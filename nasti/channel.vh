@@ -16,6 +16,7 @@ interface nasti_aw
    logic [7:0]            len;
    logic [2:0]            size;
    logic [1:0]            burst;
+   logic                  lock;
    logic [3:0]            cache;
    logic [2:0]            prot;
    logic [3:0]            qos;
@@ -61,6 +62,7 @@ interface nasti_ar
    logic [7:0]            len;
    logic [2:0]            size;
    logic [1:0]            burst;
+   logic                  lock;
    logic [3:0]            cache;
    logic [2:0]            prot;
    logic [3:0]            qos;
