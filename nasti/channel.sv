@@ -24,6 +24,12 @@ interface nasti_aw
    logic [USER_WIDTH-1:0] user;
    logic                  valid;
    logic                  ready;
+
+   modport master (output id, addr, len, size, burst, lock, cache, prot, qos, region, user, valid,
+                   input ready);
+   modport slave (input id, addr, len, size, burst, lock, cache, prot, qos, region, user, valid,
+                  output ready);
+
 endinterface // nasti_wa
 
 interface nasti_w
@@ -37,6 +43,12 @@ interface nasti_w
    logic [USER_WIDTH-1:0]   user;
    logic                    valid;
    logic                    ready;
+
+   modport master (output data, strb, last, user, valid,
+                   input ready);
+   modport slave (input data, strb, last, user, valid,
+                  output ready);
+
 endinterface // nasti_w
 
 interface nasti_b
@@ -49,6 +61,12 @@ interface nasti_b
    logic [USER_WIDTH-1:0] user;
    logic                  valid;
    logic                  ready;
+
+   modport master (input id, resp, user, valid,
+                   output ready);
+   modport slave (output id, resp, user, valid,
+                  input ready);
+
 endinterface // nasti_b
 
 interface nasti_ar
@@ -70,6 +88,12 @@ interface nasti_ar
    logic [USER_WIDTH-1:0] user;
    logic                  valid;
    logic                  ready;
+
+   modport master (output id, addr, len, size, burst, lock, cache, prot, qos, region, user, valid,
+                   input ready);
+   modport slave (input id, addr, len, size, burst, lock, cache, prot, qos, region, user, valid,
+                  output ready);
+
 endinterface // nasti_ar
 
 interface nasti_r
@@ -85,6 +109,12 @@ interface nasti_r
    logic [USER_WIDTH-1:0] user;
    logic                  valid;
    logic                  ready;
+
+   modport master (input id, data, resp, last, user, valid,
+                   output ready);
+   modport slave (output id, data, resp, last, user, valid,
+                  input ready);
+
 endinterface // nasti_r
 
 `endif
