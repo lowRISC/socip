@@ -2,9 +2,6 @@
 
 // Define the SV interfaces for NASTI channels
 
-`ifndef NASTI_CHANNEL_VH
- `define NASTI_CHANNEL_VH
-
 interface nasti_aw
   #(
     ID_WIDTH = 1,
@@ -116,5 +113,3 @@ interface nasti_r
                   input ready);
 
 endinterface // nasti_r
-
-`endif
