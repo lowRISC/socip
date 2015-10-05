@@ -1,8 +1,8 @@
 // See LICENSE for license details.
 
+// up to 8 master ports
 module nasti_demux
   #(
-    N_PORT = 2,                 // number of demultiplexed ports, maximal 8
     ID_WIDTH = 1,               // id width
     ADDR_WIDTH = 8,             // address width
     DATA_WIDTH = 8,             // width of data
@@ -48,10 +48,9 @@ module nasti_demux
    // AW and W channels
    logic       lock;
    logic [2:0] locked_port;
-   logic [2:0] aw_port_match_uint, aw_port_sel;
+   logic [2:0] aw_port_sel;
 
-   assign aw_port_match_uint = port_match(s.aw_addr);
-   assign aw_port_sel = lock ? locked_port : aw_port_match_uint;
+   assign aw_port_sel = lock ? locked_port : port_match(s.aw_addr);
 
    always_ff(posedge clk or nedgedge rstn)
      if(!rstn)
@@ -133,8 +132,9 @@ module nasti_demux
    arbiter_rr #(8)
    b_arb (
           .*,
-          .req  ( b_valid ),
-          .gnt  ( b_gnt   )
+          .req     ( b_valid ),
+          .gnt     ( b_gnt   ),
+          .enable  ( 1'b1    )
           );
    assign b_port_sel = sel_active(b_gnt);
 
@@ -160,8 +160,9 @@ module nasti_demux
    arbiter_rr #(8)
    r_arb (
           .*,
-          .req  ( r_valid ),
-          .gnt  ( r_gnt   )
+          .req     ( r_valid ),
+          .gnt     ( r_gnt   ),
+          .enable  ( 1'b1    )
           );
    assign r_port_sel = sel_active(r_gnt);
 

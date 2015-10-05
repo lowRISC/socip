@@ -7,11 +7,13 @@ module arbiter_rr
    (
     input clk, rstn,
     input [N-1:0]  req,
-    output [N-1:0] gnt
+    output [N-1:0] gnt,
+    input enable
     );
 
-   logic [N-1:0] p;           // pointer of last grant
+   logic [N-1:0] p;             // pointer of last grant
    logic [2*N-1:0] mask, req_ext, p_ext;
+   logic           lock, locked; // make the arbiter stable
 
    genvar          i;
 
@@ -24,12 +26,20 @@ module arbiter_rr
         assign mask[i] = (mask[i-1] || p_ext[i-1]) && !req_ext[i-1];
    endgenerate
 
-   assign gnt = req & (mask[N-1:0] | mask[2*N:N]);
+   assign gnt = enable ? (locked ? p : req & (mask[N-1:0] | mask[2*N:N])) : 0;
 
    always_ff @(posedge clk or negedge rstn)
      if(!rstn)
        p <= 1;
-     else if(|req)
+     else if(!locked && |gnt)
        p <= gnt;
 
+   always_ff @(posedge clk or negedge rstn)
+     if(!rstn)
+       lock <= 0;
+     else if(!lock || ~|(p&req))
+       lock <= |gnt;
+
+   assign locked = lock && |(p&req);
+   
 endmodule // arbiter_rr
