@@ -128,7 +128,7 @@ module nasti_mux
    always_comb @(*) begin
       write_matched = 0;
       for(n=0; n<W_MAX; n++)
-        write_matched |= write_vec[n].valid && m.b_id == write_vec[n].id ? n : 0;
+        write_matched = write_matched | (write_vec[n].valid && m.b_id == write_vec[n].id ? n : 0);
    end
 
    generate
@@ -152,6 +152,66 @@ module nasti_mux
 
         if(m.b_valid && m.b_ready)
           write_vec[write_matched].valid <= 0;
+     end
+
+   // AR and R
+   logic [2:0] ar_port_sel;
+   logic [7:0] ar_gnt;
+
+   arbiter_rr #(8)
+   ar_arb (
+           .*,
+           .req    ( s.ar_valid  ),
+           .gnt    ( ar_gnt      ),
+           .enable ( !read_full  )
+           );
+   assign ar_port_sel = toInt(ar_gnt);
+
+   assign m.ar_id      = s.ar_id[ar_port_sel];
+   assign m.ar_addr    = s.ar_addr[ar_port_sel];
+   assign m.ar_len     = s.ar_len[ar_port_sel];
+   assign m.ar_size    = s.ar_size[ar_port_sel];
+   assign m.ar_burst   = s.ar_burst[ar_port_sel];
+   assign m.ar_lock    = s.ar_lock[ar_port_sel];
+   assign m.ar_cache   = s.ar_cache[ar_port_sel];
+   assign m.ar_prot    = s.ar_prot[ar_port_sel];
+   assign m.ar_qos     = s.ar_qos[ar_port_sel];
+   assign m.ar_region  = s.ar_region[ar_port_sel];
+   assign m.ar_user    = s.ar_user[ar_port_sel];
+   assign m.ar_valid   = s.ar_valid[ar_port_sel];
+   assign s_ar.ready   = m.ar_ready ? (1 << ar_port_sel) : 0;
+
+   logic [$clog2(R_MAX)-1:0] read_matched;
+
+   always_comb @(*) begin
+      read_matched = 0;
+      for(n=0; n<R_MAX; n++)
+        read_matched = read_matched | (read_vec[n].valid && m.r_id == read_vec[n].id ? n : 0);
+   end
+
+   generate
+      for(i=0; i<8; i++) begin
+         assign s.r_id[i]    = m.r_id;
+         assign s.r_data[i]  = m.r_data;
+         assign s.r_resp[i]  = m.r_resp;
+         assign s.r_last[i]  = m.r_last;
+         assign s.r_user[i]  = m.r_user;
+         assign s.r_valid[i] = m.r_valid && read_vec[read_matched].port == i;
+      end
+   endgenerate
+   assign m.r_ready = s.r_ready[read_vec[read_matched].port];
+
+   // update read_vec
+   always_ff @(posedge clk or negedge rstn)
+     if(!rstn) begin
+        for(n=0; n<R_MAX; n++)
+          read_vec.valid <= 0;
+     end else begin
+        if(m.ar_valid && m.ar_ready)
+          read_vec[read_wp] <= {m.ar_id, ar_port_sel, 1};
+
+        if(m.r_valid && m.r_ready)
+          read_vec[read_matched].valid <= 0;
      end
 
 endmodule // nasti_mux
