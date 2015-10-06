@@ -8,7 +8,7 @@ module nasti_mux
     ID_WIDTH = 1,               // id width
     ADDR_WIDTH = 8,             // address width
     DATA_WIDTH = 8,             // width of data
-    USER_WIDTH = 1,             // width of user field, must > 0, let synthesizer trim it if not in use
+    USER_WIDTH = 1              // width of user field, must > 0, let synthesizer trim it if not in use
     )
    (
     input clk, rstn,
