@@ -32,7 +32,6 @@ module nasti_mux
 
    logic [$clog2(W_MAX)-1:0] write_wp;
    logic [$clog2(R_MAX)-1:0] read_wp;
-   
    logic write_full, read_full;
 
    function logic is_write_full();

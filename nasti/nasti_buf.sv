@@ -60,7 +60,6 @@ module nasti_buf
    logic [$clog2(DEPTH)-1:0]   b_wp, b_rp;
    logic [DEPTH-1:0]           r_valid;
    logic [$clog2(DEPTH)-1:0]   r_wp, r_rp;
-   
 
    function logic [$clog2(DEPTH)-1:0] incr(logic [$clog2(DEPTH)-1:0] p);
       logic [$clog2(DEPTH):0]  p_incr = p + 1;
@@ -263,4 +262,3 @@ module nasti_buf
    assign s.r_valid <= r_valid[r_rp];
 
 endmodule // nasti_buf
-
