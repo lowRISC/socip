@@ -62,54 +62,52 @@ module nasti_crossbar
    defparam mx_i6.N_PORT = 8;
    defparam mx_i7.N_PORT = 8;
 
-   // slicing input channels and possibly insert input buffers   
-   generate
-      if(IB_DEPTH == 0) begin   // No input buffer
-         nasti_channel_slicer #(N_INPUT)
-         input_slicer (
-                       .s  ( s      ),
-                       .m0 ( ib_o0  ), .m1 ( ib_o1  ), .m2 ( ib_o2  ), .m3 ( ib_o3  ),
-                       .m4 ( ib_o4  ), .m5 ( ib_o5  ), .m6 ( ib_o6  ), .m7 ( ib_o7  ));
-      end else begin            // Has input buffer
-         nasti_channel_slicer #(N_INPUT)
-         input_slicer (
-                       .s  ( s      ),
-                       .m0 ( ib_i0  ), .m1 ( ib_i1  ), .m2 ( ib_i2  ), .m3 ( ib_i3  ),
-                       .m4 ( ib_i4  ), .m5 ( ib_i5  ), .m6 ( ib_i6  ), .m7 ( ib_i7  ));
+   // slicing input channels and possibly insert input buffers
+   nasti_channel_slicer #(N_INPUT)
+   input_slicer (
+                 .s  ( s      ),
+                 .m0 ( ib_i0  ), .m1 ( ib_i1  ), .m2 ( ib_i2  ), .m3 ( ib_i3  ),
+                 .m4 ( ib_i4  ), .m5 ( ib_i5  ), .m6 ( ib_i6  ), .m7 ( ib_i7  ));
 
-         nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                     .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
-         ibuf0 (.s(ib_i0), .m(ib_o0));
+   nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
+   ibuf0 (.s(ib_i0), .m(ib_o0));
 
-         nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                     .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
-         ibuf1 (.s(ib_i1), .m(ib_o1));
+   nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
+   ibuf1 (.s(ib_i1), .m(ib_o1));
 
-         nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                     .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
-         ibuf2 (.s(ib_i2), .m(ib_o2));
+   nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
+   ibuf2 (.s(ib_i2), .m(ib_o2));
 
-         nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                     .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
-         ibuf3 (.s(ib_i3), .m(ib_o3));
+   nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
+   ibuf3 (.s(ib_i3), .m(ib_o3));
 
-         nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                     .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
-         ibuf4 (.s(ib_i4), .m(ib_o4));
+   nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
+   ibuf4 (.s(ib_i4), .m(ib_o4));
 
-         nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                     .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
-         ibuf5 (.s(ib_i5), .m(ib_o5));
+   nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
+   ibuf5 (.s(ib_i5), .m(ib_o5));
 
-         nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                     .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
-         ibuf6 (.s(ib_i6), .m(ib_o6));
+   nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
+   ibuf6 (.s(ib_i6), .m(ib_o6));
 
-         nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                     .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
-         ibuf7 (.s(ib_i7), .m(ib_o7));
-      end // else: !if(IB_DEPTH == 0)
-   endgenerate
+   nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
+   ibuf7 (.s(ib_i7), .m(ib_o7));
 
    // demux according to addresses
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
@@ -1020,52 +1018,50 @@ module nasti_crossbar
    mux7 (.*, .s(mx_i7), .m(ob_i7));
 
    // combine channel and possibly insert output buffers
-   generate
-      if(OB_DEPTH == 0) begin   // No input buffer
-         nasti_channel_combiner #(N_OUTPUT)
-         output_combiner (
-                          .s0 ( ob_i0  ), .s1 ( ob_i1  ), .s2 ( ob_i2  ), .s3 ( ob_i3  ),
-                          .s4 ( ob_i4  ), .s5 ( ob_i5  ), .s6 ( ob_i6  ), .s7 ( ob_i7  ),
-                          .m  ( m      ));
-      end else begin            // Has input buffer
-         nasti_channel_combiner #(N_OUTPUT)
-         output_combiner (
-                          .s0 ( ob_o0  ), .s1 ( ob_o1  ), .s2 ( ob_o2  ), .s3 ( ob_o3  ),
-                          .s4 ( ob_o4  ), .s5 ( ob_o5  ), .s6 ( ob_o6  ), .s7 ( ob_o7  ),
-                          .m  ( m      ));
+   nasti_channel_combiner #(N_OUTPUT)
+   output_combiner (
+                    .s0 ( ob_o0  ), .s1 ( ob_o1  ), .s2 ( ob_o2  ), .s3 ( ob_o3  ),
+                    .s4 ( ob_o4  ), .s5 ( ob_o5  ), .s6 ( ob_o6  ), .s7 ( ob_o7  ),
+                    .m  ( m      ));
 
-         nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                     .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
-         obuf0 (.s(ob_i0), .m(ob_o0));
+   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
+   obuf0 (.s(ob_i0), .m(ob_o0));
 
-         nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                     .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
-         obuf1 (.s(ob_i1), .m(ob_o1));
+   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
+   obuf1 (.s(ob_i1), .m(ob_o1));
 
-         nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                     .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
-         obuf2 (.s(ob_i2), .m(ob_o2));
+   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
+   obuf2 (.s(ob_i2), .m(ob_o2));
 
-         nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                     .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
-         obuf3 (.s(ob_i3), .m(ob_o3));
+   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
+   obuf3 (.s(ob_i3), .m(ob_o3));
 
-         nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                     .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
-         obuf4 (.s(ob_i4), .m(ob_o4));
+   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
+   obuf4 (.s(ob_i4), .m(ob_o4));
 
-         nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                     .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
-         obuf5 (.s(ob_i5), .m(ob_o5));
+   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
+   obuf5 (.s(ob_i5), .m(ob_o5));
 
-         nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                     .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
-         obuf6 (.s(ob_i6), .m(ob_o6));
+   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
+   obuf6 (.s(ob_i6), .m(ob_o6));
 
-         nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                     .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
-         obuf7 (.s(ob_i7), .m(ob_o7));
-      end // else: !if(OB_DEPTH == 0)
-   endgenerate
+   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
+   obuf7 (.s(ob_i7), .m(ob_o7));
 
 endmodule // nasti_crossbar
