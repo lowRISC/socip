@@ -39,28 +39,29 @@ module nasti_crossbar
    genvar i, j;
 
    // painful, why vivado does not support array of interfaces
-   nasti_channel ib_i0, ib_i1, ib_i2, ib_i3, ib_i4, ib_i5, ib_i6, ib_i7;
-   nasti_channel ib_o0, ib_o1, ib_o2, ib_o3, ib_o4, ib_o5, ib_o6, ib_o7;
-   nasti_channel dm_o0, dm_o1, dm_o2, dm_o3, dm_o4, dm_o5, dm_o6, dm_o7;
-   nasti_channel mx_i0, mx_i1, mx_i2, mx_i3, mx_i4, mx_i5, mx_i6, mx_i7;
-   nasti_channel ob_i0, ob_i1, ob_i2, ob_i3, ob_i4, ob_i5, ob_i6, ob_i7;
-   nasti_channel ob_o0, ob_o1, ob_o2, ob_o3, ob_o4, ob_o5, ob_o6, ob_o7;
-   defparam dm_i0.N_PORT = 8;
-   defparam dm_i1.N_PORT = 8;
-   defparam dm_i2.N_PORT = 8;
-   defparam dm_i3.N_PORT = 8;
-   defparam dm_i4.N_PORT = 8;
-   defparam dm_i5.N_PORT = 8;
-   defparam dm_i6.N_PORT = 8;
-   defparam dm_i7.N_PORT = 8;
-   defparam mx_i0.N_PORT = 8;
-   defparam mx_i1.N_PORT = 8;
-   defparam mx_i2.N_PORT = 8;
-   defparam mx_i3.N_PORT = 8;
-   defparam mx_i4.N_PORT = 8;
-   defparam mx_i5.N_PORT = 8;
-   defparam mx_i6.N_PORT = 8;
-   defparam mx_i7.N_PORT = 8;
+   nasti_channel #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+                   .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
+   ib_i0(), ib_i1(), ib_i2(), ib_i3(), ib_i4(), ib_i5(), ib_i6(), ib_i7();
+
+   nasti_channel #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+                   .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
+   ib_o0(), ib_o1(), ib_o2(), ib_o3(), ib_o4(), ib_o5(), ib_o6(), ib_o7();
+
+   nasti_channel #(.N_PORT(8), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+                   .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
+   dm_o0(), dm_o1(), dm_o2(), dm_o3(), dm_o4(), dm_o5(), dm_o6(), dm_o7();
+
+   nasti_channel #(.N_PORT(8), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+                   .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
+   mx_i0(), mx_i1(), mx_i2(), mx_i3(), mx_i4(), mx_i5(), mx_i6(), mx_i7();
+
+   nasti_channel #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+                   .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
+   ob_i0(), ob_i1(), ob_i2(), ob_i3(), ob_i4(), ob_i5(), ob_i6(), ob_i7();
+
+   nasti_channel #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+                   .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
+   ob_o0(), ob_o1(), ob_o2(), ob_o3(), ob_o4(), ob_o5(), ob_o6(), ob_o7();
 
    // slicing input channels and possibly insert input buffers
    nasti_channel_slicer #(N_INPUT)
