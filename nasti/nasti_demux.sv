@@ -52,7 +52,7 @@ module nasti_demux
 
    assign aw_port_sel = lock ? locked_port : port_match(s.aw_addr);
 
-   always_ff(posedge clk or nedgedge rstn)
+   always_ff @(posedge clk or negedge rstn)
      if(!rstn)
        lock <= 1'b0;
      else if(s.aw_valid && s.aw_ready) begin

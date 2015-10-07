@@ -93,7 +93,7 @@ module nasti_mux
 
    assign aw_port_sel = lock ? locked_port : toInt(aw_gnt);
 
-   always_ff(posedge clk or negedge rstn)
+   always_ff @(posedge clk or negedge rstn)
      if(!rstn)
        lock <= 1'b0;
      else if(s.aw_valid[aw_port_sel] && s.aw_ready[aw_port_sel]) begin
