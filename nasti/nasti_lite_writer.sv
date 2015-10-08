@@ -71,10 +71,7 @@ module nasti_lite_writer
         else $fatal(1, "nasti-lite support only 32/64-bit channels!");
 
       assert(BUF_DEPTH >= (NASTI_DATA_WIDTH-1)/LITE_DATA_WIDTH + 1)
-        else $fatal(1, "nasti_lite_write_buf buffer depth too short!");
-
-      assert(BUF_DEPTH >= MAX_TRANSACTION)
-        else $error("buffer size less than the number of transactions is impractical.");
+        else $fatal(1, "nasti_lite_writer buffer depth too short!");
    end
 
    // shared information
@@ -227,7 +224,7 @@ module nasti_lite_writer
                                        conflict_match,   resp_b_match;
 
    // help functions
-   function logic [$clog2(MAX_TRANSACTION):0] toInt (logic [MAX_TRANSACTION-1:0] dat);
+   function logic [$clog2(MAX_TRANSACTION)-1:0] toInt (logic [MAX_TRANSACTION-1:0] dat);
       int i;
       for(i=0; i<MAX_TRANSACTION; i++)
         if(dat[i]) return i;
