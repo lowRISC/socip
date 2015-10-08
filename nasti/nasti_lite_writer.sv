@@ -50,7 +50,7 @@ module nasti_lite_writer
 
     output [LITE_DATA_WIDTH-1:0]    lite_w_data,
     output [LITE_DATA_WIDTH/8-1:0]  lite_w_strb,
-    output [USER_WIDTH-1:0]         lite_w_w_user,
+    output [USER_WIDTH-1:0]         lite_w_user,
     output                          lite_w_valid,
     input                           lite_w_ready,
 
