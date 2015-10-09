@@ -121,7 +121,7 @@ module nasti_lite_writer
    function logic [7:0] nasti_byte_size (logic [2:0] s);
       return 1 << s;
    endfunction // nasti_byte_size
-   
+
    function logic [$clog2(BUF_DEPTH)-1:0] lite_packet_size (logic [2:0] s);
       return nasti_byte_size(s) / BUF_DATA_WIDTH;
    endfunction // lite_packet_size
