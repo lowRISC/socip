@@ -43,9 +43,9 @@ module nasti_lite_reader
     output                          lite_ar_valid,
     input                           lite_ar_ready,
 
-    input  [ID_WIDTH-1:0]           lite_b_id,
+    input  [ID_WIDTH-1:0]           lite_r_id,
     input  [LITE_DATA_WIDTH-1:0]    lite_r_data,
-    input  [1:0]                    lite_b_resp,
+    input  [1:0]                    lite_r_resp,
     input  [USER_WIDTH-1:0]         lite_r_user,
     input                           lite_r_valid,
     output                          lite_r_ready
@@ -58,7 +58,7 @@ module nasti_lite_reader
 
    init begin
       assert(LITE_DATA_WIDTH == 32 || LITE_DATA_WIDTH == 64)
-        else $fatal(1, "nasti-lite support only 32/64-bit channels!");
+        else $fatal(1, "nasti-lite supports only 32/64-bit channels!");
 
       assert(BUF_DEPTH > 0)
         else $fatal(1, "nasti_lite_reader buffer depth too short!");

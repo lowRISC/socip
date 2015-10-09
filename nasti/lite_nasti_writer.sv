@@ -67,7 +67,7 @@ module lite_nasti_writer
 
    init begin
       assert(LITE_DATA_WIDTH == 32 || LITE_DATA_WIDTH == 64)
-        else $fatal(1, "nasti-lite support only 32/64-bit channels!");
+        else $fatal(1, "nasti-lite supports only 32/64-bit channels!");
    end
 
    // helper functions
@@ -99,8 +99,7 @@ module lite_nasti_writer
 
    // transaction control
    logic [MAX_TRANSACTION-1:0]                    conflict_match, resp_match;
-   logic [$clog2(MAX_TRANSACTION)-1:0]            xact_avail_index, xact_cur_index,
-                                                  resp_index;
+   logic [$clog2(MAX_TRANSACTION)-1:0]            xact_avail_index, resp_index;
    logic                                          lock;
 
    generate

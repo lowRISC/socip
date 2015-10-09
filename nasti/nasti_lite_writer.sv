@@ -68,7 +68,7 @@ module nasti_lite_writer
 
    init begin
       assert(LITE_DATA_WIDTH == 32 || LITE_DATA_WIDTH == 64)
-        else $fatal(1, "nasti-lite support only 32/64-bit channels!");
+        else $fatal(1, "nasti-lite supports only 32/64-bit channels!");
 
       assert(BUF_DEPTH >= (NASTI_DATA_WIDTH-1)/LITE_DATA_WIDTH + 1)
         else $fatal(1, "nasti_lite_writer buffer depth too short!");
