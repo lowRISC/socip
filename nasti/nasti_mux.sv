@@ -13,7 +13,7 @@ module nasti_mux
    (
     input clk, rstn,
     nasti_channel.slave  s,
-    nasti_channel.master m,
+    nasti_channel.master m
     );
 
    // dummy
@@ -27,8 +27,8 @@ module nasti_mux
       logic                valid;
    } transaction_t;
 
-   transaction_t [W_MAX] write_vec;
-   transaction_t [R_MAX] read_vec;
+   transaction_t [W_MAX-1:0] write_vec;
+   transaction_t [R_MAX-1:0] read_vec;
 
    logic [$clog2(W_MAX)-1:0] write_wp;
    logic [$clog2(R_MAX)-1:0] read_wp;
@@ -178,7 +178,7 @@ module nasti_mux
    assign m.ar_region  = s.ar_region[ar_port_sel];
    assign m.ar_user    = s.ar_user[ar_port_sel];
    assign m.ar_valid   = s.ar_valid[ar_port_sel];
-   assign s_ar.ready   = m.ar_ready ? (1 << ar_port_sel) : 0;
+   assign s.ar_ready   = m.ar_ready ? (1 << ar_port_sel) : 0;
 
    logic [$clog2(R_MAX)-1:0] read_matched;
 

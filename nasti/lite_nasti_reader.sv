@@ -25,7 +25,7 @@ module lite_nasti_reader
     output [1:0]                    lite_r_resp,
     output [USER_WIDTH-1:0]         lite_r_user,
     output                          lite_r_valid,
-    input                           lite_r_ready
+    input                           lite_r_ready,
 
     output  [ID_WIDTH-1:0]          nasti_ar_id,
     output  [ADDR_WIDTH-1:0]        nasti_ar_addr,
@@ -47,16 +47,15 @@ module lite_nasti_reader
     input                           nasti_r_last,
     input  [USER_WIDTH-1:0]         nasti_r_user,
     input                           nasti_r_valid,
-    output                          nasti_r_ready,
+    output                          nasti_r_ready
     );
 
    localparam BUF_DATA_WIDTH = NASTI_DATA_WIDTH < LITE_DATA_WIDTH ? NASTI_DATA_WIDTH : LITE_DATA_WIDTH;
    localparam MAX_BURST_SIZE = NASTI_DATA_WIDTH/BUF_DATA_WIDTH;
 
-
    genvar                           i;
 
-   init begin
+   initial begin
       assert(LITE_DATA_WIDTH == 32 || LITE_DATA_WIDTH == 64)
         else $fatal(1, "nasti-lite supports only 32/64-bit channels!");
    end
@@ -114,7 +113,7 @@ module lite_nasti_reader
      else begin
         if(lite_ar_valid && lite_ar_ready) begin
            xact_valid_vec[xact_avail_index] <= 1;
-           xact_id_vec[xact_avail_index] <= lite_aw_id;
+           xact_id_vec[xact_avail_index] <= lite_ar_id;
            xact_data_cnt_vec[xact_avail_index] <= 0;
            xact_resp_vec[xact_avail_index] <= 0;
         end
@@ -132,7 +131,7 @@ module lite_nasti_reader
    // connect signals
    assign lite_ar_ready = xact_vec_available && !xact_id_conflict && nasti_ar_ready;
 
-   assign lite_r_id = nasti_b_id;
+   assign lite_r_id = nasti_r_id;
    assign lite_r_data = nasti_packet_size() == 1 ?
                         nasti_r_data :
                         {xact_data_vec[resp_index][MAX_BURST_SIZE-1:1], nasti_r_data};
@@ -160,4 +159,3 @@ module lite_nasti_reader
    assign nasti_r_ready = |resp_match;
 
 endmodule // lite_nasti_reader
-

@@ -11,7 +11,7 @@ interface nasti_channel
     USER_WIDTH = 1              // width of user field, must > 0, let synthesizer trim it if not in use
     );
 
-   init assert(USER_WIDTH > 0) else $fatal(1, "[nasti interface] User field must have at least 1 bit!");
+   initial assert(USER_WIDTH > 0) else $fatal(1, "[nasti interface] User field must have at least 1 bit!");
 
    // write/read address
    logic [N_PORT-1:0][ID_WIDTH-1:0]     aw_id,     ar_id;

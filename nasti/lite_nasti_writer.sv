@@ -16,7 +16,7 @@ module lite_nasti_writer
     input  [2:0]                    lite_aw_prot,
     input  [3:0]                    lite_aw_qos,
     input  [3:0]                    lite_aw_region,
-    input  [USER_WIDTH-1:0]         lite_aw_aw_user,
+    input  [USER_WIDTH-1:0]         lite_aw_user,
     input                           lite_aw_valid,
     output                          lite_aw_ready,
 
@@ -65,7 +65,7 @@ module lite_nasti_writer
 
    genvar                           i;
 
-   init begin
+   initial begin
       assert(LITE_DATA_WIDTH == 32 || LITE_DATA_WIDTH == 64)
         else $fatal(1, "nasti-lite supports only 32/64-bit channels!");
    end

@@ -162,7 +162,7 @@ module nasti_channel_slicer
          assign m3.aw_cache   = s.aw_cache[3];
          assign m3.aw_prot    = s.aw_prot[3];
          assign m3.aw_qos     = s.aw_qos[3];
-         assign m3.aw_region  = s.aw_region[3]
+         assign m3.aw_region  = s.aw_region[3];
          assign m3.aw_user    = s.aw_user[3];
          assign m3.aw_valid   = s.aw_valid[3];
          assign m3.ar_id      = s.ar_id[3];
@@ -174,7 +174,7 @@ module nasti_channel_slicer
          assign m3.ar_cache   = s.ar_cache[3];
          assign m3.ar_prot    = s.ar_prot[3];
          assign m3.ar_qos     = s.ar_qos[3];
-         assign m3.ar_region  = s.ar_region[3]
+         assign m3.ar_region  = s.ar_region[3];
          assign m3.ar_user    = s.ar_user[3];
          assign m3.ar_valid   = s.ar_valid[3];
          assign m3.w_data     = s.w_data[3];
@@ -209,7 +209,7 @@ module nasti_channel_slicer
          assign m4.aw_cache   = s.aw_cache[4];
          assign m4.aw_prot    = s.aw_prot[4];
          assign m4.aw_qos     = s.aw_qos[4];
-         assign m4.aw_region  = s.aw_region[4]
+         assign m4.aw_region  = s.aw_region[4];
          assign m4.aw_user    = s.aw_user[4];
          assign m4.aw_valid   = s.aw_valid[4];
          assign m4.ar_id      = s.ar_id[4];
@@ -221,7 +221,7 @@ module nasti_channel_slicer
          assign m4.ar_cache   = s.ar_cache[4];
          assign m4.ar_prot    = s.ar_prot[4];
          assign m4.ar_qos     = s.ar_qos[4];
-         assign m4.ar_region  = s.ar_region[4]
+         assign m4.ar_region  = s.ar_region[4];
          assign m4.ar_user    = s.ar_user[4];
          assign m4.ar_valid   = s.ar_valid[4];
          assign m4.w_data     = s.w_data[4];
@@ -256,7 +256,7 @@ module nasti_channel_slicer
          assign m5.aw_cache   = s.aw_cache[5];
          assign m5.aw_prot    = s.aw_prot[5];
          assign m5.aw_qos     = s.aw_qos[5];
-         assign m5.aw_region  = s.aw_region[5]
+         assign m5.aw_region  = s.aw_region[5];
          assign m5.aw_user    = s.aw_user[5];
          assign m5.aw_valid   = s.aw_valid[5];
          assign m5.ar_id      = s.ar_id[5];
@@ -268,7 +268,7 @@ module nasti_channel_slicer
          assign m5.ar_cache   = s.ar_cache[5];
          assign m5.ar_prot    = s.ar_prot[5];
          assign m5.ar_qos     = s.ar_qos[5];
-         assign m5.ar_region  = s.ar_region[5]
+         assign m5.ar_region  = s.ar_region[5];
          assign m5.ar_user    = s.ar_user[5];
          assign m5.ar_valid   = s.ar_valid[5];
          assign m5.w_data     = s.w_data[5];
@@ -303,7 +303,7 @@ module nasti_channel_slicer
          assign m6.aw_cache   = s.aw_cache[6];
          assign m6.aw_prot    = s.aw_prot[6];
          assign m6.aw_qos     = s.aw_qos[6];
-         assign m6.aw_region  = s.aw_region[6]
+         assign m6.aw_region  = s.aw_region[6];
          assign m6.aw_user    = s.aw_user[6];
          assign m6.aw_valid   = s.aw_valid[6];
          assign m6.ar_id      = s.ar_id[6];
@@ -315,7 +315,7 @@ module nasti_channel_slicer
          assign m6.ar_cache   = s.ar_cache[6];
          assign m6.ar_prot    = s.ar_prot[6];
          assign m6.ar_qos     = s.ar_qos[6];
-         assign m6.ar_region  = s.ar_region[6]
+         assign m6.ar_region  = s.ar_region[6];
          assign m6.ar_user    = s.ar_user[6];
          assign m6.ar_valid   = s.ar_valid[6];
          assign m6.w_data     = s.w_data[6];
@@ -350,7 +350,7 @@ module nasti_channel_slicer
          assign m7.aw_cache   = s.aw_cache[7];
          assign m7.aw_prot    = s.aw_prot[7];
          assign m7.aw_qos     = s.aw_qos[7];
-         assign m7.aw_region  = s.aw_region[7]
+         assign m7.aw_region  = s.aw_region[7];
          assign m7.aw_user    = s.aw_user[7];
          assign m7.aw_valid   = s.aw_valid[7];
          assign m7.ar_id      = s.ar_id[7];
@@ -362,7 +362,7 @@ module nasti_channel_slicer
          assign m7.ar_cache   = s.ar_cache[7];
          assign m7.ar_prot    = s.ar_prot[7];
          assign m7.ar_qos     = s.ar_qos[7];
-         assign m7.ar_region  = s.ar_region[7]
+         assign m7.ar_region  = s.ar_region[7];
          assign m7.ar_user    = s.ar_user[7];
          assign m7.ar_valid   = s.ar_valid[7];
          assign m7.w_data     = s.w_data[7];

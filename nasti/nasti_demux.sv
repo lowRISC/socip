@@ -27,7 +27,7 @@ module nasti_demux
    (
     input clk, rstn,
     nasti_channel.slave  s,
-    nasti_channel.master m,
+    nasti_channel.master m
     );
 
    genvar i;
@@ -35,16 +35,16 @@ module nasti_demux
    // port matcher
    function logic [2:0] port_match(logic [7:0] addr);
       if(MASK0 != 0 && (addr & ~MASK0) == BASE0) return 0;
-      if(MASK1 != 0 (addr & ~MASK1) == BASE1) return 1;
-      if(MASK2 != 0 (addr & ~MASK2) == BASE2) return 2;
-      if(MASK3 != 0 (addr & ~MASK3) == BASE3) return 3;
-      if(MASK4 != 0 (addr & ~MASK4) == BASE4) return 4;
-      if(MASK5 != 0 (addr & ~MASK5) == BASE5) return 5;
-      if(MASK6 != 0 (addr & ~MASK6) == BASE6) return 6;
-      if(MASK7 != 0 (addr & ~MASK7) == BASE7) return 7;
+      if(MASK1 != 0 && (addr & ~MASK1) == BASE1) return 1;
+      if(MASK2 != 0 && (addr & ~MASK2) == BASE2) return 2;
+      if(MASK3 != 0 && (addr & ~MASK3) == BASE3) return 3;
+      if(MASK4 != 0 && (addr & ~MASK4) == BASE4) return 4;
+      if(MASK5 != 0 && (addr & ~MASK5) == BASE5) return 5;
+      if(MASK6 != 0 && (addr & ~MASK6) == BASE6) return 6;
+      if(MASK7 != 0 && (addr & ~MASK7) == BASE7) return 7;
       return 0;
    endfunction // port_match
-   
+
    // AW and W channels
    logic       lock;
    logic [2:0] locked_port;
@@ -172,6 +172,6 @@ module nasti_demux
    assign s.r_last  = m.r_last[r_port_sel];
    assign s.r_user  = m.r_user[r_port_sel];
    assign s.r_valid = m.r_valid[r_port_sel];
-   assign m.r_ready = r_gnt;   
+   assign m.r_ready = r_gnt;
 
 endmodule // nasti_demux

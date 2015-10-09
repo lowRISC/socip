@@ -56,7 +56,7 @@ module nasti_lite_reader
 
    genvar                           i;
 
-   init begin
+   initial begin
       assert(LITE_DATA_WIDTH == 32 || LITE_DATA_WIDTH == 64)
         else $fatal(1, "nasti-lite supports only 32/64-bit channels!");
 
@@ -123,7 +123,7 @@ module nasti_lite_reader
    logic [$clog2(MAX_TRANSACTION)-1:0]     resp_xact_index, xact_avail_index,
                                            xact_ar_index, xact_r_index;
    generate
-      for(i=0; i<MAX_TRANSACTION) begin
+      for(i=0; i<MAX_TRANSACTION; i++) begin
          assign resp_xact_match[i] = lite_r_id_buf[lite_r_rp] == xact_id_vec[i] &&
                                      lite_r_buf_valid[lite_r_rp] && xact_valid_vec[i];
          assign conflict_match[i] = nasti_ar_id == xact_id_vec[i] && xact_valid_vec[i];
