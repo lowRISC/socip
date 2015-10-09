@@ -172,10 +172,13 @@ module lite_nasti_writer
    assign nasti_aw_user = lite_aw_user;
    assign nasti_aw_valid = !lock && xact_vec_available && !xact_id_conflict && lite_aw_valid;
 
-   assign nasti_w_data = xact_data_cnt == 0 ? lite_w_data : xact_data[xact_data_cnt];
-   assign nasti_w_strb = xact_data_cnt == 0 ? lite_w_strb : xact_strb[xact_data_cnt];
+   assign nasti_w_data = nasti_packet_size() == 1 || xact_data_cnt == 0 ?
+                         lite_w_data : xact_data[xact_data_cnt];
+   assign nasti_w_strb = nasti_packet_size() == 1 || xact_data_cnt == 0 ?
+                         lite_w_strb : xact_strb[xact_data_cnt];
    assign nasti_w_last = xact_data_cnt == nasti_packet_size() - 1;
-   assign nasti_w_user = xact_data_cnt == 0 ? lite_w_user : xact_w_user;
+   assign nasti_w_user = nasti_packet_size() == 1 || xact_data_cnt == 0 ?
+                         lite_w_user : xact_w_user;
    assign nasti_w_valid = lock &&
                           (xact_data_cnt == 0 && lite_w_valid) ||
                           (xact_data_cnt != 0 && xact_data_cnt != nasti_packet_size());
