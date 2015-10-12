@@ -229,7 +229,7 @@ module nasti_mux
         if(m.ar_valid && m.ar_ready) begin
            read_vec[read_wp].id <= m.ar_id;
            read_vec[read_wp].port <= ar_port_sel;
-           read_vec[read_wp] <= 1'b1;
+           read_vec[read_wp].valid <= 1'b1;
         end
 
         if(m.r_valid && m.r_ready)

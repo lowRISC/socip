@@ -32,6 +32,15 @@ module nasti_demux
 
    genvar i;
 
+   // function to find active channel
+   function logic [2:0] sel_active (logic [7:0] rdy);
+      // assume rdy arbitrated and one-hot
+      int i;
+      for(i=0; i<8; i++)
+        if(rdy[i]) return i;
+      return 0;
+   endfunction // sel_active
+
    // port matcher
    function logic [2:0] port_match(logic [7:0] addr);
       if(MASK0 != 0 && (addr & ~MASK0) == BASE0) return 0;
@@ -107,14 +116,7 @@ module nasti_demux
       end // for (i=0; i<8; i++)
    endgenerate
 
-   // function to find active channel
-   function logic [2:0] sel_active (logic [7:0] rdy);
-      // assume rdy arbitrated and one-hot
-      int i;
-      for(i=0; i<8; i++)
-        if(rdy[i]) return i;
-      return 0;
-   endfunction // sel_active
+   assign s.ar_ready = m.ar_ready[ar_port_sel];
    
    // B channel
    logic [7:0] b_valid, b_gnt;

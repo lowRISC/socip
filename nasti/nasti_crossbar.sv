@@ -73,42 +73,42 @@ module nasti_crossbar
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf0 (.s(ib_i0), .m(ib_o0));
+   ibuf0 (.*, .s(ib_i0), .m(ib_o0));
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf1 (.s(ib_i1), .m(ib_o1));
+   ibuf1 (.*, .s(ib_i1), .m(ib_o1));
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf2 (.s(ib_i2), .m(ib_o2));
+   ibuf2 (.*, .s(ib_i2), .m(ib_o2));
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf3 (.s(ib_i3), .m(ib_o3));
+   ibuf3 (.*, .s(ib_i3), .m(ib_o3));
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf4 (.s(ib_i4), .m(ib_o4));
+   ibuf4 (.*, .s(ib_i4), .m(ib_o4));
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf5 (.s(ib_i5), .m(ib_o5));
+   ibuf5 (.*, .s(ib_i5), .m(ib_o5));
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf6 (.s(ib_i6), .m(ib_o6));
+   ibuf6 (.*, .s(ib_i6), .m(ib_o6));
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf7 (.s(ib_i7), .m(ib_o7));
+   ibuf7 (.*, .s(ib_i7), .m(ib_o7));
 
    // demux according to addresses
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
@@ -1049,41 +1049,41 @@ module nasti_crossbar
    nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
-   obuf0 (.s(ob_i0), .m(ob_o0));
+   obuf0 (.*, .s(ob_i0), .m(ob_o0));
 
    nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
-   obuf1 (.s(ob_i1), .m(ob_o1));
+   obuf1 (.*, .s(ob_i1), .m(ob_o1));
 
    nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
-   obuf2 (.s(ob_i2), .m(ob_o2));
+   obuf2 (.*, .s(ob_i2), .m(ob_o2));
 
    nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
-   obuf3 (.s(ob_i3), .m(ob_o3));
+   obuf3 (.*, .s(ob_i3), .m(ob_o3));
 
    nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
-   obuf4 (.s(ob_i4), .m(ob_o4));
+   obuf4 (.*, .s(ob_i4), .m(ob_o4));
 
    nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
-   obuf5 (.s(ob_i5), .m(ob_o5));
+   obuf5 (.*, .s(ob_i5), .m(ob_o5));
 
    nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
-   obuf6 (.s(ob_i6), .m(ob_o6));
+   obuf6 (.*, .s(ob_i6), .m(ob_o6));
 
    nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
-   obuf7 (.s(ob_i7), .m(ob_o7));
+   obuf7 (.*, .s(ob_i7), .m(ob_o7));
 
 endmodule // nasti_crossbar
