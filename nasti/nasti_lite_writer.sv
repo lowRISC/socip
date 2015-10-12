@@ -240,17 +240,17 @@ module nasti_lite_writer
       for(i=0; i<MAX_TRANSACTION; i++) begin
          assign write_xact_match[i] = aw_id == resp_id_vec[i] && resp_valid_vec[i];
          assign resp_xact_match[i] = lite_b_id == resp_id_vec[i] && resp_valid_vec[i];
-         assign conflict_xact_match[i] = nasti_aw_id == resp_id_vec[i] && resp_valid_vec[i];
+         assign conflict_match[i] = nasti_aw_id == resp_id_vec[i] && resp_valid_vec[i];
          assign resp_b_match[i] = resp_size_vec[i] == resp_cnt_vec[i] && resp_last_vec[i] && resp_valid_vec[i];
       end
    endgenerate
 
    assign write_xact_index = toInt(write_xact_match);
-   assign read_xact_index = toInt(read_xact_match);
+   assign resp_xact_index = toInt(resp_xact_match);
    assign resp_avail_index = toInt(~resp_valid_vec);
    assign resp_b_index = toInt(resp_b_match);
    assign resp_id_conflict = |conflict_match;
-   assign resp_vec_available = |~resp_valid_vec;
+   assign resp_vec_available = |(~resp_valid_vec);
 
    // update valid
    always_ff @(posedge clk or negedge rstn)
@@ -268,7 +268,7 @@ module nasti_lite_writer
    assign nasti_b_valid = |resp_b_match;
    assign nasti_b_id = resp_id_vec[resp_b_index];
    assign nasti_b_resp = resp_resp_vec[resp_b_index];
-   assign nasti_b_user = resp_resp_user[resp_b_index];
+   assign nasti_b_user = resp_user_vec[resp_b_index];
    assign lite_b_ready = ~nasti_b_valid || |resp_xact_match; // needed to make sure resp_b_match is one-hot
 
    // store response

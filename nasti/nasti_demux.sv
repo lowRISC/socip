@@ -7,22 +7,22 @@ module nasti_demux
     ADDR_WIDTH = 8,             // address width
     DATA_WIDTH = 8,             // width of data
     USER_WIDTH = 1,             // width of user field, must > 0, let synthesizer trim it if not in use
-    [ADDR_WIDTH-1:0] BASE0 = 0, // base address for port 0
-    [ADDR_WIDTH-1:0] BASE1 = 0, // base address for port 1
-    [ADDR_WIDTH-1:0] BASE2 = 0, // base address for port 2
-    [ADDR_WIDTH-1:0] BASE3 = 0, // base address for port 3
-    [ADDR_WIDTH-1:0] BASE4 = 0, // base address for port 4
-    [ADDR_WIDTH-1:0] BASE5 = 0, // base address for port 5
-    [ADDR_WIDTH-1:0] BASE6 = 0, // base address for port 6
-    [ADDR_WIDTH-1:0] BASE7 = 0, // base address for port 7
-    [ADDR_WIDTH-1:0] MASK0 = 0, // address mask for port 0
-    [ADDR_WIDTH-1:0] MASK1 = 0, // address mask for port 1
-    [ADDR_WIDTH-1:0] MASK2 = 0, // address mask for port 2
-    [ADDR_WIDTH-1:0] MASK3 = 0, // address mask for port 3
-    [ADDR_WIDTH-1:0] MASK4 = 0, // address mask for port 4
-    [ADDR_WIDTH-1:0] MASK5 = 0, // address mask for port 5
-    [ADDR_WIDTH-1:0] MASK6 = 0, // address mask for port 6
-    [ADDR_WIDTH-1:0] MASK7 = 0  // address mask for port 7
+    logic [ADDR_WIDTH-1:0] BASE0 = 0, // base address for port 0
+    logic [ADDR_WIDTH-1:0] BASE1 = 0, // base address for port 1
+    logic [ADDR_WIDTH-1:0] BASE2 = 0, // base address for port 2
+    logic [ADDR_WIDTH-1:0] BASE3 = 0, // base address for port 3
+    logic [ADDR_WIDTH-1:0] BASE4 = 0, // base address for port 4
+    logic [ADDR_WIDTH-1:0] BASE5 = 0, // base address for port 5
+    logic [ADDR_WIDTH-1:0] BASE6 = 0, // base address for port 6
+    logic [ADDR_WIDTH-1:0] BASE7 = 0, // base address for port 7
+    logic [ADDR_WIDTH-1:0] MASK0 = 0, // address mask for port 0
+    logic [ADDR_WIDTH-1:0] MASK1 = 0, // address mask for port 1
+    logic [ADDR_WIDTH-1:0] MASK2 = 0, // address mask for port 2
+    logic [ADDR_WIDTH-1:0] MASK3 = 0, // address mask for port 3
+    logic [ADDR_WIDTH-1:0] MASK4 = 0, // address mask for port 4
+    logic [ADDR_WIDTH-1:0] MASK5 = 0, // address mask for port 5
+    logic [ADDR_WIDTH-1:0] MASK6 = 0, // address mask for port 6
+    logic [ADDR_WIDTH-1:0] MASK7 = 0  // address mask for port 7
     )
    (
     input clk, rstn,
@@ -120,14 +120,24 @@ module nasti_demux
    logic [7:0] b_valid, b_gnt;
    logic [2:0] b_port_sel;
 
-   assign b_valid[0] = MASK0 != 0 && s.b_valid[0];
-   assign b_valid[1] = MASK1 != 0 && s.b_valid[1];
-   assign b_valid[2] = MASK2 != 0 && s.b_valid[2];
-   assign b_valid[3] = MASK3 != 0 && s.b_valid[3];
-   assign b_valid[4] = MASK4 != 0 && s.b_valid[4];
-   assign b_valid[5] = MASK5 != 0 && s.b_valid[5];
-   assign b_valid[6] = MASK6 != 0 && s.b_valid[6];
-   assign b_valid[7] = MASK7 != 0 && s.b_valid[7];
+   generate
+      if(MASK0 != 0)   assign b_valid[0] = m.b_valid[0];
+      else             assign b_valid[0] = 1'b0;
+      if(MASK1 != 0)   assign b_valid[1] = m.b_valid[1];
+      else             assign b_valid[1] = 1'b0;
+      if(MASK2 != 0)   assign b_valid[2] = m.b_valid[2];
+      else             assign b_valid[2] = 1'b0;
+      if(MASK3 != 0)   assign b_valid[3] = m.b_valid[3];
+      else             assign b_valid[3] = 1'b0;
+      if(MASK4 != 0)   assign b_valid[4] = m.b_valid[4];
+      else             assign b_valid[4] = 1'b0;
+      if(MASK5 != 0)   assign b_valid[5] = m.b_valid[5];
+      else             assign b_valid[5] = 1'b0;
+      if(MASK6 != 0)   assign b_valid[6] = m.b_valid[6];
+      else             assign b_valid[6] = 1'b0;
+      if(MASK7 != 0)   assign b_valid[7] = m.b_valid[7];
+      else             assign b_valid[7] = 1'b0;
+   endgenerate
 
    arbiter_rr #(8)
    b_arb (
@@ -148,14 +158,24 @@ module nasti_demux
    logic [7:0] r_valid, r_gnt;
    logic [2:0] r_port_sel;
 
-   assign r_valid[0] = MASK0 != 0 && s.r_valid[0];
-   assign r_valid[1] = MASK1 != 0 && s.r_valid[1];
-   assign r_valid[2] = MASK2 != 0 && s.r_valid[2];
-   assign r_valid[3] = MASK3 != 0 && s.r_valid[3];
-   assign r_valid[4] = MASK4 != 0 && s.r_valid[4];
-   assign r_valid[5] = MASK5 != 0 && s.r_valid[5];
-   assign r_valid[6] = MASK6 != 0 && s.r_valid[6];
-   assign r_valid[7] = MASK7 != 0 && s.r_valid[7];
+   generate
+      if(MASK0 != 0)   assign r_valid[0] = m.r_valid[0];
+      else             assign r_valid[0] = 1'b0;
+      if(MASK1 != 0)   assign r_valid[1] = m.r_valid[1];
+      else             assign r_valid[1] = 1'b0;
+      if(MASK2 != 0)   assign r_valid[2] = m.r_valid[2];
+      else             assign r_valid[2] = 1'b0;
+      if(MASK3 != 0)   assign r_valid[3] = m.r_valid[3];
+      else             assign r_valid[3] = 1'b0;
+      if(MASK4 != 0)   assign r_valid[4] = m.r_valid[4];
+      else             assign r_valid[4] = 1'b0;
+      if(MASK5 != 0)   assign r_valid[5] = m.r_valid[5];
+      else             assign r_valid[5] = 1'b0;
+      if(MASK6 != 0)   assign r_valid[6] = m.r_valid[6];
+      else             assign r_valid[6] = 1'b0;
+      if(MASK7 != 0)   assign r_valid[7] = m.r_valid[7];
+      else             assign r_valid[7] = 1'b0;
+   endgenerate
 
    arbiter_rr #(8)
    r_arb (

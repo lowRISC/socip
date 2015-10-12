@@ -140,7 +140,7 @@ module nasti_lite_reader
    assign xact_r_index = toInt(xact_r_gnt);
    assign xact_avail_index = toInt(~xact_valid_vec);
    assign xact_id_conflict = |conflict_match;
-   assign xact_vec_available = |~xact_valid_vec;
+   assign xact_vec_available = |(~xact_valid_vec);
 
    arbiter_rr #(MAX_TRANSACTION)
    xact_ar_arb(.*, .req(xact_ar_req), .gnt(xact_ar_gnt));
@@ -162,8 +162,8 @@ module nasti_lite_reader
 
    always_ff @(posedge clk) begin
       if(nasti_ar_valid && nasti_ar_ready) begin
-         xact_id[xact_avail_index]          <= nasti_ar_id;
-         xact_addr[xact_avail_index]        <= nasti_ar_addr;
+         xact_id_vec[xact_avail_index]      <= nasti_ar_id;
+         xact_addr_vec[xact_avail_index]    <= nasti_ar_addr;
          xact_len_vec[xact_avail_index]     <= nasti_ar_len;
          xact_ar_cnt_vec[xact_avail_index]  <= nasti_ar_len;
          xact_r_cnt_vec[xact_avail_index]   <= nasti_ar_len;
@@ -177,7 +177,7 @@ module nasti_lite_reader
       end
 
       if(lite_ar_valid && lite_ar_ready) begin
-         xact_addr[xact_ar_index] <= xact_addr[xact_ar_index] + BUF_DATA_WIDTH/8;
+         xact_addr_vec[xact_ar_index] <= xact_addr_vec[xact_ar_index] + BUF_DATA_WIDTH/8;
          if(xact_ar_cnt_vec[xact_ar_index]) begin
             if(xact_req_cnt[xact_ar_index] ==  lite_packet_size(xact_size_vec[xact_ar_index]) -1) begin
                xact_req_cnt[xact_ar_index] <= 0;

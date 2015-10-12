@@ -21,7 +21,7 @@ module nasti_buf
    generate
       if(DEPTH > 0) begin
 
-         typedef struct {
+         typedef struct packed unsigned {
             logic [ID_WIDTH-1:0] id;
             logic [ADDR_WIDTH-1:0] addr;
             logic [7:0]            len;
@@ -35,13 +35,13 @@ module nasti_buf
             logic [USER_WIDTH-1:0] user;
          } pkt_addr_t;
 
-         typedef struct            {
+         typedef struct packed unsigned {
             logic [ID_WIDTH-1:0]   id;
             logic [1:0]            resp;
             logic [USER_WIDTH-1:0] user;
          } pkt_resp_t;
 
-         typedef struct            {
+         typedef struct packed unsigned {
             logic [DATA_WIDTH-1:0] data;
             logic [DATA_WIDTH/8-1:0] strb;
             logic                    last;
@@ -49,7 +49,8 @@ module nasti_buf
          } pkt_data_t;
 
          function logic [$clog2(DEPTH)-1:0] incr(logic [$clog2(DEPTH)-1:0] p);
-            logic [$clog2(DEPTH):0]  p_incr = p + 1;
+            logic [$clog2(DEPTH):0]  p_incr;
+            p_incr = p + 1;
             return p_incr >= DEPTH ? p_incr - DEPTH : p_incr;
          endfunction // incr
 

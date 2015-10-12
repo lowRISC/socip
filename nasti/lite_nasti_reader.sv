@@ -103,7 +103,7 @@ module lite_nasti_reader
    endgenerate
 
    assign xact_avail_index = toInt(~xact_valid_vec);
-   assign xact_vec_available = |~xact_valid_vec;
+   assign xact_vec_available = |(~xact_valid_vec);
    assign xact_id_conflict = |conflict_match;
    assign resp_index = toInt(resp_match);
 

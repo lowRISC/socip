@@ -17,7 +17,7 @@ module arbiter_rr
 
    genvar          i;
 
-   assign mask[0] = 0;
+   assign mask[0] = 1'b0;
    assign req_ext = {req, req};
    assign p_ext = p;
 
@@ -26,7 +26,7 @@ module arbiter_rr
         assign mask[i] = (mask[i-1] || p_ext[i-1]) && !req_ext[i-1];
    endgenerate
 
-   assign gnt = enable ? (locked ? p : req & (mask[N-1:0] | mask[2*N:N])) : 0;
+   assign gnt = enable ? (locked ? p : req & (mask[N-1:0] | mask[2*N-1:N])) : 0;
 
    always_ff @(posedge clk or negedge rstn)
      if(!rstn)
