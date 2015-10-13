@@ -7,6 +7,7 @@ module nasti_demux
     ADDR_WIDTH = 8,             // address width
     DATA_WIDTH = 8,             // width of data
     USER_WIDTH = 1,             // width of user field, must > 0, let synthesizer trim it if not in use
+    LITE_MODE = 0,              // whether work in Lite mode
     logic [ADDR_WIDTH-1:0] BASE0 = 0, // base address for port 0
     logic [ADDR_WIDTH-1:0] BASE1 = 0, // base address for port 1
     logic [ADDR_WIDTH-1:0] BASE2 = 0, // base address for port 2
@@ -67,7 +68,7 @@ module nasti_demux
      else if(s.aw_valid && s.aw_ready) begin
         lock <= 1'b1;
         locked_port <= aw_port_sel;
-     end else if(s.w_last && s.w_valid && s.w_ready)
+     end else if((LITE_MODE || s.w_last) && s.w_valid && s.w_ready)
        lock <= 1'b0;
 
    generate

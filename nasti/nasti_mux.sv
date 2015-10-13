@@ -8,7 +8,8 @@ module nasti_mux
     ID_WIDTH = 1,               // id width
     ADDR_WIDTH = 8,             // address width
     DATA_WIDTH = 8,             // width of data
-    USER_WIDTH = 1              // width of user field, must > 0, let synthesizer trim it if not in use
+    USER_WIDTH = 1,             // width of user field, must > 0, let synthesizer trim it if not in use
+    LITE_MODE = 0               // whether work in Lite mode
     )
    (
     input clk, rstn,
@@ -112,7 +113,7 @@ module nasti_mux
      else if(s.aw_valid[aw_port_sel] && s.aw_ready[aw_port_sel]) begin
         lock <= 1'b1;
         locked_port <= aw_port_sel;
-     end else if(s.w_last[aw_port_sel] && s.w_valid[aw_port_sel] && s.w_ready[aw_port_sel])
+     end else if((LITE_MODE || s.w_last[aw_port_sel]) && s.w_valid[aw_port_sel] && s.w_ready[aw_port_sel])
        lock <= 1'b0;
 
    assign m.aw_id      = s.aw_id[aw_port_sel];

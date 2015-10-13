@@ -13,6 +13,7 @@ module nasti_crossbar
     ADDR_WIDTH = 8,             // address width
     DATA_WIDTH = 8,             // width of data
     USER_WIDTH = 1,             // width of user field, must > 0, let synthesizer trim it if not
+    LITE_MODE = 0,              // whether work in Lite mode
     logic [ADDR_WIDTH-1:0] BASE0 = 0, // base address for port 0
     logic [ADDR_WIDTH-1:0] BASE1 = 0, // base address for port 1
     logic [ADDR_WIDTH-1:0] BASE2 = 0, // base address for port 2
@@ -112,7 +113,7 @@ module nasti_crossbar
 
    // demux according to addresses
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
                  .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK3), .MASK3(MASK3),
@@ -120,7 +121,7 @@ module nasti_crossbar
    demux0 (.*, .s(ib_o0), .m(dm_o0));
 
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
                  .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK3), .MASK3(MASK3),
@@ -128,7 +129,7 @@ module nasti_crossbar
    demux1 (.*, .s(ib_o1), .m(dm_o1));
 
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
                  .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK3), .MASK3(MASK3),
@@ -144,7 +145,7 @@ module nasti_crossbar
    demux3 (.*, .s(ib_o3), .m(dm_o3));
 
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
                  .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK3), .MASK3(MASK3),
@@ -152,7 +153,7 @@ module nasti_crossbar
    demux4 (.*, .s(ib_o4), .m(dm_o4));
 
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
                  .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK3), .MASK3(MASK3),
@@ -160,7 +161,7 @@ module nasti_crossbar
    demux5 (.*, .s(ib_o5), .m(dm_o5));
 
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
                  .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK3), .MASK3(MASK3),
@@ -168,7 +169,7 @@ module nasti_crossbar
    demux6 (.*, .s(ib_o6), .m(dm_o6));
 
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
                  .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK3), .MASK3(MASK3),
@@ -1001,27 +1002,32 @@ module nasti_crossbar
    // multiplexers
    nasti_mux #(.W_MAX(W_MAX), .R_MAX(R_MAX),
                .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .LITE_MODE(LITE_MODE))
    mux0 (.*, .s(mx_i0), .m(ob_i0));
 
    nasti_mux #(.W_MAX(W_MAX), .R_MAX(R_MAX),
                .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .LITE_MODE(LITE_MODE))
    mux1 (.*, .s(mx_i1), .m(ob_i1));
 
    nasti_mux #(.W_MAX(W_MAX), .R_MAX(R_MAX),
                .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .LITE_MODE(LITE_MODE))
    mux2 (.*, .s(mx_i2), .m(ob_i2));
 
    nasti_mux #(.W_MAX(W_MAX), .R_MAX(R_MAX),
                .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .LITE_MODE(LITE_MODE))
    mux3 (.*, .s(mx_i3), .m(ob_i3));
 
    nasti_mux #(.W_MAX(W_MAX), .R_MAX(R_MAX),
                .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .LITE_MODE(LITE_MODE))
    mux4 (.*, .s(mx_i4), .m(ob_i4));
 
    nasti_mux #(.W_MAX(W_MAX), .R_MAX(R_MAX),
@@ -1031,12 +1037,14 @@ module nasti_crossbar
 
    nasti_mux #(.W_MAX(W_MAX), .R_MAX(R_MAX),
                .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .LITE_MODE(LITE_MODE))
    mux6 (.*, .s(mx_i6), .m(ob_i6));
 
    nasti_mux #(.W_MAX(W_MAX), .R_MAX(R_MAX),
                .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .LITE_MODE(LITE_MODE))
    mux7 (.*, .s(mx_i7), .m(ob_i7));
 
    // combine channel and possibly insert output buffers
