@@ -154,7 +154,7 @@ module nasti_demux
    assign s.b_resp  = m.b_resp[b_port_sel];
    assign s.b_user  = m.b_user[b_port_sel];
    assign s.b_valid = m.b_valid[b_port_sel];
-   assign m.b_ready = b_gnt;
+   assign m.b_ready = s.b_ready ? b_gnt : 0;
 
    // R channel
    logic [7:0] r_valid, r_gnt;
@@ -194,6 +194,6 @@ module nasti_demux
    assign s.r_last  = m.r_last[r_port_sel];
    assign s.r_user  = m.r_user[r_port_sel];
    assign s.r_valid = m.r_valid[r_port_sel];
-   assign m.r_ready = r_gnt;
+   assign m.r_ready = s.r_ready ? r_gnt : 0;
 
 endmodule // nasti_demux

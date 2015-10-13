@@ -630,7 +630,7 @@ module nasti_crossbar
    assign cbo_r_last[0]     = mx_i0.r_last;
    assign cbo_r_user[0]     = mx_i0.r_user;
    assign cbo_r_valid[0]    = mx_i0.r_valid;
-   assign mx_i0.r_ready     = cbo_r_ready[1][0];
+   assign mx_i0.r_ready     = cbo_r_ready[0];
 
    assign mx_i1.aw_id       = cbo_aw_id[1];
    assign mx_i1.aw_addr     = cbo_aw_addr[1];
@@ -720,7 +720,7 @@ module nasti_crossbar
    assign cbo_r_last[2]     = mx_i2.r_last;
    assign cbo_r_user[2]     = mx_i2.r_user;
    assign cbo_r_valid[2]    = mx_i2.r_valid;
-   assign mx_i2.r_ready     = cbo_r_ready[1][2];
+   assign mx_i2.r_ready     = cbo_r_ready[2];
 
    assign mx_i3.aw_id       = cbo_aw_id[3];
    assign mx_i3.aw_addr     = cbo_aw_addr[3];
@@ -758,14 +758,14 @@ module nasti_crossbar
    assign cbo_b_resp[3]     = mx_i3.b_resp;
    assign cbo_b_user[3]     = mx_i3.b_user;
    assign cbo_b_valid[3]    = mx_i3.b_valid;
-   assign mx_i3.b_ready     = cbo_b_ready[1][3];
+   assign mx_i3.b_ready     = cbo_b_ready[3];
    assign cbo_r_id[3]       = mx_i3.r_id;
    assign cbo_r_data[3]     = mx_i3.r_data;
    assign cbo_r_resp[3]     = mx_i3.r_resp;
    assign cbo_r_last[3]     = mx_i3.r_last;
    assign cbo_r_user[3]     = mx_i3.r_user;
    assign cbo_r_valid[3]    = mx_i3.r_valid;
-   assign mx_i3.r_ready     = cbo_r_ready[1][3];
+   assign mx_i3.r_ready     = cbo_r_ready[3];
 
    assign mx_i4.aw_id       = cbo_aw_id[4];
    assign mx_i4.aw_addr     = cbo_aw_addr[4];

@@ -23,7 +23,7 @@ module arbiter_rr
 
    generate
       for(i=1; i<2*N; i++)
-        assign mask[i] = (mask[i-1] || p_ext[i-1]) && !req_ext[i-1];
+        assign mask[i] = (mask[i-1] && !req_ext[i-1]) || p_ext[i-1];
    endgenerate
 
    assign gnt = enable ? (locked ? p : req & (mask[N-1:0] | mask[2*N-1:N])) : 0;
