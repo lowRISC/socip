@@ -141,7 +141,7 @@ module nasti_mux
 
    generate
       for(i=0; i<W_MAX; i++)
-        assign write_match[i] = write_vec[i].valid && m.b_id == write_vec[i].id;
+        assign write_match[i] = write_vec[i].valid && m.b_valid && m.b_id == write_vec[i].id;
    endgenerate
    assign write_match_index = toInt_w(write_match);
 
@@ -204,7 +204,7 @@ module nasti_mux
 
    generate
       for(i=0; i<R_MAX; i++)
-        assign read_match[i] = read_vec[i].valid && m.r_id == read_vec[i].id;
+        assign read_match[i] = read_vec[i].valid && m.r_valid && m.r_id == read_vec[i].id;
    endgenerate
    assign read_match_index = toInt_r(read_match);
 

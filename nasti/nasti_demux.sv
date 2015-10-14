@@ -123,24 +123,14 @@ module nasti_demux
    logic [7:0] b_valid, b_gnt;
    logic [2:0] b_port_sel;
 
-   generate
-      if(MASK0 != 0)   assign b_valid[0] = m.b_valid[0];
-      else             assign b_valid[0] = 1'b0;
-      if(MASK1 != 0)   assign b_valid[1] = m.b_valid[1];
-      else             assign b_valid[1] = 1'b0;
-      if(MASK2 != 0)   assign b_valid[2] = m.b_valid[2];
-      else             assign b_valid[2] = 1'b0;
-      if(MASK3 != 0)   assign b_valid[3] = m.b_valid[3];
-      else             assign b_valid[3] = 1'b0;
-      if(MASK4 != 0)   assign b_valid[4] = m.b_valid[4];
-      else             assign b_valid[4] = 1'b0;
-      if(MASK5 != 0)   assign b_valid[5] = m.b_valid[5];
-      else             assign b_valid[5] = 1'b0;
-      if(MASK6 != 0)   assign b_valid[6] = m.b_valid[6];
-      else             assign b_valid[6] = 1'b0;
-      if(MASK7 != 0)   assign b_valid[7] = m.b_valid[7];
-      else             assign b_valid[7] = 1'b0;
-   endgenerate
+   assign b_valid[0] = (MASK0 != 0) && m.b_valid[0];
+   assign b_valid[1] = (MASK1 != 0) && m.b_valid[1];
+   assign b_valid[2] = (MASK2 != 0) && m.b_valid[2];
+   assign b_valid[3] = (MASK3 != 0) && m.b_valid[3];
+   assign b_valid[4] = (MASK4 != 0) && m.b_valid[4];
+   assign b_valid[5] = (MASK5 != 0) && m.b_valid[5];
+   assign b_valid[6] = (MASK6 != 0) && m.b_valid[6];
+   assign b_valid[7] = (MASK7 != 0) && m.b_valid[7];
 
    arbiter_rr #(8)
    b_arb (
@@ -161,24 +151,14 @@ module nasti_demux
    logic [7:0] r_valid, r_gnt;
    logic [2:0] r_port_sel;
 
-   generate
-      if(MASK0 != 0)   assign r_valid[0] = m.r_valid[0];
-      else             assign r_valid[0] = 1'b0;
-      if(MASK1 != 0)   assign r_valid[1] = m.r_valid[1];
-      else             assign r_valid[1] = 1'b0;
-      if(MASK2 != 0)   assign r_valid[2] = m.r_valid[2];
-      else             assign r_valid[2] = 1'b0;
-      if(MASK3 != 0)   assign r_valid[3] = m.r_valid[3];
-      else             assign r_valid[3] = 1'b0;
-      if(MASK4 != 0)   assign r_valid[4] = m.r_valid[4];
-      else             assign r_valid[4] = 1'b0;
-      if(MASK5 != 0)   assign r_valid[5] = m.r_valid[5];
-      else             assign r_valid[5] = 1'b0;
-      if(MASK6 != 0)   assign r_valid[6] = m.r_valid[6];
-      else             assign r_valid[6] = 1'b0;
-      if(MASK7 != 0)   assign r_valid[7] = m.r_valid[7];
-      else             assign r_valid[7] = 1'b0;
-   endgenerate
+   assign r_valid[0] = (MASK0 != 0) && m.r_valid[0];
+   assign r_valid[1] = (MASK1 != 0) && m.r_valid[1];
+   assign r_valid[2] = (MASK2 != 0) && m.r_valid[2];
+   assign r_valid[3] = (MASK3 != 0) && m.r_valid[3];
+   assign r_valid[4] = (MASK4 != 0) && m.r_valid[4];
+   assign r_valid[5] = (MASK5 != 0) && m.r_valid[5];
+   assign r_valid[6] = (MASK6 != 0) && m.r_valid[6];
+   assign r_valid[7] = (MASK7 != 0) && m.r_valid[7];
 
    arbiter_rr #(8)
    r_arb (
