@@ -43,7 +43,7 @@ module nasti_demux
    endfunction // sel_active
 
    // port matcher
-   function logic [2:0] port_match(logic [7:0] addr);
+   function logic [2:0] port_match(logic [ADDR_WIDTH-1:0] addr);
       if(MASK0 != 0 && (addr & ~MASK0) == BASE0) return 0;
       if(MASK1 != 0 && (addr & ~MASK1) == BASE1) return 1;
       if(MASK2 != 0 && (addr & ~MASK2) == BASE2) return 2;
