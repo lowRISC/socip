@@ -116,7 +116,7 @@ module nasti_crossbar
                  .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
                  .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
-                 .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK3), .MASK3(MASK3),
+                 .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
                  .MASK4(MASK4), .MASK5(MASK5), .MASK6(MASK6), .MASK7(MASK7))
    demux0 (.*, .s(ib_o0), .m(dm_o0));
 
@@ -124,7 +124,7 @@ module nasti_crossbar
                  .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
                  .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
-                 .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK3), .MASK3(MASK3),
+                 .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
                  .MASK4(MASK4), .MASK5(MASK5), .MASK6(MASK6), .MASK7(MASK7))
    demux1 (.*, .s(ib_o1), .m(dm_o1));
 
@@ -132,7 +132,7 @@ module nasti_crossbar
                  .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
                  .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
-                 .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK3), .MASK3(MASK3),
+                 .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
                  .MASK4(MASK4), .MASK5(MASK5), .MASK6(MASK6), .MASK7(MASK7))
    demux2 (.*, .s(ib_o2), .m(dm_o2));
 
@@ -140,7 +140,7 @@ module nasti_crossbar
                  .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                  .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
-                 .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK3), .MASK3(MASK3),
+                 .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
                  .MASK4(MASK4), .MASK5(MASK5), .MASK6(MASK6), .MASK7(MASK7))
    demux3 (.*, .s(ib_o3), .m(dm_o3));
 
@@ -148,7 +148,7 @@ module nasti_crossbar
                  .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
                  .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
-                 .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK3), .MASK3(MASK3),
+                 .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
                  .MASK4(MASK4), .MASK5(MASK5), .MASK6(MASK6), .MASK7(MASK7))
    demux4 (.*, .s(ib_o4), .m(dm_o4));
 
@@ -156,7 +156,7 @@ module nasti_crossbar
                  .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
                  .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
-                 .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK3), .MASK3(MASK3),
+                 .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
                  .MASK4(MASK4), .MASK5(MASK5), .MASK6(MASK6), .MASK7(MASK7))
    demux5 (.*, .s(ib_o5), .m(dm_o5));
 
@@ -164,7 +164,7 @@ module nasti_crossbar
                  .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
                  .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
-                 .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK3), .MASK3(MASK3),
+                 .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
                  .MASK4(MASK4), .MASK5(MASK5), .MASK6(MASK6), .MASK7(MASK7))
    demux6 (.*, .s(ib_o6), .m(dm_o6));
 
@@ -172,7 +172,7 @@ module nasti_crossbar
                  .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
                  .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
-                 .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK3), .MASK3(MASK3),
+                 .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
                  .MASK4(MASK4), .MASK5(MASK5), .MASK6(MASK6), .MASK7(MASK7))
    demux7 (.*, .s(ib_o7), .m(dm_o7));
 
