@@ -36,20 +36,9 @@ module nasti_buf
    // assign sig = A ? 1 : 2;
    //
    // seems working.
-   // Or may be it is not happy with structs
-
-   typedef struct packed unsigned {
-      logic [ID_WIDTH-1:0]   id;
-      logic [1:0]            resp;
-      logic [USER_WIDTH-1:0] user;
-   } pkt_resp_t;
-
-   typedef struct packed unsigned {
-      logic [DATA_WIDTH-1:0]   data;
-      logic [DATA_WIDTH/8-1:0] strb;
-      logic                    last;
-      logic [USER_WIDTH-1:0]   user;
-   } pkt_data_t;
+   //
+   // And it is not happy with struct
+   // Force me to use simple arrays
 
    function logic [$clog2(DEPTH_LOC)-1:0] incr(logic [$clog2(DEPTH_LOC)-1:0] p);
       logic [$clog2(DEPTH_LOC):0] p_incr;
@@ -180,9 +169,12 @@ module nasti_buf
    assign m.ar_valid  = BUF_REQ && DEPTH > 0 ? ar_valid[ar_rp]    : s.ar_valid;
 
    // W
-   pkt_data_t                      w_q  [DEPTH_LOC-1:0];
-   logic [DEPTH_LOC-1:0]           w_valid;
-   logic [$clog2(DEPTH_LOC)-1:0]   w_wp, w_rp;
+   logic [DATA_WIDTH-1:0]   w_q_data  [DEPTH_LOC-1:0];
+   logic [DATA_WIDTH/8-1:0] w_q_strb  [DEPTH_LOC-1:0];
+   logic                    w_q_last  [DEPTH_LOC-1:0];
+   logic [USER_WIDTH-1:0]   w_q_user  [DEPTH_LOC-1:0];
+   logic [DEPTH_LOC-1:0]    w_valid;
+   logic [$clog2(DEPTH_LOC)-1:0] w_wp, w_rp;
 
    always_ff @(posedge clk or negedge rstn)
      if(!rstn) begin
@@ -203,23 +195,25 @@ module nasti_buf
 
    always_ff @(posedge clk)
      if(s.w_valid && s.w_ready) begin
-        w_q[w_wp].data <= s.w_data;
-        w_q[w_wp].strb <= s.w_strb;
-        w_q[w_wp].last <= s.w_last;
-        w_q[w_wp].user <= s.w_user;
+        w_q_data[w_wp] <= s.w_data;
+        w_q_strb[w_wp] <= s.w_strb;
+        w_q_last[w_wp] <= s.w_last;
+        w_q_user[w_wp] <= s.w_user;
      end
 
    assign s.w_ready = BUF_REQ && DEPTH > 0 ? !w_valid[w_wp] : m.w_ready;
-   assign m.w_data  = BUF_REQ && DEPTH > 0 ? w_q[w_rp].data : s.w_data;
-   assign m.w_strb  = BUF_REQ && DEPTH > 0 ? w_q[w_rp].strb : s.w_strb;
-   assign m.w_last  = BUF_REQ && DEPTH > 0 ? w_q[w_rp].last : s.w_last;
-   assign m.w_user  = BUF_REQ && DEPTH > 0 ? w_q[w_rp].user : s.w_user;
+   assign m.w_data  = BUF_REQ && DEPTH > 0 ? w_q_data[w_rp] : s.w_data;
+   assign m.w_strb  = BUF_REQ && DEPTH > 0 ? w_q_strb[w_rp] : s.w_strb;
+   assign m.w_last  = BUF_REQ && DEPTH > 0 ? w_q_last[w_rp] : s.w_last;
+   assign m.w_user  = BUF_REQ && DEPTH > 0 ? w_q_user[w_rp] : s.w_user;
    assign m.w_valid = BUF_REQ && DEPTH > 0 ? w_valid[w_rp]  : s.w_valid;
 
    // B
-   pkt_resp_t                      b_q  [DEPTH_LOC-1:0];
-   logic [DEPTH_LOC-1:0]           b_valid;
-   logic [$clog2(DEPTH_LOC)-1:0]   b_wp, b_rp;
+   logic [ID_WIDTH-1:0]   b_q_id    [DEPTH_LOC-1:0];
+   logic [1:0]            b_q_resp  [DEPTH_LOC-1:0];
+   logic [USER_WIDTH-1:0] b_q_user  [DEPTH_LOC-1:0];
+   logic [DEPTH_LOC-1:0]  b_valid;
+   logic [$clog2(DEPTH_LOC)-1:0] b_wp, b_rp;
 
    always_ff @(posedge clk or negedge rstn)
      if(!rstn) begin
@@ -240,22 +234,26 @@ module nasti_buf
 
    always_ff @(posedge clk)
      if(m.b_valid && m.b_ready) begin
-        b_q[b_wp].id   <= m.b_id;
-        b_q[b_wp].resp <= m.b_resp;
-        b_q[b_wp].user <= m.b_user;
+        b_q_id[b_wp]   <= m.b_id;
+        b_q_resp[b_wp] <= m.b_resp;
+        b_q_user[b_wp] <= m.b_user;
      end
 
    assign m.b_ready = BUF_RESP && DEPTH > 0 ? !b_valid[b_wp] : s.b_ready;
-   assign s.b_id    = BUF_RESP && DEPTH > 0 ? b_q[b_rp].id   : m.b_id;
-   assign s.b_resp  = BUF_RESP && DEPTH > 0 ? b_q[b_rp].resp : m.b_resp;
-   assign s.b_user  = BUF_RESP && DEPTH > 0 ? b_q[b_rp].user : m.b_user;
+   assign s.b_id    = BUF_RESP && DEPTH > 0 ? b_q_id[b_rp]   : m.b_id;
+   assign s.b_resp  = BUF_RESP && DEPTH > 0 ? b_q_resp[b_rp] : m.b_resp;
+   assign s.b_user  = BUF_RESP && DEPTH > 0 ? b_q_user[b_rp] : m.b_user;
    assign s.b_valid = BUF_RESP && DEPTH > 0 ? b_valid[b_rp]  : m.b_valid;
 
    // R
-   pkt_data_t                      r_data_q [DEPTH_LOC-1:0];
-   pkt_resp_t                      r_resp_q [DEPTH_LOC-1:0];
-   logic [DEPTH_LOC-1:0]           r_valid;
-   logic [$clog2(DEPTH_LOC)-1:0]   r_wp, r_rp;
+   logic [DATA_WIDTH-1:0]   r_q_data  [DEPTH_LOC-1:0];
+   logic [DATA_WIDTH/8-1:0] r_q_strb  [DEPTH_LOC-1:0];
+   logic                    r_q_last  [DEPTH_LOC-1:0];
+   logic [ID_WIDTH-1:0]     r_q_id    [DEPTH_LOC-1:0];
+   logic [1:0]              r_q_resp  [DEPTH_LOC-1:0];
+   logic [USER_WIDTH-1:0]   r_q_user  [DEPTH_LOC-1:0];
+   logic [DEPTH_LOC-1:0]    r_valid;
+   logic [$clog2(DEPTH_LOC)-1:0] r_wp, r_rp;
 
    always_ff @(posedge clk or negedge rstn)
      if(!rstn) begin
@@ -276,19 +274,19 @@ module nasti_buf
 
    always_ff @(posedge clk)
      if(m.r_valid && m.r_ready) begin
-        r_resp_q[r_wp].id   <= m.r_id;
-        r_data_q[r_wp].data <= m.r_data;
-        r_resp_q[r_wp].resp <= m.r_resp;
-        r_data_q[r_wp].last <= m.r_last;
-        r_resp_q[r_wp].user <= m.r_user;
+        r_q_id[r_wp]   <= m.r_id;
+        r_q_data[r_wp] <= m.r_data;
+        r_q_resp[r_wp] <= m.r_resp;
+        r_q_last[r_wp] <= m.r_last;
+        r_q_user[r_wp] <= m.r_user;
      end
 
-   assign m.r_ready = BUF_RESP && DEPTH > 0 ? !r_valid[r_wp]      : s.r_ready;
-   assign s.r_id    = BUF_RESP && DEPTH > 0 ? r_resp_q[r_rp].id   : m.r_id;
-   assign s.r_data  = BUF_RESP && DEPTH > 0 ? r_data_q[r_rp].data : m.r_data;
-   assign s.r_resp  = BUF_RESP && DEPTH > 0 ? r_resp_q[r_rp].resp : m.r_resp;
-   assign s.r_last  = BUF_RESP && DEPTH > 0 ? r_data_q[r_rp].last : m.r_last;
-   assign s.r_user  = BUF_RESP && DEPTH > 0 ? r_resp_q[r_rp].user : m.r_user;
-   assign s.r_valid = BUF_RESP && DEPTH > 0 ? r_valid[r_rp]       : m.r_valid;
+   assign m.r_ready = BUF_RESP && DEPTH > 0 ? !r_valid[r_wp] : s.r_ready;
+   assign s.r_id    = BUF_RESP && DEPTH > 0 ? r_q_id[r_rp]   : m.r_id;
+   assign s.r_data  = BUF_RESP && DEPTH > 0 ? r_q_data[r_rp] : m.r_data;
+   assign s.r_resp  = BUF_RESP && DEPTH > 0 ? r_q_resp[r_rp] : m.r_resp;
+   assign s.r_last  = BUF_RESP && DEPTH > 0 ? r_q_last[r_rp] : m.r_last;
+   assign s.r_user  = BUF_RESP && DEPTH > 0 ? r_q_user[r_rp] : m.r_user;
+   assign s.r_valid = BUF_RESP && DEPTH > 0 ? r_valid[r_rp]  : m.r_valid;
 
 endmodule // nasti_buf

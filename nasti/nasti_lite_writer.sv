@@ -238,9 +238,9 @@ module nasti_lite_writer
    // control signals
    generate
       for(i=0; i<MAX_TRANSACTION; i++) begin
-         assign write_xact_match[i] = aw_id == resp_id_vec[i] && resp_valid_vec[i];
-         assign resp_xact_match[i] = lite_b_id == resp_id_vec[i] && resp_valid_vec[i];
-         assign conflict_match[i] = nasti_aw_id == resp_id_vec[i] && resp_valid_vec[i];
+         assign write_xact_match[i] = aw_id === resp_id_vec[i] && resp_valid_vec[i];
+         assign resp_xact_match[i] = lite_b_id === resp_id_vec[i] && resp_valid_vec[i];
+         assign conflict_match[i] = nasti_aw_id === resp_id_vec[i] && resp_valid_vec[i];
          assign resp_b_match[i] = resp_size_vec[i] == resp_cnt_vec[i] && resp_last_vec[i] && resp_valid_vec[i];
       end
    endgenerate

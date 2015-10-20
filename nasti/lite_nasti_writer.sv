@@ -104,8 +104,8 @@ module lite_nasti_writer
 
    generate
       for(i=0; i<MAX_TRANSACTION; i++) begin
-         assign conflict_match[i] = lite_aw_id == xact_id_vec[i] && xact_valid_vec[i];
-         assign resp_match[i] = nasti_b_id == xact_id_vec[i] && xact_valid_vec[i];
+         assign conflict_match[i] = lite_aw_id === xact_id_vec[i] && xact_valid_vec[i];
+         assign resp_match[i] = nasti_b_id === xact_id_vec[i] && xact_valid_vec[i];
       end
    endgenerate
 
@@ -178,9 +178,9 @@ module lite_nasti_writer
    assign nasti_w_last = xact_data_cnt == nasti_packet_size() - 1;
    assign nasti_w_user = nasti_packet_size() == 1 || xact_data_cnt == 0 ?
                          lite_w_user : xact_w_user;
-   assign nasti_w_valid = lock &&
+   assign nasti_w_valid = lock && (
                           (xact_data_cnt == 0 && lite_w_valid) ||
-                          (xact_data_cnt != 0 && xact_data_cnt != nasti_packet_size());
+                          (xact_data_cnt != 0 && xact_data_cnt != nasti_packet_size()));
 
    assign nasti_b_ready = |resp_match;
 

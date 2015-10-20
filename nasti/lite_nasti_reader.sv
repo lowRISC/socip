@@ -97,8 +97,8 @@ module lite_nasti_reader
 
    generate
       for(i=0; i<MAX_TRANSACTION; i++) begin
-         assign conflict_match[i] = lite_ar_id == xact_id_vec[i] && xact_valid_vec[i];
-         assign resp_match[i] = nasti_r_id == xact_id_vec[i] && xact_valid_vec[i];
+         assign conflict_match[i] = lite_ar_id === xact_id_vec[i] && xact_valid_vec[i];
+         assign resp_match[i] = nasti_r_id === xact_id_vec[i] && xact_valid_vec[i];
       end
    endgenerate
 

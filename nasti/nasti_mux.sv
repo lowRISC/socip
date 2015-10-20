@@ -21,71 +21,54 @@ module nasti_mux
    genvar i;
 
    // transaction records
-   typedef struct packed unsigned {
-      logic [ID_WIDTH-1:0] id;
-      logic [2:0]          port;
-      logic                valid;
-   } transaction_t;
-
-   transaction_t [W_MAX-1:0] write_vec;
-   transaction_t [R_MAX-1:0] read_vec;
+   logic [W_MAX-1:0][ID_WIDTH-1:0]    write_vec_id;
+   logic [W_MAX-1:0][2:0]             write_vec_port;
+   logic [W_MAX-1:0]                  write_vec_valid;
+   logic [R_MAX-1:0][ID_WIDTH-1:0]    read_vec_id;
+   logic [R_MAX-1:0][2:0]             read_vec_port;
+   logic [R_MAX-1:0]                  read_vec_valid;
 
    logic [$clog2(W_MAX)-1:0] write_wp;
    logic [$clog2(R_MAX)-1:0] read_wp;
    logic write_full, read_full;
 
-   function logic is_write_full();
-      int i;
-      for(i=0; i<W_MAX; i++)
-        if(!write_vec[i].valid)
-          return 0;
-      return 1;
-   endfunction // is_write_full
-   assign write_full = is_write_full();
-
-   function logic is_read_full();
-      int i;
-      for(i=0; i<R_MAX; i++)
-        if(!read_vec[i].valid)
-          return 0;
-      return 1;
-   endfunction // is_read_full
-   assign read_full = is_read_full();
+   assign write_full = &write_vec_valid;
+   assign read_full = &read_vec_valid;
 
    function logic[$clog2(W_MAX)-1:0] get_write_wp();
-      int i;
+      automatic int i;
       for(i=0; i<W_MAX; i++)
-        if(!write_vec[i].valid)
+        if(!write_vec_valid[i])
           return i;
       return 0;
    endfunction //
    assign write_wp = get_write_wp();
 
    function logic[$clog2(R_MAX)-1:0] get_read_wp();
-      int i;
+      automatic int i;
       for(i=0; i<R_MAX; i++)
-        if(!read_vec[i].valid)
+        if(!read_vec_valid[i])
           return i;
       return 0;
    endfunction //
    assign read_wp = get_read_wp();
 
    function logic [2:0] toInt (logic [7:0] dat);
-      int i;
+      automatic int i;
       for(i=0; i<8; i++)
         if(dat[i]) return i;
       return 0;
    endfunction // toInt
       
    function logic [$clog2(W_MAX)-1:0] toInt_w (logic [W_MAX-1:0] dat);
-      int i;
+      automatic int i;
       for(i=0; i<W_MAX; i++)
         if(dat[i]) return i;
       return 0;
    endfunction // toInt
 
    function logic [$clog2(R_MAX)-1:0] toInt_r (logic [R_MAX:0] dat);
-      int i;
+      automatic int i;
       for(i=0; i<R_MAX; i++)
         if(dat[i]) return i;
       return 0;
@@ -141,7 +124,7 @@ module nasti_mux
 
    generate
       for(i=0; i<W_MAX; i++)
-        assign write_match[i] = write_vec[i].valid && m.b_valid && m.b_id == write_vec[i].id;
+        assign write_match[i] = write_vec_valid[i] && m.b_valid && m.b_id === write_vec_id[i];
    endgenerate
    assign write_match_index = toInt_w(write_match);
 
@@ -150,26 +133,24 @@ module nasti_mux
          assign s.b_id[i]    = m.b_id;
          assign s.b_resp[i]  = m.b_resp;
          assign s.b_user[i]  = m.b_user;
-         assign s.b_valid[i] = m.b_valid && write_vec[write_match_index].port == i;
+         assign s.b_valid[i] = m.b_valid && write_vec_port[write_match_index] == i;
       end
    endgenerate
-   assign m.b_ready = s.b_ready[write_vec[write_match_index].port];
+   assign m.b_ready = s.b_ready[write_vec_port[write_match_index]];
 
    // update write_vec
    always_ff @(posedge clk or negedge rstn)
      if(!rstn) begin
-        int n;
-        for(n=0; n<W_MAX; n++)
-          write_vec[n].valid <= 1'b0;
+        write_vec_valid <= 0;
      end else begin
         if(m.aw_valid && m.aw_ready) begin
-           write_vec[write_wp].id <= m.aw_id;
-           write_vec[write_wp].port <= aw_port_sel;
-           write_vec[write_wp].valid <= 1'b1;
+           write_vec_id[write_wp] <= m.aw_id;
+           write_vec_port[write_wp] <= aw_port_sel;
+           write_vec_valid[write_wp] <= 1'b1;
         end
 
         if(m.b_valid && m.b_ready)
-          write_vec[write_match_index].valid <= 1'b0;
+          write_vec_valid[write_match_index] <= 1'b0;
      end
 
    // AR and R
@@ -204,7 +185,7 @@ module nasti_mux
 
    generate
       for(i=0; i<R_MAX; i++)
-        assign read_match[i] = read_vec[i].valid && m.r_valid && m.r_id == read_vec[i].id;
+        assign read_match[i] = read_vec_valid[i] && m.r_valid && m.r_id === read_vec_id[i];
    endgenerate
    assign read_match_index = toInt_r(read_match);
 
@@ -215,26 +196,26 @@ module nasti_mux
          assign s.r_resp[i]  = m.r_resp;
          assign s.r_last[i]  = m.r_last;
          assign s.r_user[i]  = m.r_user;
-         assign s.r_valid[i] = m.r_valid && read_vec[read_match_index].port == i;
+         assign s.r_valid[i] = m.r_valid && read_vec_port[read_match_index] == i;
       end
    endgenerate
-   assign m.r_ready = s.r_ready[read_vec[read_match_index].port];
+   assign m.r_ready = s.r_ready[read_vec_port[read_match_index]];
 
    // update read_vec
    always_ff @(posedge clk or negedge rstn)
      if(!rstn) begin
         int n;
         for(n=0; n<R_MAX; n++)
-          read_vec[n].valid <= 1'b0;
+          read_vec_valid[n] <= 1'b0;
      end else begin
         if(m.ar_valid && m.ar_ready) begin
-           read_vec[read_wp].id <= m.ar_id;
-           read_vec[read_wp].port <= ar_port_sel;
-           read_vec[read_wp].valid <= 1'b1;
+           read_vec_id[read_wp] <= m.ar_id;
+           read_vec_port[read_wp] <= ar_port_sel;
+           read_vec_valid[read_wp] <= 1'b1;
         end
 
         if(m.r_valid && m.r_ready)
-          read_vec[read_match_index].valid <= 1'b0;
+          read_vec_valid[read_match_index] <= 1'b0;
      end
 
 endmodule // nasti_mux

@@ -126,7 +126,7 @@ module nasti_lite_reader
       for(i=0; i<MAX_TRANSACTION; i++) begin
          assign resp_xact_match[i] = lite_r_id_buf[lite_r_rp] == xact_id_vec[i] &&
                                      lite_r_buf_valid[lite_r_rp] && xact_valid_vec[i];
-         assign conflict_match[i] = nasti_ar_id == xact_id_vec[i] && xact_valid_vec[i];
+         assign conflict_match[i] = nasti_ar_id === xact_id_vec[i] && xact_valid_vec[i];
          assign xact_ar_req[i] = xact_valid_vec[i] &&
                                  (xact_ar_cnt_vec[i] ||
                                   xact_req_cnt[i] < lite_packet_size(xact_size_vec[i]));
