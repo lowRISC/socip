@@ -79,15 +79,28 @@ module lite_nasti_writer
    endfunction // toInt
 
    function logic [2:0] nasti_byte_size ();
-      return BUF_DATA_WIDTH == 8 ? 0 : $clog2(BUF_DATA_WIDTH/8);
+      return $clog2(NASTI_DATA_WIDTH/8);
    endfunction // nasti_byte_size
 
    function logic [7:0] nasti_packet_size ();
       return  LITE_DATA_WIDTH / BUF_DATA_WIDTH;
    endfunction // lite_packet_size
 
+   function logic [ADDR_WIDTH-1:0] nasti_addr(logic[ADDR_WIDTH-1:0] addr);
+      return NASTI_DATA_WIDTH == BUF_DATA_WIDTH ? addr : (addr >>  $clog2(NASTI_DATA_WIDTH/8)) << $clog2(NASTI_DATA_WIDTH/8);
+   endfunction // nasti_addr
+
+   function logic [NASTI_DATA_WIDTH/8-1:0] nasti_wmask(logic [LITE_DATA_WIDTH/8-1:0] mask, logic[ADDR_WIDTH-1:0] addr);
+      return NASTI_DATA_WIDTH == BUF_DATA_WIDTH ? mask : mask << (BUF_DATA_WIDTH/8 * addr[$clog2(NASTI_DATA_WIDTH/8)-1:$clog2(LITE_DATA_WIDTH/8)]);
+   endfunction // nasti_addr
+
+   function logic [NASTI_DATA_WIDTH-1:0] nasti_data(logic [NASTI_DATA_WIDTH-1:0] data, logic[ADDR_WIDTH-1:0] addr);
+      return NASTI_DATA_WIDTH == BUF_DATA_WIDTH ? data : data << (BUF_DATA_WIDTH * addr[$clog2(NASTI_DATA_WIDTH/8)-1:$clog2(LITE_DATA_WIDTH/8)]);
+   endfunction // lite_data
+
    // transaction vector
    logic [MAX_TRANSACTION-1:0][ID_WIDTH-1:0]      xact_id_vec;
+   logic [ADDR_WIDTH-1:0]                         xact_addr;
    logic [MAX_BURST_SIZE-1:0][BUF_DATA_WIDTH-1:0] xact_data;
    logic [MAX_BURST_SIZE-1:0][BUF_DATA_WIDTH/8-1:0]
                                                   xact_strb;
@@ -129,6 +142,7 @@ module lite_nasti_writer
         if(lite_aw_valid && lite_aw_ready) begin
            xact_valid_vec[xact_avail_index] <= 1;
            xact_id_vec[xact_avail_index] <= lite_aw_id;
+           xact_addr <= lite_aw_addr;
         end
 
         if(lite_b_valid && lite_b_ready)
@@ -159,7 +173,7 @@ module lite_nasti_writer
    assign lite_b_valid = nasti_b_valid && |resp_match;
 
    assign nasti_aw_id = lite_aw_id;
-   assign nasti_aw_addr = lite_aw_addr;
+   assign nasti_aw_addr = nasti_addr(lite_aw_addr);
    assign nasti_aw_len = nasti_packet_size() - 1;
    assign nasti_aw_size = nasti_byte_size();
    assign nasti_aw_burst = 2'b01; // support INCR only
@@ -172,9 +186,9 @@ module lite_nasti_writer
    assign nasti_aw_valid = !lock && xact_vec_available && !xact_id_conflict && lite_aw_valid;
 
    assign nasti_w_data = nasti_packet_size() == 1 || xact_data_cnt == 0 ?
-                         lite_w_data : xact_data[xact_data_cnt];
+                         nasti_data(lite_w_data, xact_addr) : xact_data[xact_data_cnt];
    assign nasti_w_strb = nasti_packet_size() == 1 || xact_data_cnt == 0 ?
-                         lite_w_strb : xact_strb[xact_data_cnt];
+                         nasti_wmask(lite_w_strb, xact_addr) : xact_strb[xact_data_cnt];
    assign nasti_w_last = xact_data_cnt == nasti_packet_size() - 1;
    assign nasti_w_user = nasti_packet_size() == 1 || xact_data_cnt == 0 ?
                          lite_w_user : xact_w_user;

@@ -69,7 +69,7 @@ module lite_nasti_reader
    endfunction // toInt
 
    function logic [2:0] nasti_byte_size ();
-      return BUF_DATA_WIDTH == 8 ? 0 : $clog2(BUF_DATA_WIDTH/8);
+      return $clog2(NASTI_DATA_WIDTH/8);
    endfunction // nasti_byte_size
 
    function logic [7:0] nasti_packet_size ();
@@ -78,10 +78,19 @@ module lite_nasti_reader
 
    function logic [1:0] combine_resp(logic [1:0] resp_old, resp_new);
       return resp_new > resp_old ? resp_new : resp_old;
-   endfunction
+   endfunction // combine_resp
+
+   function logic [ADDR_WIDTH-1:0] nasti_addr(logic[ADDR_WIDTH-1:0] addr);
+      return NASTI_DATA_WIDTH == BUF_DATA_WIDTH ? addr : (addr >>  $clog2(NASTI_DATA_WIDTH/8)) << $clog2(NASTI_DATA_WIDTH/8);
+   endfunction // nasti_addr
+
+   function logic [BUF_DATA_WIDTH-1:0] lite_data(logic [NASTI_DATA_WIDTH-1:0] data, logic[ADDR_WIDTH-1:0] addr);
+      return NASTI_DATA_WIDTH == BUF_DATA_WIDTH ? data : data >> (BUF_DATA_WIDTH * addr[$clog2(NASTI_DATA_WIDTH/8)-1:$clog2(LITE_DATA_WIDTH/8)]);
+   endfunction // lite_data
 
    // transaction vector
    logic [MAX_TRANSACTION-1:0][ID_WIDTH-1:0]      xact_id_vec;
+   logic [MAX_TRANSACTION-1:0][ADDR_WIDTH-1:0]    xact_addr_vec;
    logic [MAX_TRANSACTION-1:0][MAX_BURST_SIZE-1:0][BUF_DATA_WIDTH-1:0]
                                                   xact_data_vec;
    logic [MAX_TRANSACTION-1:0][$clog2(MAX_BURST_SIZE):0]
@@ -114,6 +123,7 @@ module lite_nasti_reader
         if(lite_ar_valid && lite_ar_ready) begin
            xact_valid_vec[xact_avail_index] <= 1;
            xact_id_vec[xact_avail_index] <= lite_ar_id;
+           xact_addr_vec[xact_avail_index] <= lite_ar_addr;
            xact_data_cnt_vec[xact_avail_index] <= 0;
            xact_resp_vec[xact_avail_index] <= 0;
         end
@@ -133,7 +143,7 @@ module lite_nasti_reader
 
    assign lite_r_id = nasti_r_id;
    assign lite_r_data = nasti_packet_size() == 1 ?
-                        nasti_r_data :
+                        lite_data(nasti_r_data, xact_addr_vec[resp_index]) :
                         {xact_data_vec[resp_index][MAX_BURST_SIZE-1:1], nasti_r_data};
    assign lite_r_resp = nasti_packet_size() == 1 ?
                         nasti_r_resp :
@@ -144,7 +154,7 @@ module lite_nasti_reader
                            xact_data_cnt_vec[resp_index] == nasti_packet_size() - 1);
 
    assign nasti_ar_id = lite_ar_id;
-   assign nasti_ar_addr = lite_ar_addr;
+   assign nasti_ar_addr = nasti_addr(lite_ar_addr);
    assign nasti_ar_len = nasti_packet_size() - 1;
    assign nasti_ar_size = nasti_byte_size();
    assign nasti_ar_burst = 2'b01; // support INCR only
