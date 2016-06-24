@@ -44,7 +44,7 @@ module nasti_lite_writer
     output [2:0]                    lite_aw_prot,
     output [3:0]                    lite_aw_qos,
     output [3:0]                    lite_aw_region,
-    output [USER_WIDTH-1:0]         lite_aw_aw_user,
+    output [USER_WIDTH-1:0]         lite_aw_user,
     output                          lite_aw_valid,
     input                           lite_aw_ready,
 
@@ -123,7 +123,7 @@ module nasti_lite_writer
    endfunction // nasti_byte_size
 
    function logic [$clog2(BUF_DEPTH)-1:0] lite_packet_size (logic [2:0] s);
-      return nasti_byte_size(s) / BUF_DATA_WIDTH;
+      return nasti_byte_size(s) / (BUF_DATA_WIDTH / 8);
    endfunction // lite_packet_size
 
    function logic [$clog2(MAX_BURST_SIZE)-1:0] busrt_index(logic [$clog2(BUF_DEPTH)-1:0] p, index);
@@ -132,13 +132,13 @@ module nasti_lite_writer
 
    // burst size calculator
    assign w_wp_step = lite_packet_size(aw_size);
-   assign w_wp_start = 1 << w_wp;                // [00010000]
-   assign w_wp_end = 1 << w_wp + w_wp_step;      // [00000100]
+   assign w_wp_start = 1 << w_wp;                // [00000100]
+   assign w_wp_end = 1 << w_wp + w_wp_step;      // [00010000]
    generate
       for(i=1; i<2*BUF_DEPTH; i++) assign w_wp_start_mask[i] = w_wp_start_mask[i-1] | w_wp_start[i];
       for(i=2*BUF_DEPTH-1; i!=0; i--) assign w_wp_end_mask[i-1] = w_wp_end_mask[i] | w_wp_end[i];
-      assign w_wp_start_mask[0] = w_wp_start[i]; // [00011111]
-      assign w_wp_end_mask[2*BUF_DEPTH-1] = 0;   // [11111000]
+      assign w_wp_start_mask[0] = 0;             // [11111000]
+      assign w_wp_end_mask[2*BUF_DEPTH-1] = 0;   // [00011111]
    endgenerate
    assign w_wp_update_ext = w_wp_start_mask & w_wp_end_mask; // [00011000]
    assign w_wp_update = w_wp_update_ext[0 +: BUF_DEPTH] | w_wp_update_ext[BUF_DEPTH +: BUF_DEPTH]; // [1001]
@@ -212,7 +212,7 @@ module nasti_lite_writer
    assign lite_aw_prot = aw_prot;
    assign lite_aw_qos = aw_qos;
    assign lite_aw_region = aw_region;
-   assign lite_aw_aw_user = aw_user;
+   assign lite_aw_user = aw_user;
    assign lite_w_data = data_q[w_rp];
    assign lite_w_strb = strb_q[w_rp];
    assign lite_w_w_user = w_user;

@@ -62,7 +62,7 @@ module nasti_lite_bridge
       .lite_aw_prot    ( lite_m.aw_prot    ),
       .lite_aw_qos     ( lite_m.aw_qos     ),
       .lite_aw_region  ( lite_m.aw_region  ),
-      .lite_aw_aw_user ( lite_m.aw_aw_user ),
+      .lite_aw_user    ( lite_m.aw_user    ),
       .lite_aw_valid   ( lite_m.aw_valid   ),
       .lite_aw_ready   ( lite_m.aw_ready   ),
       .lite_w_data     ( lite_m.w_data     ),
