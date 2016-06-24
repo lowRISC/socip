@@ -79,7 +79,6 @@ module nasti_lite_bridge
 
    nasti_lite_reader
      #(
-       .BUF_DEPTH        ( READ_BUF_DEPTH     ),
        .MAX_TRANSACTION  ( READ_TRANSACTION   ),
        .ID_WIDTH         ( ID_WIDTH           ),
        .ADDR_WIDTH       ( ADDR_WIDTH         ),

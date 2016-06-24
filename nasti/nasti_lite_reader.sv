@@ -49,62 +49,74 @@ module nasti_lite_reader
     );
 
 
-   localparam BUF_LEN = NASTI_DATA_WIDTH/LITE_DATA_WIDTH;
+   localparam BUF_LEN = NASTI_DATA_WIDTH > LITE_DATA_WIDTH ? NASTI_DATA_WIDTH/LITE_DATA_WIDTH : 1;
+   localparam MAX_TRAN_BITS = $clog2(MAX_TRANSACTION);
+   localparam BUF_LEN_BITS = $clog2(BUF_LEN);
+   localparam NASTI_W_BITS = $clog2(NASTI_DATA_WIDTH/8);
+   localparam LITE_W_BITS = $clog2(LITE_DATA_WIDTH/8);
 
    genvar i;
 
    initial begin
-      assert(NASTI_DATA_WIDTH > LITE_DATA_WIDTH)
-        else $fatal(1, "Do not support narrower lite than nasti!");
-      
       assert(LITE_DATA_WIDTH == 32 || LITE_DATA_WIDTH == 64)
         else $fatal(1, "nasti-lite supports only 32/64-bit channels!");
    end
 
-   typedef struct packed {
-      logic [ID_WIDTH-1:0]   id,
-      logic [ADDR_WIDTH-1:0] addr,
-      logic [8:0]            len,
-      logic [2:0]            size,
-      logic [2:0]            prot,
-      logic [3:0]            qos,
-      logic [3:0]            region,
-      logic [USER_WIDTH-1:0] user
+   typedef struct packed unsigned {
+      logic [ID_WIDTH-1:0]   id;
+      logic [ADDR_WIDTH-1:0] addr;
+      logic [8:0]            len;
+      logic [2:0]            size;
+      logic [2:0]            prot;
+      logic [3:0]            qos;
+      logic [3:0]            region;
+      logic [USER_WIDTH-1:0] user;
       } NastiAR;
 
    // nasti request buffer
    NastiAR [MAX_TRANSACTION-1:0]     ar_buf;
-   logic [$clog2(MAX_TRANSACTION):0] ar_buf_rp, ar_buf_wp;
+   logic [MAX_TRAN_BITS-1:0]         ar_buf_rp, ar_buf_wp;
    logic                             ar_buf_valid;
    logic                             ar_buf_full, ar_buf_empty;
-   
+
    // transaction information
    NastiAR                                  xact_req;
    logic                                    xact_req_valid;
-   logic [8+$clog2(BUF_LEN):0]              xact_ar_cnt;
-   logic [8+$clog2(BUF_LEN):0]              xact_r_cnt;
+   logic [BUF_LEN_BITS+7:0]                 xact_ar_cnt;
+   logic [BUF_LEN_BITS+7:0]                 xact_r_cnt;
    logic [BUF_LEN-1:0][LITE_DATA_WIDTH-1:0] xact_data_vec;
    logic [1:0]                              xact_resp;
-   logic [$clog2(BUF_LEN):0]                xact_data_wp;
+   logic [BUF_LEN_BITS:0]                   xact_data_wp;
    logic                                    xact_finish;
+
+   logic [ADDR_WIDTH-1:0]                   lite_ar_addr_accum;
    logic [7:0]                              nasti_r_cnt;
    logic [ADDR_WIDTH-1:0]                   nasti_r_addr;
+   logic [ADDR_WIDTH-1:0]                   nasti_r_addr_accum;
 
-   function int unsigned nasti_step_size(input NastiAR req) begin
-      return (8'd1 << req.size);
-   endfunction
+   function int unsigned nasti_step_size(input NastiAR req);
+      return 8'd1 << req.size;
+   endfunction // nasti_step_size
 
-   function int unsigned lite_step_size(input NastiAR req) begin
-      return nasti_step_size(req) > LITE_DATA_WIDTH/8 ? LITE_DATA_WIDTH/8 : (8'd1 << req.size);
+   function bit unsigned nasti_shrink(input NastiAR req);
+      return nasti_step_size(req) > LITE_DATA_WIDTH/8;
+   endfunction // nasti_shrink
+
+   function int unsigned lite_step_size(input NastiAR req);
+      return nasti_shrink(req) ? LITE_DATA_WIDTH/8 : nasti_step_size(req);
    endfunction // lite_step_size
 
-   function int unsigned lite_packet_ratio(input NastiAR req) begin
-      return nasti_step_size(req) > LITE_DATA_WIDTH/8 ? BUF_LEN : 1;
+   function int unsigned lite_packet_ratio(input NastiAR req);
+      return nasti_shrink(req) ? 8'd1 << (req.size - LITE_W_BITS) : 1;
    endfunction // lite_packet_ratio
 
-   function int unsigned lite_packet_size(input NastiAR req) begin
+   function int unsigned lite_packet_size(input NastiAR req);
       return lite_packet_ratio(req) * (req.len + 1);
    endfunction // lite_packet_size
+
+   function int unsigned incr(input int unsigned cnt, step, ub);
+      return cnt >= ub - step ? 0 : cnt + step;
+   endfunction // incr
 
    // buffer requests
 
@@ -116,8 +128,8 @@ module nasti_lite_reader
         ar_buf_wp <= 0;
      else if(nasti_ar_valid && nasti_ar_ready) begin
         ar_buf[ar_buf_wp] <= NastiAR'{nasti_ar_id, nasti_ar_addr, nasti_ar_len, nasti_ar_size,
-                                      nasti_ar_prot, nasti_ar_qos, nasti_ar_region, nasti_ar_uaer};
-        ar_buf_wp <= ar_buf_wp == MAX_TRANSACTION-1 ? 0 : ar_buf_wp + 1;
+                                      nasti_ar_prot, nasti_ar_qos, nasti_ar_region, nasti_ar_user};
+        ar_buf_wp <= incr(ar_buf_wp, 1, MAX_TRANSACTION);
      end
 
    assign nasti_ar_ready = !ar_buf_full;
@@ -127,63 +139,82 @@ module nasti_lite_reader
        ar_buf_valid <= 1'b0;
      else if(nasti_ar_valid && nasti_ar_ready)
        ar_buf_valid <= 1'b1;
-     else if(xact_finish && (ar_buf_wp == 0 ? ar_buf_rp == MAX_TRANSACTION-1 : ar_buf_rp + 1 == ar_buf_wp))
+     else if(xact_finish && ar_buf_wp == incr(ar_buf_rp, 1, MAX_TRANSACTION))
        ar_buf_valid <= 1'b0;
 
-   always_ff(posedge clk or negedge rstn)
+   always_ff @(posedge clk or negedge rstn)
      if(!rstn)
        ar_buf_rp <= 0;
      else if(xact_finish)
-       ar_buf_rp <= ar_buf_rp == MAX_TRANSACTION-1 ? 0 : ar_buf_rp + 1;
-   
+       ar_buf_rp <= incr(ar_buf_rp, 1, MAX_TRANSACTION);
+
    // current transaction
 
+   always_ff @(posedge clk or negedge rstn)
+     if(!rstn)
+       lite_ar_addr_accum <= 0;
+     else if(lite_ar_valid && lite_ar_ready)
+       lite_ar_addr_accum <= lite_ar_addr_accum + lite_step_size(xact_req);
+     else if(xact_finish)
+       lite_ar_addr_accum <= 0;
+
    assign lite_ar_id = xact_req.id;
-   assign lite_ar_addr = xact_req.addr + xact_ar_cnt * lite_step_size(xact_req);
+   assign lite_ar_addr = xact_req.addr + lite_ar_addr_accum;
    assign lite_ar_prot = xact_req.prot;
    assign lite_ar_region = xact_req.region;
    assign lite_ar_user = xact_req.user;
    assign lite_ar_valid = xact_req_valid && xact_ar_cnt < lite_packet_size(xact_req);
-   assign lite_r_ready = xact_req_valid && xact_r_cnt < lite_packet_size(xact_req) && xact_data_wp < lite_packet_ratio(xact_req);
+   assign lite_r_ready = xact_req_valid && xact_r_cnt < lite_packet_size(xact_req) &&
+                         xact_data_wp < lite_packet_ratio(xact_req);
 
    always_ff @(posedge clk or negedge rstn)
-     if(!rstn) begin
+     if(!rstn)
         xact_req_valid <= 1'b0;
-        xact_finish <= 1'b0;
-     end else if(lite_r_ready) begin
+     else begin
         if(lite_ar_valid && lite_ar_ready)
           xact_ar_cnt <= xact_ar_cnt + 1;
+        else if(xact_finish)
+          xact_ar_cnt <= 0;
+
         if(lite_r_valid && lite_r_ready)
           xact_r_cnt <= xact_r_cnt + 1;
-     end else if(nasti_r_valid && nasti_r_ready && nasti_r_cnt == xact_req.len)
-       xact_finish <= 1;
-     else if(xact_finish) begin
-        xact_req <= ar_buf[ar_buf_rp];
-        xact_req_valid <= ar_buf_valid;
-        xact_ar_cnt <= 0;
-        xact_r_cnt <= 0;
-        xact_finish <= 0;
+        else if(xact_finish)
+          xact_r_cnt <= 0;
+
+        if(xact_finish || !xact_req_valid) begin
+           xact_req <= ar_buf[ar_buf_rp];
+           xact_req_valid <= ar_buf_valid;
+        end
      end
 
-   always_ff @(posedge clk)
-     if(lite_r_valid && lite_r_ready) begin
+   assign xact_finish = nasti_r_valid && nasti_r_ready && nasti_r_cnt == xact_req.len;
+
+   always_ff @(posedge clk or negedge rstn)
+     if(!rstn)
+       xact_data_wp <= 0;
+     else if(lite_r_valid && lite_r_ready) begin
         xact_data_vec[xact_data_wp] <= lite_r_data;
         xact_resp <= lite_r_resp;
-     end
+        xact_data_wp <= xact_data_wp + 1;
+     end else if(nasti_r_valid && nasti_r_ready)
+       xact_data_wp <= 0;
 
    assign nasti_r_valid = xact_req_valid && xact_data_wp == lite_packet_ratio(xact_req);
    assign nasti_r_id = xact_req.id;
-   assign nasti_r_data = xact_data_vec << {nasti_r_addr[$clog2(NASTI_DATA_WIDTH)-1:0], 3'b000};
+   assign nasti_r_data = xact_data_vec << (nasti_r_addr[NASTI_W_BITS-1:0] * 8);
    assign nasti_r_resp = xact_resp;
    assign nasti_r_last = nasti_r_cnt == xact_req.len;
    assign nasti_r_user = xact_req.user;
+   assign nasti_r_addr = xact_req.addr + nasti_r_addr_accum;
 
    always_ff @(posedge clk or negedge rstn)
      if(!rstn) begin
         nasti_r_cnt <= 0;
+        nasti_r_addr_accum <= 0;
      end else if(nasti_r_valid && nasti_r_ready) begin
         nasti_r_cnt <= nasti_r_cnt == xact_req.len ? 0 : nasti_r_cnt + 1;
-        nasti_r_addr <= (nasti_r_cnt == 0 ? xact_req.addr : nasti_r_addr) + nasti_step_size(xact_req);
-     end
+        nasti_r_addr_accum <= nasti_r_addr_accum + nasti_step_size(xact_req);
+     end else if(xact_finish)
+       nasti_r_addr_accum <= 0;
 
 endmodule // nasti_lite_reader
