@@ -139,13 +139,13 @@ module nasti_lite_reader
        ar_buf_valid <= 1'b0;
      else if(nasti_ar_valid && nasti_ar_ready)
        ar_buf_valid <= 1'b1;
-     else if(xact_finish && ar_buf_wp == incr(ar_buf_rp, 1, MAX_TRANSACTION))
+     else if((xact_finish || !xact_req_valid) && ar_buf_wp == incr(ar_buf_rp, 1, MAX_TRANSACTION))
        ar_buf_valid <= 1'b0;
 
    always_ff @(posedge clk or negedge rstn)
      if(!rstn)
        ar_buf_rp <= 0;
-     else if(xact_finish)
+     else if(ar_buf_valid && (xact_finish || !xact_req_valid))
        ar_buf_rp <= incr(ar_buf_rp, 1, MAX_TRANSACTION);
 
    // current transaction
@@ -168,9 +168,11 @@ module nasti_lite_reader
                          xact_data_wp < lite_packet_ratio(xact_req);
 
    always_ff @(posedge clk or negedge rstn)
-     if(!rstn)
+     if(!rstn) begin
         xact_req_valid <= 1'b0;
-     else begin
+        xact_ar_cnt <= 0;
+        xact_r_cnt <= 0;
+     end else begin
         if(lite_ar_valid && lite_ar_ready)
           xact_ar_cnt <= xact_ar_cnt + 1;
         else if(xact_finish)
@@ -182,7 +184,7 @@ module nasti_lite_reader
           xact_r_cnt <= 0;
 
         if(xact_finish || !xact_req_valid) begin
-           xact_req <= ar_buf[ar_buf_rp];
+           if(ar_buf_valid) xact_req <= ar_buf[ar_buf_rp];
            xact_req_valid <= ar_buf_valid;
         end
      end
