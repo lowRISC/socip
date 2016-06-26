@@ -5,9 +5,7 @@
 module nasti_lite_bridge
   #(
     WRITE_TRANSACTION = 2,      // maximal number of parallel write transactions
-    WRITE_BUF_DEPTH = 4,        // depth of the lite side buffer for write transactions
     READ_TRANSACTION = 2,       // maximal number of parallel read transactions
-    READ_BUF_DEPTH = 2,         // depth of the lite side buffers for read transactions
     ID_WIDTH = 1,               // id width
     ADDR_WIDTH = 8,             // address width
     NASTI_DATA_WIDTH = 64,      // width of data on the nasti side
@@ -16,13 +14,12 @@ module nasti_lite_bridge
     )
    (
     input clk, rstn,
-    nasti_channel.slave  nasti_s,
-    nasti_channel.master lite_m
+    nasti_channel  nasti_s,
+    nasti_channel lite_m
     );
 
    nasti_lite_writer
      #(
-       .BUF_DEPTH        ( WRITE_BUF_DEPTH    ),
        .MAX_TRANSACTION  ( WRITE_TRANSACTION  ),
        .ID_WIDTH         ( ID_WIDTH           ),
        .ADDR_WIDTH       ( ADDR_WIDTH         ),
@@ -139,8 +136,8 @@ module lite_nasti_bridge
     )
    (
     input clk, rstn,
-    nasti_channel.slave  lite_s,
-    nasti_channel.master nasti_m
+    nasti_channel lite_s,
+    nasti_channel nasti_m
     );
 
    lite_nasti_writer
