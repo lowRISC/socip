@@ -95,22 +95,22 @@ module nasti_lite_writer
    // transaction information
    NastiReq                                   xact_req;
    logic                                      xact_req_valid;
-   logic [BUF_LEN_BITS+7:0]                   xact_aw_cnt;
-   logic [BUF_LEN_BITS+7:0]                   xact_w_cnt;
-   logic [BUF_LEN_BITS+7:0]                   xact_b_cnt;
-   logic                                      xact_data_valid;
+   logic [BUF_LEN_BITS+8:0]                   xact_aw_cnt;
+   logic [BUF_LEN_BITS+8:0]                   xact_b_cnt;
    logic [BUF_LEN-1:0][LITE_DATA_WIDTH-1:0]   xact_data_vec;
    logic [BUF_LEN-1:0][LITE_DATA_WIDTH/8-1:0] xact_strb_vec;
    logic [USER_WIDTH-1:0]                     xact_user;
    logic [1:0]                                xact_resp;
-   logic [BUF_LEN_BITS:0]                     xact_data_rp;
+   logic [8:0]                                nasti_w_cnt;
+   logic [BUF_LEN_BITS:0]                     lite_aw_cnt;
+   logic                                      lite_aw_data_valid;
+   logic [BUF_LEN_BITS:0]                     lite_w_rp;
    logic [BUF_LEN_BITS:0]                     lite_b_cnt;
+   logic                                      lite_b_data_valid;
+   logic [LITE_DATA_WIDTH/8-1:0]              lite_b_strb;
+   logic [ADDR_WIDTH-1:0]                     lite_b_addr;
+   logic [BUF_LEN_BITS:0]                     lite_b_rp;
    logic                                      xact_finish;
-
-   logic [ADDR_WIDTH-1:0]                   lite_aw_addr_accum;
-   logic [ADDR_WIDTH-1:0]                   nasti_w_addr;
-   logic [ADDR_WIDTH-1:0]                   nasti_w_addr_accum;
-   logic [7:0]                              nasti_b_cnt;
 
    function int unsigned nasti_step_size(input NastiReq req);
       return 8'd1 << req.size;
@@ -164,109 +164,112 @@ module nasti_lite_writer
      else if(aw_buf_valid && (xact_finish || !xact_req_valid))
        aw_buf_rp <= incr(aw_buf_rp, 1, MAX_TRANSACTION);
 
-   // current transaction
-
-   always_ff @(posedge clk or negedge rstn)
-     if(!rstn)
-       lite_aw_addr_accum <= 0;
-     else if(lite_aw_valid && lite_aw_ready)
-       lite_aw_addr_accum <= lite_aw_addr_accum + lite_step_size(xact_req);
-     else if(xact_finish)
-       lite_aw_addr_accum <= 0;
-
-   assign lite_aw_id = xact_req.id;
-   assign lite_aw_addr = xact_req.addr + lite_aw_addr_accum;
-   assign lite_aw_prot = xact_req.prot;
-   assign lite_aw_qos = xact_req.qos;
-   assign lite_aw_region = xact_req.region;
-   assign lite_aw_user = xact_req.user;
-   assign lite_aw_valid = xact_req_valid && xact_aw_cnt < lite_packet_size(xact_req);
    assign nasti_aw_ready = !aw_buf_full;
-
-   always_ff @(posedge clk or negedge rstn)
-     if(!rstn) begin
-        xact_req_valid <= 1'b0;
-        xact_aw_cnt <= 0;
-        xact_w_cnt <= 0;
-        xact_b_cnt <= 0;
-     end else begin
-        if(lite_aw_valid && lite_aw_ready)
-          xact_aw_cnt <= xact_aw_cnt + 1;
-        else if(xact_finish)
-          xact_aw_cnt <= 0;
-
-        if(lite_w_valid && lite_w_ready)
-          xact_w_cnt <= xact_w_cnt + 1;
-        else if(xact_finish)
-          xact_w_cnt <= 0;
-
-        if(lite_b_valid && lite_b_ready)
-          xact_b_cnt <= xact_b_cnt + 1;
-        else if(xact_finish)
-          xact_b_cnt <= 0;
-
-        if(xact_finish || !xact_req_valid) begin
-           if(aw_buf_valid) xact_req <= aw_buf[aw_buf_rp];
-           xact_req_valid <= aw_buf_valid;
-        end
-     end
-
-   assign xact_finish = nasti_b_valid && nasti_b_ready && nasti_b_cnt == xact_req.len;
+   assign xact_finish = nasti_b_valid && nasti_b_ready;
 
    always_ff @(posedge clk or negedge rstn)
      if(!rstn)
-       xact_data_valid <= 1'b0;
-     else if(nasti_w_valid && nasti_w_ready) begin
-        xact_data_vec <= nasti_w_data;
-        xact_strb_vec <= nasti_w_strb;
-        xact_user <= nasti_w_user;
-        xact_data_valid <= 1'b1;
-     end else if(lite_b_valid && lite_b_ready && lite_b_cnt == lite_packet_ratio(xact_req)-1)
-       xact_data_valid <= 1'b0;
+       nasti_w_cnt <= 0;
+     else if(nasti_w_valid && nasti_w_ready)
+       nasti_w_cnt <= nasti_w_cnt + 1;
+     else if(xact_finish)
+       nasti_w_cnt <= 0;
 
-   always_ff @(posedge clk or negedge rstn)
-     if(!rstn)
-       xact_data_rp <= 0;
-     else if(lite_w_valid && lite_w_ready)
-       xact_data_rp <= xact_data_rp == lite_packet_ratio(xact_req)-1 ? 0 : xact_data_rp + 1;
-
-   always_ff @(posedge clk or negedge rstn)
-     if(!rstn)
-       lite_b_cnt <= 0;
-     else if(lite_b_valid && lite_b_ready)
-       lite_b_cnt <= lite_b_cnt == lite_packet_ratio(xact_req)-1 ? 0 : lite_b_cnt + 1;
-
-   logic [BUF_LEN_BITS:0] xact_data_rp_offset;
-   assign xact_data_rp_offset = NASTI_DATA_WIDTH > LITE_DATA_WIDTH ? nasti_w_addr[NASTI_W_BITS-1:LITE_W_BITS] : 0;
-   assign lite_w_data = xact_data_vec[xact_data_rp+xact_data_rp_offset];
-   assign lite_w_strb = xact_strb_vec[xact_data_rp+xact_data_rp_offset];
-   assign lite_w_user = xact_user;
-   assign nasti_w_addr = xact_req.addr + nasti_w_addr_accum;
-   assign lite_w_valid = xact_data_valid &&  xact_w_cnt < lite_packet_size(xact_req);
-   assign nasti_w_ready = !xact_data_valid;
-
-   always_ff @(posedge clk)
-     if(lite_b_valid && lite_b_ready)
-       xact_resp <= lite_b_resp;
+   assign nasti_w_ready = xact_req_valid && !lite_b_data_valid && nasti_w_cnt < xact_req.len + 1;
 
    assign nasti_b_valid = xact_req_valid && xact_b_cnt == lite_packet_size(xact_req);
    assign nasti_b_id = xact_req.id;
    assign nasti_b_resp = xact_resp;
    assign nasti_b_user = xact_req.user;
-   assign lite_b_ready = xact_data_valid;
+
+   // current transaction
+   logic lite_aw_bypass;
+   logic lite_b_bypass;
+
+   logic lite_aw_send, lite_w_send, lite_req_send;
+   always_ff @(posedge clk or negedge rstn)
+     if(!rstn) begin
+        lite_aw_send <= 1'b0;
+        lite_w_send <= 1'b0;
+     end else begin
+        lite_aw_send <= lite_req_send ? 1'b0 : lite_aw_send || (lite_aw_valid && lite_aw_ready);
+        lite_w_send  <= lite_req_send ? 1'b0 : lite_w_send  || (lite_w_valid && lite_w_ready);
+     end
+   assign lite_req_send = (lite_aw_send || (lite_aw_valid && lite_aw_ready)) &&
+                          (lite_w_send  || (lite_w_valid && lite_w_ready));
+   assign lite_aw_bypass = lite_aw_data_valid && lite_w_strb == 0;
+   assign lite_b_bypass  = lite_b_data_valid  && lite_b_strb == 0;
+
+   always_ff @(posedge clk or negedge rstn)
+     if(!rstn) begin
+        xact_aw_cnt <= 0;
+        lite_aw_cnt <= 0;
+     end else if(lite_req_send || lite_aw_bypass) begin
+        xact_aw_cnt <= xact_aw_cnt + 1;
+        lite_aw_cnt <= lite_aw_cnt == lite_packet_ratio(xact_req)-1 ? 0 : lite_aw_cnt + 1;
+     end else if(xact_finish) begin
+        xact_aw_cnt <= 0;
+     end
+
+   always_ff @(posedge clk or negedge rstn)
+     if(!rstn) begin
+        xact_b_cnt <= 0;
+        lite_b_cnt <= 0;
+     end else if(lite_b_valid && lite_b_ready || lite_b_bypass) begin
+        xact_b_cnt <= xact_b_cnt + 1;
+        lite_b_cnt <= lite_b_cnt == lite_packet_ratio(xact_req)-1 ? 0 : lite_b_cnt + 1;
+     end else if(xact_finish)
+       xact_b_cnt <= 0;
 
    always_ff @(posedge clk or negedge rstn)
      if(!rstn)
-       nasti_w_addr_accum <= 0;
-     else if(nasti_w_valid && nasti_w_ready)
-       nasti_w_addr_accum <= nasti_w_addr_accum + nasti_step_size(xact_req);
-     else if(xact_finish)
-       nasti_w_addr_accum <= 0;
+       xact_req_valid <= 1'b0;
+     else if(xact_finish || !xact_req_valid) begin
+        if(aw_buf_valid)
+          xact_req <= aw_buf[aw_buf_rp];
+        xact_req_valid <= aw_buf_valid;
+     end
 
    always_ff @(posedge clk or negedge rstn)
-     if(!rstn)
-        nasti_b_cnt <= 0;
-     else if(nasti_b_valid && nasti_b_ready)
-       nasti_b_cnt <= nasti_b_cnt == xact_req.len ? 0 : nasti_b_cnt + 1;
+     if(!rstn) begin
+        lite_aw_data_valid <= 1'b0;
+        lite_b_data_valid <= 1'b0;
+     end else if(nasti_w_valid && nasti_w_ready) begin
+        xact_data_vec <= nasti_w_data;
+        xact_strb_vec <= nasti_w_strb;
+        xact_user <= nasti_w_user;
+        lite_aw_data_valid <= 1'b1;
+        lite_b_data_valid <= 1'b1;
+     end else begin
+        if((lite_req_send || lite_aw_bypass) && lite_aw_cnt == lite_packet_ratio(xact_req)-1)
+          lite_aw_data_valid <= 1'b0;
+
+        if((lite_b_valid && lite_b_ready || lite_b_bypass) && lite_b_cnt == lite_packet_ratio(xact_req)-1)
+          lite_b_data_valid <= 1'b0;
+     end
+
+   always_ff @(posedge clk)
+     if(lite_b_valid && lite_b_ready)
+       xact_resp <= lite_b_resp;
+
+   assign lite_aw_id = xact_req.id;
+   assign lite_aw_addr = xact_req.addr + xact_aw_cnt * lite_step_size(xact_req);
+   assign lite_aw_prot = xact_req.prot;
+   assign lite_aw_qos = xact_req.qos;
+   assign lite_aw_region = xact_req.region;
+   assign lite_aw_user = xact_req.user;
+   assign lite_aw_valid = lite_aw_data_valid && !lite_aw_send && !lite_aw_bypass;
+
+   assign lite_w_rp = NASTI_DATA_WIDTH > LITE_DATA_WIDTH ? lite_aw_addr[NASTI_W_BITS-1:LITE_W_BITS] : 0;
+   assign lite_w_data = xact_data_vec[lite_w_rp];
+   assign lite_w_strb = xact_strb_vec[lite_w_rp];
+   assign lite_w_user = xact_user;
+   assign lite_w_valid = lite_aw_data_valid && !lite_w_send && !lite_aw_bypass;
+
+   assign lite_b_addr = xact_req.addr + xact_b_cnt * lite_step_size(xact_req);
+   assign lite_b_rp = NASTI_DATA_WIDTH > LITE_DATA_WIDTH ? lite_b_addr[NASTI_W_BITS-1:LITE_W_BITS] : 0;
+   assign lite_b_strb = xact_strb_vec[lite_b_rp];
+   assign lite_b_ready = lite_b_data_valid;
+
 
 endmodule // nasti_lite_write_buf
