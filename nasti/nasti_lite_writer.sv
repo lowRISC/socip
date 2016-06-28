@@ -104,6 +104,7 @@ module nasti_lite_writer
    logic [USER_WIDTH-1:0]                     xact_user;
    logic [1:0]                                xact_resp;
    logic [BUF_LEN_BITS:0]                     xact_data_rp;
+   logic [BUF_LEN_BITS:0]                     lite_b_cnt;
    logic                                      xact_finish;
 
    logic [ADDR_WIDTH-1:0]                   lite_aw_addr_accum;
@@ -176,6 +177,7 @@ module nasti_lite_writer
    assign lite_aw_id = xact_req.id;
    assign lite_aw_addr = xact_req.addr + lite_aw_addr_accum;
    assign lite_aw_prot = xact_req.prot;
+   assign lite_aw_qos = xact_req.qos;
    assign lite_aw_region = xact_req.region;
    assign lite_aw_user = xact_req.user;
    assign lite_aw_valid = xact_req_valid && xact_aw_cnt < lite_packet_size(xact_req);
@@ -219,16 +221,20 @@ module nasti_lite_writer
         xact_strb_vec <= nasti_w_strb;
         xact_user <= nasti_w_user;
         xact_data_valid <= 1'b1;
-     end else if(nasti_b_valid && nasti_b_ready)
+     end else if(lite_b_valid && lite_b_ready && lite_b_cnt == lite_packet_ratio(xact_req)-1)
        xact_data_valid <= 1'b0;
 
    always_ff @(posedge clk or negedge rstn)
      if(!rstn)
        xact_data_rp <= 0;
      else if(lite_w_valid && lite_w_ready)
-       xact_data_rp <= xact_data_rp + 1;
-     else if(nasti_b_valid && nasti_b_ready)
-       xact_data_rp <= 0;
+       xact_data_rp <= xact_data_rp == lite_packet_ratio(xact_req)-1 ? 0 : xact_data_rp + 1;
+
+   always_ff @(posedge clk or negedge rstn)
+     if(!rstn)
+       lite_b_cnt <= 0;
+     else if(lite_b_valid && lite_b_ready)
+       lite_b_cnt <= lite_b_cnt == lite_packet_ratio(xact_req)-1 ? 0 : lite_b_cnt + 1;
 
    logic [BUF_LEN_BITS:0] xact_data_rp_offset;
    assign xact_data_rp_offset = NASTI_DATA_WIDTH > LITE_DATA_WIDTH ? nasti_w_addr[NASTI_W_BITS-1:LITE_W_BITS] : 0;
@@ -239,16 +245,15 @@ module nasti_lite_writer
    assign lite_w_valid = xact_data_valid &&  xact_w_cnt < lite_packet_size(xact_req);
    assign nasti_w_ready = !xact_data_valid;
 
-   always_ff @(posedge clk or negedge rstn)
+   always_ff @(posedge clk)
      if(lite_b_valid && lite_b_ready)
        xact_resp <= lite_b_resp;
 
-   assign nasti_b_valid = xact_req_valid && xact_data_rp == lite_packet_ratio(xact_req);
+   assign nasti_b_valid = xact_req_valid && xact_b_cnt == lite_packet_size(xact_req);
    assign nasti_b_id = xact_req.id;
    assign nasti_b_resp = xact_resp;
    assign nasti_b_user = xact_req.user;
-   assign lite_b_ready = xact_data_valid && xact_b_cnt < lite_packet_size(xact_req) &&
-                         xact_data_rp < lite_packet_ratio(xact_req);
+   assign lite_b_ready = xact_data_valid;
 
    always_ff @(posedge clk or negedge rstn)
      if(!rstn)

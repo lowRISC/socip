@@ -161,6 +161,7 @@ module nasti_lite_reader
    assign lite_ar_id = xact_req.id;
    assign lite_ar_addr = xact_req.addr + lite_ar_addr_accum;
    assign lite_ar_prot = xact_req.prot;
+   assign lite_ar_qos = xact_req.qos;
    assign lite_ar_region = xact_req.region;
    assign lite_ar_user = xact_req.user;
    assign lite_ar_valid = xact_req_valid && xact_ar_cnt < lite_packet_size(xact_req);
