@@ -1,4 +1,4 @@
-module data_mover # (
+module nasti_data_mover # (
    parameter ADDR_WIDTH = 64,
    parameter DATA_WIDTH = 64
 ) (
@@ -117,7 +117,7 @@ module data_mover # (
                   dest.aw_valid <= 0;
                   dest_ready    <= 1;
                end
-               if ((src_ready | src_to_be_ready) & (dest_ready | dest_to_be_ready)) begin
+               if ((src_ready || src_to_be_ready) && (dest_ready || dest_to_be_ready)) begin
                   state_wait   <= 0;
                   state_ready  <= 1;
                   dest.b_ready <= 1;
