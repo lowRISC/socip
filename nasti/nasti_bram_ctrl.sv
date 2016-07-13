@@ -98,7 +98,7 @@ module nasti_bram_ctrl # (
          // Idle state
 
          if (inbound_read) begin
-            assert ((s_nasti.ar_addr & (DATA_WIDTH/8-1)) == 0) else $error("Unaligned burst not supported");
+            assert ((s_nasti.ar_addr & (DATA_WIDTH/8-1)) == 0) else $error("Unaligned burst not supported: ar_addr = %x", s_nasti.ar_addr);
             assert ((8 << s_nasti.ar_size) == DATA_WIDTH) else $error("Narrow burst not supported");
             assert (s_nasti.ar_burst == 1) else $error("Only INCR burst mode is supported");
 
@@ -111,7 +111,7 @@ module nasti_bram_ctrl # (
 
             // Advance address and decrease remaining length
             read_burst_addr <= s_nasti.ar_addr + DATA_WIDTH / 8;
-            read_burst_remaining <= s_nasti.ar_len + 1;
+            read_burst_remaining <= s_nasti.ar_len;
 
             s_nasti.r_id <= s_nasti.ar_id;
 
@@ -121,7 +121,7 @@ module nasti_bram_ctrl # (
          end
 
          if (inbound_write) begin
-            assert ((s_nasti.aw_addr & (DATA_WIDTH/8-1)) == 0) else $error("Unaligned burst not supported");
+            assert ((s_nasti.aw_addr & (DATA_WIDTH/8-1)) == 0) else $error("Unaligned burst not supported, aw_addr = %x", s_nasti.aw_addr);
             assert ((8 << s_nasti.aw_size) == DATA_WIDTH) else $error("Narrow burst not supported");
             assert (s_nasti.aw_burst == 1) else $error("Only INCR burst mode is supported");
 
