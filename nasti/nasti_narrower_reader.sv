@@ -56,12 +56,14 @@ module nasti_narrower_reader
     output                          slave_r_ready
     );
 
+   localparam MASTER_CHANNEL_SIZE = $clog2(MASTER_DATA_WIDTH/8);
    localparam SLAVE_CHANNEL_SIZE = $clog2(SLAVE_DATA_WIDTH/8);
    
    `include "nasti_request.vh"
 
    NastReq                          request;
    logic [7:0]                      r_cnt;
+   logic [ADDR_WIDTH-1:0]           r_addr;
 
    enum {S_IDEL, S_AR, S_R}         state;
 
@@ -73,8 +75,15 @@ module nasti_narrower_reader
       return req.size > SLAVE_CHANNEL_SIZE ? (req.size - SLAVE_CHANNEL_SIZE) : 0;
    endfunction // ratio
 
+   function int unsigned slave_step (input NastiReq req);
+      return req.size > SLAVE_CHANNEL_SIZE ? SLAVE_DATA_WIDTH / 8 : 1 << req.size;
+   endfunction // slave_len
+
    function int unsigned slave_len (input NastiReq req);
-      return (req.len << ratio_offset(req)) | (ratio(req) - 1);
+      if(ratio(req) > 1)        // special treatment for unaligned addr
+        return (req.len << ratio_offset(req)) + ratio(req) - req.addr[req.size-1:SLAVE_CHANNEL_SIZE] - 1;
+      else
+        return req.len;
    endfunction // slave_len
 
    function int unsigned slave_size (input NastiReq req);
@@ -84,13 +93,6 @@ module nasti_narrower_reader
    function int unsigned total_size (input int unsigned r_size, r_len);
       return (1 << r_size) * (r_len + 1);
    endfunction // total_size
-
-   function int unsigned beat_index (input NastiReq req, input int unsigned cnt);
-      if(ratio(req) > 1)
-        return cnt[ratio_offset(req)-1:0];
-      else
-        return 0;
-   endfunction // beat_index
 
    always_ff @(posedge clk or negedge rstn)
      if(!rstn)
@@ -114,6 +116,7 @@ module nasti_narrower_reader
                              master_ar_size, master_ar_burst, master_ar_lock,
                              master_ar_cache, master_ar_prot, master_ar_qos,
                              master_ar_region, master_ar_user};
+        r_addr <= master_ar_addr;
 
         assert(nasti_ar_burst == 2'b01)
           else $fatal(1, "nasti narrower support only INCR burst!");
@@ -137,24 +140,35 @@ module nasti_narrower_reader
    assign slave_ar_user = request.user;
 
    always_ff @(posedge clk or negedge rstn)
+     if(slave_r_valid && slave_r_ready) begin // special treatment for unalign addr
+        r_addr <= (r_addr[ADDR_WIDTH-1:ratio_offset(request)] << ratio_offset(request))
+          + slave_step(request);
+     end else if(master_ar_valid && master_ar_ready)
+       r_addr <= master_ar_addr;
+
+   always_ff @(posedge clk or negedge rstn)
      if(!rstn)
        r_cnt <= 0;
-     else if(slave_r_valid && slave_r_ready)
-       r_cnt <= r_cnt + 1;
-     else if(slave_ar_valid && slave_ar_ready)
+     else if(master_r_valid && master_r_ready)
+        r_cnt <= r_cnt + 1;
+     else if(master_ar_valid && master_ar_ready)
        r_cnt <= 0;
 
    always_ff @(posedge clk)
      if(slave_r_valid && slave_r_ready) begin
-        master_r_data[beat_index(request, r_cnt)*SLAVE_DATA_WIDTH +: SLAVE_DATA_WIDTH] <= slave_r_data;
-        master_r_last <= r_cnt == slave_len(request);
+        master_r_data[r_addr[MASTER_CHANNEL_SIZE-1:SLAVE_CHANNEL_SIZE]*SLAVE_DATA_WIDTH +: SLAVE_DATA_WIDTH] <= slave_r_data;
+        master_r_last <= r_cnt == req.len;
         master_r_reqp <= slave_r_resp;
         master_r_user <= slave_r_user;
+        assert(slave_r_resp == 0)
+          else $fatal(1, {"AXI interface response error with code=", string'(slave_r_resp)});
      end else if(slave_ar_valid && slave_ar_ready)
        master_r_data <= 0;
 
    logic master_r_valid_wire, master_r_valid_dly;
-   assign master_r_valid_wire = slave_r_valid && slave_r_ready && beat_index(request, r_cnt) == raio(request) - 1;
+   assign master_r_valid_wire
+     = {1'b0, r_addr[request.size-1:0]} + slave_step(request) >= request.size
+       && slave_r_valid && slave_r_ready;
 
    always_ff @(posedge clk or negedge rstn)
      if(!rstn)
