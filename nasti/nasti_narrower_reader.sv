@@ -150,7 +150,7 @@ module nasti_narrower_reader
      if(!rstn)
        r_cnt <= 0;
      else if(master_r_valid && master_r_ready)
-        r_cnt <= r_cnt + 1;
+       r_cnt <= r_cnt + 1;
      else if(master_ar_valid && master_ar_ready)
        r_cnt <= 0;
 
@@ -178,10 +178,10 @@ module nasti_narrower_reader
      else if(slave_r_valid && slave_r_ready)
        master_r_valid_dlay <= master_r_valid_wire;
 
-   assign master_r_valid = master_r_valid_wire || master_r_valid_dly;
+   assign master_r_valid = state == S_R && (master_r_valid_wire || master_r_valid_dly);
    assign master_r_id = request.id;
 
-   assign slave_r_ready = !master_r_valid_dly;
+   assign slave_r_ready = state == S_R && !master_r_valid_dly;
 
 endmodule // nasti_narrower_reader
 

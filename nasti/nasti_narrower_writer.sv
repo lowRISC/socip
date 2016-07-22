@@ -71,9 +71,99 @@ module nasti_narrower_writer
 
    NastReq                          request;
    logic [7:0]                      w_cnt;
+   logic [ADDR_WIDTH-1:0]           w_addr;
 
-   enum {S_IDEL, S_AR, S_R}         state;
+   enum {S_IDEL, S_AW, S_W, S_B}    state;
 
+   function int unsigned ratio (input NastiReq req);
+      return req.size > SLAVE_CHANNEL_SIZE ? 1 << (req.size - SLAVE_CHANNEL_SIZE) : 1;
+   endfunction // ratio
+   
+   function int unsigned ratio_offset (input NastiReq req);
+      return req.size > SLAVE_CHANNEL_SIZE ? (req.size - SLAVE_CHANNEL_SIZE) : 0;
+   endfunction // ratio
+
+   function int unsigned slave_step (input NastiReq req);
+      return req.size > SLAVE_CHANNEL_SIZE ? SLAVE_DATA_WIDTH / 8 : 1 << req.size;
+   endfunction // slave_len
+
+   function int unsigned slave_len (input NastiReq req);
+      if(ratio(req) > 1)        // special treatment for unaligned addr
+        return (req.len << ratio_offset(req)) + ratio(req) - req.addr[req.size-1:SLAVE_CHANNEL_SIZE] - 1;
+      else
+        return req.len;
+   endfunction // slave_len
+
+   function int unsigned slave_size (input NastiReq req);
+      return req.size > SLAVE_CHANNEL_SIZE ? SLAVE_CHANNEL_SIZE : req.size;
+   endfunction // slave_size
+
+   function int unsigned total_size (input int unsigned r_size, r_len);
+      return (1 << r_size) * (r_len + 1);
+   endfunction // total_size
+   
+   always_ff @(posedge clk or negedge rstn)
+     if(!rstn)
+       state <= S_IDLE;
+     else
+       case (state)
+         S_IDLE:
+           if(master_aw_valid && master_aw_ready)
+             state <= S_AW;
+         S_AW:
+           if(slave_aw_valid && slave_aw_ready)
+             state <= S_W;
+         S_W:
+           if(slave_w_valid && slave_w_ready && slave_w_last)
+             state <= S_B;
+         S_B:
+           if(master_b_valid && master_b_ready)
+             state <= S_IDLE;
+       endcase // case (state)
+
+   always_ff @(posedge clk)
+     if(master_aw_valid && master_aw_ready) begin
+        request <= NastiReq'{master_aw_id, master_aw_addr, master_aw_len,
+                             master_aw_size, master_aw_burst, master_aw_lock,
+                             master_aw_cache, master_aw_prot, master_aw_qos,
+                             master_aw_region, master_aw_user};
+        w_addr <= master_aw_addr;
+
+        assert(nasti_aw_burst == 2'b01)
+          else $fatal(1, "nasti narrower support only INCR burst!");
+        assert(total_size(master_aw_size, master_aw_len) <= 32 * SLAVE_DATA_WIDTH)
+          else $fatal(1, "nasti narrower does not support burst larger than slave's maximal burst size!");
+     end
+
+   assign master_aw_ready = state == S_IDLE;
+
+   assign slave_aw_valid = state == S_AW;
+   assign slave_aw_id = request.id;
+   assign slave_aw_addr = request.addr;
+   assign slave_aw_len = slave_len(request);
+   assign slave_aw_size = slave_size(request);
+   assign slave_aw_burst = request.burst;
+   assign slave_aw_lock = request.lock;
+   assign slave_aw_cache = request.cache;
+   assign slave_aw_prot = request.prot;
+   assign slave_aw_qos = request.qos;
+   assign slave_aw_region = request.region;
+   assign slave_aw_user = request.user;
+
+   always_ff @(posedge clk or negedge rstn)
+     if(slave_w_valid && slave_w_ready) begin // special treatment for unalign addr
+        w_addr <= (w_addr[ADDR_WIDTH-1:ratio_offset(request)] << ratio_offset(request))
+          + slave_step(request);
+     end else if(master_aw_valid && master_aw_ready)
+       w_addr <= master_aw_addr;
+
+   always_ff @(posedge clk or negedge rstn)
+     if(!rstn)
+       w_cnt <= 0;
+     else if(master_w_valid && master_w_ready)
+       w_cnt <= w_cnt + 1;
+     else if(master_aw_valid && master_aw_ready)
+       w_cnt <= 0;
 
 
 endmodule // nasti_narrower_writer
