@@ -75,16 +75,7 @@ module nasti_lite_writer
         else $fatal(1, "nasti bus cannot be narrower than lite bus!");
    end
 
-   typedef struct packed unsigned {
-      logic [ID_WIDTH-1:0]   id;
-      logic [ADDR_WIDTH-1:0] addr;
-      logic [8:0]            len;
-      logic [2:0]            size;
-      logic [2:0]            prot;
-      logic [3:0]            qos;
-      logic [3:0]            region;
-      logic [USER_WIDTH-1:0] user;
-      } NastiReq;
+   `include "nasti_request.vh"
 
    // nasti request buffer
    NastiReq [MAX_TRANSACTION-1:0]    aw_buf;
@@ -145,9 +136,15 @@ module nasti_lite_writer
      if(!rstn)
         aw_buf_wp <= 0;
      else if(nasti_aw_valid && nasti_aw_ready) begin
-        aw_buf[aw_buf_wp] <= NastiReq'{nasti_aw_id, nasti_aw_addr, nasti_aw_len, nasti_aw_size,
-                                       nasti_aw_prot, nasti_aw_qos, nasti_aw_region, nasti_aw_user};
+        aw_buf[aw_buf_wp] <= NastiReq'{nasti_aw_id, nasti_aw_addr, nasti_aw_len,
+                                       nasti_aw_size, nasti_aw_burst, nasti_aw_lock,
+                                       nasti_aw_cache, nasti_aw_prot, nasti_aw_qos,
+                                       nasti_aw_region, nasti_aw_user};
         aw_buf_wp <= incr(aw_buf_wp, 1, MAX_TRANSACTION);
+
+        assert(nasti_aw_burst == 2'b01)
+          else $fatal(1, "nasti-lite support only INCR burst!");
+
      end
 
    always_ff @(posedge clk or negedge rstn)

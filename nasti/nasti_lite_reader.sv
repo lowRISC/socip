@@ -1,3 +1,5 @@
+// See LICENSE for license details.
+
 module nasti_lite_reader
   #(
     MAX_TRANSACTION = 2,        // the number of parallel transactions
@@ -64,16 +66,7 @@ module nasti_lite_reader
         else $fatal(1, "nasti bus cannot be narrower than lite bus!");
    end
 
-   typedef struct packed unsigned {
-      logic [ID_WIDTH-1:0]   id;
-      logic [ADDR_WIDTH-1:0] addr;
-      logic [8:0]            len;
-      logic [2:0]            size;
-      logic [2:0]            prot;
-      logic [3:0]            qos;
-      logic [3:0]            region;
-      logic [USER_WIDTH-1:0] user;
-      } NastiReq;
+   `include "nasti_request.vh"
 
    // nasti request buffer
    NastiReq [MAX_TRANSACTION-1:0]    ar_buf;
@@ -129,9 +122,14 @@ module nasti_lite_reader
      if(!rstn)
         ar_buf_wp <= 0;
      else if(nasti_ar_valid && nasti_ar_ready) begin
-        ar_buf[ar_buf_wp] <= NastiReq'{nasti_ar_id, nasti_ar_addr, nasti_ar_len, nasti_ar_size,
-                                       nasti_ar_prot, nasti_ar_qos, nasti_ar_region, nasti_ar_user};
+        ar_buf[ar_buf_wp] <= NastiReq'{nasti_ar_id, nasti_ar_addr, nasti_ar_len,
+                                       nasti_ar_size, nasti_ar_burst, nasti_ar_lock,
+                                       nasti_ar_cache, nasti_ar_prot, nasti_ar_qos,
+                                       nasti_ar_region, nasti_ar_user};
         ar_buf_wp <= incr(ar_buf_wp, 1, MAX_TRANSACTION);
+
+        assert(nasti_ar_burst == 2'b01)
+          else $fatal(1, "nasti-lite support only INCR burst!");
      end
 
    always_ff @(posedge clk or negedge rstn)
