@@ -160,11 +160,25 @@ module nasti_narrower_writer
    always_ff @(posedge clk or negedge rstn)
      if(!rstn)
        w_cnt <= 0;
-     else if(master_w_valid && master_w_ready)
+     else if(slave_w_valid && slave_w_ready)
        w_cnt <= w_cnt + 1;
      else if(master_aw_valid && master_aw_ready)
        w_cnt <= 0;
 
+   assign slave_w_data = master_w_data >> (w_addr[MASTER_CHANNEL_SIZE-1:SLAVE_CHANNEL_SIZE]*SLAVE_DATA_WIDTH);
+   assign slave_w_strb = master_w_strb >> (w_addr[MASTER_CHANNEL_SIZE-1:SLAVE_CHANNEL_SIZE]*SLAVE_DATA_WIDTH/8);
+   assign slave_w_user = master_w_user;
+   assign slave_w_last = w_cnt == slave_len(request);
+   assign salve_w_valid = master_w_valid && state == S_W;
+   assign master_w_ready
+     = {1'b0, w_addr[request.size-1:0]} + slave_step(request) >= (1 << request.size)
+       && slave_w_ready && state == S_W;
+
+   assign master_b_id = slave_b_id;
+   assign master_b_resp = slave_b_resp;
+   assign master_b_user = slave_b_user;
+   assign master_b_valid = slave_b_valid && state == S_B;
+   assign slave_b_ready = master_b_ready && state == S_B;
 
 endmodule // nasti_narrower_writer
 

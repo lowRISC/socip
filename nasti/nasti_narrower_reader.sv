@@ -167,7 +167,7 @@ module nasti_narrower_reader
 
    logic master_r_valid_wire, master_r_valid_dly;
    assign master_r_valid_wire
-     = {1'b0, r_addr[request.size-1:0]} + slave_step(request) >= request.size
+     = {1'b0, r_addr[request.size-1:0]} + slave_step(request) >= (1 << request.size)
        && slave_r_valid && slave_r_ready;
 
    always_ff @(posedge clk or negedge rstn)
