@@ -27,8 +27,8 @@ module nasti_demux
     )
    (
     input clk, rstn,
-    nasti_channel.slave  s,
-    nasti_channel.master m
+    nasti_channel.slave  master,
+    nasti_channel.master salve
     );
 
    genvar i;
@@ -60,77 +60,77 @@ module nasti_demux
    logic [2:0] locked_port;
    logic [2:0] aw_port_sel;
 
-   assign aw_port_sel = lock ? locked_port : port_match(s.aw_addr);
+   assign aw_port_sel = lock ? locked_port : port_match(master.aw_addr);
 
    always_ff @(posedge clk or negedge rstn)
      if(!rstn)
        lock <= 1'b0;
-     else if(s.aw_valid && s.aw_ready) begin
+     else if(master.aw_valid && master.aw_ready) begin
         lock <= 1'b1;
         locked_port <= aw_port_sel;
-     end else if((LITE_MODE || s.w_last) && s.w_valid && s.w_ready)
+     end else if((LITE_MODE || master.w_last) && master.w_valid && master.w_ready)
        lock <= 1'b0;
 
    generate
       for(i=0; i<8; i++) begin
-         assign m.aw_id[i]      = s.aw_id;
-         assign m.aw_addr[i]    = s.aw_addr;
-         assign m.aw_len[i]     = s.aw_len;
-         assign m.aw_size[i]    = s.aw_size;
-         assign m.aw_burst[i]   = s.aw_burst;
-         assign m.aw_lock[i]    = s.aw_lock;
-         assign m.aw_cache[i]   = s.aw_cache;
-         assign m.aw_prot[i]    = s.aw_prot;
-         assign m.aw_qos[i]     = s.aw_qos;
-         assign m.aw_region[i]  = s.aw_region;
-         assign m.aw_user[i]    = s.aw_user;
-         assign m.aw_valid[i]   = !lock && aw_port_sel == i && s.aw_valid;
-         assign m.w_data[i]     = s.w_data;
-         assign m.w_strb[i]     = s.w_strb;
-         assign m.w_last[i]     = s.w_last;
-         assign m.w_user[i]     = s.w_user;
-         assign m.w_valid[i]    = lock && aw_port_sel == i && s.w_valid;
+         assign slave.aw_id[i]      = master.aw_id;
+         assign slave.aw_addr[i]    = master.aw_addr;
+         assign slave.aw_len[i]     = master.aw_len;
+         assign slave.aw_size[i]    = master.aw_size;
+         assign slave.aw_burst[i]   = master.aw_burst;
+         assign slave.aw_lock[i]    = master.aw_lock;
+         assign slave.aw_cache[i]   = master.aw_cache;
+         assign slave.aw_prot[i]    = master.aw_prot;
+         assign slave.aw_qos[i]     = master.aw_qos;
+         assign slave.aw_region[i]  = master.aw_region;
+         assign slave.aw_user[i]    = master.aw_user;
+         assign slave.aw_valid[i]   = !lock && aw_port_sel == i && master.aw_valid;
+         assign slave.w_data[i]     = master.w_data;
+         assign slave.w_strb[i]     = master.w_strb;
+         assign slave.w_last[i]     = master.w_last;
+         assign slave.w_user[i]     = master.w_user;
+         assign slave.w_valid[i]    = lock && aw_port_sel == i && master.w_valid;
       end // for (i=0; i<8; i++)
    endgenerate
 
-   assign s.aw_ready = !lock && m.aw_ready[aw_port_sel];
-   assign s.w_ready = lock && m.w_ready[aw_port_sel];
+   assign master.aw_ready = !lock && slave.aw_ready[aw_port_sel];
+   assign master.w_ready = lock && slave.w_ready[aw_port_sel];
 
    // AR channel
    logic [2:0] ar_port_sel;
-   assign ar_port_sel = port_match(s.ar_addr);
+   assign ar_port_sel = port_match(master.ar_addr);
 
    generate
       for(i=0; i<8; i++) begin
-         assign m.ar_id[i]      = s.ar_id;
-         assign m.ar_addr[i]    = s.ar_addr;
-         assign m.ar_len[i]     = s.ar_len;
-         assign m.ar_size[i]    = s.ar_size;
-         assign m.ar_burst[i]   = s.ar_burst;
-         assign m.ar_lock[i]    = s.ar_lock;
-         assign m.ar_cache[i]   = s.ar_cache;
-         assign m.ar_prot[i]    = s.ar_prot;
-         assign m.ar_qos[i]     = s.ar_qos;
-         assign m.ar_region[i]  = s.ar_region;
-         assign m.ar_user[i]    = s.ar_user;
-         assign m.ar_valid[i]   = ar_port_sel == i && s.ar_valid;
+         assign slave.ar_id[i]      = master.ar_id;
+         assign slave.ar_addr[i]    = master.ar_addr;
+         assign slave.ar_len[i]     = master.ar_len;
+         assign slave.ar_size[i]    = master.ar_size;
+         assign slave.ar_burst[i]   = master.ar_burst;
+         assign slave.ar_lock[i]    = master.ar_lock;
+         assign slave.ar_cache[i]   = master.ar_cache;
+         assign slave.ar_prot[i]    = master.ar_prot;
+         assign slave.ar_qos[i]     = master.ar_qos;
+         assign slave.ar_region[i]  = master.ar_region;
+         assign slave.ar_user[i]    = master.ar_user;
+         assign slave.ar_valid[i]   = ar_port_sel == i && master.ar_valid;
       end // for (i=0; i<8; i++)
    endgenerate
 
-   assign s.ar_ready = m.ar_ready[ar_port_sel];
+   assign master.ar_ready = slave.ar_ready[ar_port_sel];
    
    // B channel
    logic [7:0] b_valid, b_gnt;
    logic [2:0] b_port_sel;
 
-   assign b_valid[0] = (MASK0 != 0) && m.b_valid[0];
-   assign b_valid[1] = (MASK1 != 0) && m.b_valid[1];
-   assign b_valid[2] = (MASK2 != 0) && m.b_valid[2];
-   assign b_valid[3] = (MASK3 != 0) && m.b_valid[3];
-   assign b_valid[4] = (MASK4 != 0) && m.b_valid[4];
-   assign b_valid[5] = (MASK5 != 0) && m.b_valid[5];
-   assign b_valid[6] = (MASK6 != 0) && m.b_valid[6];
-   assign b_valid[7] = (MASK7 != 0) && m.b_valid[7];
+   assign b_valid[0] = (MASK0 != 0) && slave.b_valid[0];
+   assign b_valid[1] = (MASK1 != 0) && slave.b_valid[1];
+   assign b_valid[2] = (MASK2 != 0) && slave.b_valid[2];
+   assign b_valid[3] = (MASK3 != 0) && slave.b_valid[3];
+   assign b_valid[4] = (MASK4 != 0) && slave.b_valid[4];
+   assign b_valid[5] = (MASK5 != 0) && slave.b_valid[5];
+   assign b_valid[6] = (MASK6 != 0) && slave.b_valid[6];
+   assign b_valid[7] = (MASK7 != 0) && slave.b_valid[7];
 
    arbiter_rr #(8)
    b_arb (
@@ -141,24 +141,24 @@ module nasti_demux
           );
    assign b_port_sel = sel_active(b_gnt);
 
-   assign s.b_id    = m.b_id[b_port_sel];
-   assign s.b_resp  = m.b_resp[b_port_sel];
-   assign s.b_user  = m.b_user[b_port_sel];
-   assign s.b_valid = m.b_valid[b_port_sel];
-   assign m.b_ready = s.b_ready ? b_gnt : 0;
+   assign master.b_id    = slave.b_id[b_port_sel];
+   assign master.b_resp  = slave.b_resp[b_port_sel];
+   assign master.b_user  = slave.b_user[b_port_sel];
+   assign master.b_valid = slave.b_valid[b_port_sel];
+   assign slave.b_ready  = master.b_ready ? b_gnt : 0;
 
    // R channel
    logic [7:0] r_valid, r_gnt;
    logic [2:0] r_port_sel;
 
-   assign r_valid[0] = (MASK0 != 0) && m.r_valid[0];
-   assign r_valid[1] = (MASK1 != 0) && m.r_valid[1];
-   assign r_valid[2] = (MASK2 != 0) && m.r_valid[2];
-   assign r_valid[3] = (MASK3 != 0) && m.r_valid[3];
-   assign r_valid[4] = (MASK4 != 0) && m.r_valid[4];
-   assign r_valid[5] = (MASK5 != 0) && m.r_valid[5];
-   assign r_valid[6] = (MASK6 != 0) && m.r_valid[6];
-   assign r_valid[7] = (MASK7 != 0) && m.r_valid[7];
+   assign r_valid[0] = (MASK0 != 0) && slave.r_valid[0];
+   assign r_valid[1] = (MASK1 != 0) && slave.r_valid[1];
+   assign r_valid[2] = (MASK2 != 0) && slave.r_valid[2];
+   assign r_valid[3] = (MASK3 != 0) && slave.r_valid[3];
+   assign r_valid[4] = (MASK4 != 0) && slave.r_valid[4];
+   assign r_valid[5] = (MASK5 != 0) && slave.r_valid[5];
+   assign r_valid[6] = (MASK6 != 0) && slave.r_valid[6];
+   assign r_valid[7] = (MASK7 != 0) && slave.r_valid[7];
 
    arbiter_rr #(8)
    r_arb (
@@ -169,12 +169,12 @@ module nasti_demux
           );
    assign r_port_sel = sel_active(r_gnt);
 
-   assign s.r_id    = m.r_id[r_port_sel];
-   assign s.r_data  = m.r_data[r_port_sel];
-   assign s.r_resp  = m.r_resp[r_port_sel];
-   assign s.r_last  = m.r_last[r_port_sel];
-   assign s.r_user  = m.r_user[r_port_sel];
-   assign s.r_valid = m.r_valid[r_port_sel];
-   assign m.r_ready = s.r_ready ? r_gnt : 0;
+   assign master.r_id    = slave.r_id[r_port_sel];
+   assign master.r_data  = slave.r_data[r_port_sel];
+   assign master.r_resp  = slave.r_resp[r_port_sel];
+   assign master.r_last  = slave.r_last[r_port_sel];
+   assign master.r_user  = slave.r_user[r_port_sel];
+   assign master.r_valid = slave.r_valid[r_port_sel];
+   assign slave.r_ready  = master.r_ready ? r_gnt : 0;
 
 endmodule // nasti_demux

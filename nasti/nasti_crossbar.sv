@@ -33,8 +33,8 @@ module nasti_crossbar
     )
    (
     input clk, rstn,
-    nasti_channel.slave  s,
-    nasti_channel.master m
+    nasti_channel.slave  master, // master input portss
+    nasti_channel.master slave   // slave output ports
     );
 
    genvar i, j;
@@ -67,49 +67,56 @@ module nasti_crossbar
    // slicing input channels and possibly insert input buffers
    nasti_channel_slicer #(N_INPUT)
    input_slicer (
-                 .s  ( s      ),
-                 .m0 ( ib_i0  ), .m1 ( ib_i1  ), .m2 ( ib_i2  ), .m3 ( ib_i3  ),
-                 .m4 ( ib_i4  ), .m5 ( ib_i5  ), .m6 ( ib_i6  ), .m7 ( ib_i7  ));
+                 .master  ( master ),
+                 .salve_0 ( ib_i0  ),
+                 .slave_1 ( ib_i1  ),
+                 .slave_2 ( ib_i2  ),
+                 .slave_3 ( ib_i3  ),
+                 .salve_4 ( ib_i4  ),
+                 .salve_5 ( ib_i5  ),
+                 .salve_6 ( ib_i6  ),
+                 .slave_7 ( ib_i7  )
+                 );
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf0 (.*, .s(ib_i0), .m(ib_o0));
+   ibuf0 (.*, .master(ib_i0), .salve(ib_o0));
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf1 (.*, .s(ib_i1), .m(ib_o1));
+   ibuf1 (.*, .master(ib_i1), .salve(ib_o1));
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf2 (.*, .s(ib_i2), .m(ib_o2));
+   ibuf2 (.*, .master(ib_i2), .salve(ib_o2));
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf3 (.*, .s(ib_i3), .m(ib_o3));
+   ibuf3 (.*, .master(ib_i3), .salve(ib_o3));
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf4 (.*, .s(ib_i4), .m(ib_o4));
+   ibuf4 (.*, .master(ib_i4), .salve(ib_o4));
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf5 (.*, .s(ib_i5), .m(ib_o5));
+   ibuf5 (.*, .master(ib_i5), .salve(ib_o5));
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf6 (.*, .s(ib_i6), .m(ib_o6));
+   ibuf6 (.*, .master(ib_i6), .salve(ib_o6));
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf7 (.*, .s(ib_i7), .m(ib_o7));
+   ibuf7 (.*, .master(ib_i7), .salve(ib_o7));
 
    // demux according to addresses
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
@@ -118,7 +125,7 @@ module nasti_crossbar
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
                  .MASK4(MASK4), .MASK5(MASK5), .MASK6(MASK6), .MASK7(MASK7))
-   demux0 (.*, .s(ib_o0), .m(dm_o0));
+   demux0 (.*, .master(ib_o0), .slave(dm_o0));
 
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                  .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
@@ -126,7 +133,7 @@ module nasti_crossbar
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
                  .MASK4(MASK4), .MASK5(MASK5), .MASK6(MASK6), .MASK7(MASK7))
-   demux1 (.*, .s(ib_o1), .m(dm_o1));
+   demux1 (.*, .master(ib_o1), .slave(dm_o1));
 
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                  .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
@@ -134,7 +141,7 @@ module nasti_crossbar
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
                  .MASK4(MASK4), .MASK5(MASK5), .MASK6(MASK6), .MASK7(MASK7))
-   demux2 (.*, .s(ib_o2), .m(dm_o2));
+   demux2 (.*, .master(ib_o2), .slave(dm_o2));
 
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                  .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
@@ -142,7 +149,7 @@ module nasti_crossbar
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
                  .MASK4(MASK4), .MASK5(MASK5), .MASK6(MASK6), .MASK7(MASK7))
-   demux3 (.*, .s(ib_o3), .m(dm_o3));
+   demux3 (.*, .master(ib_o3), .slave(dm_o3));
 
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                  .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
@@ -150,7 +157,7 @@ module nasti_crossbar
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
                  .MASK4(MASK4), .MASK5(MASK5), .MASK6(MASK6), .MASK7(MASK7))
-   demux4 (.*, .s(ib_o4), .m(dm_o4));
+   demux4 (.*, .master(ib_o4), .slave(dm_o4));
 
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                  .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
@@ -158,7 +165,7 @@ module nasti_crossbar
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
                  .MASK4(MASK4), .MASK5(MASK5), .MASK6(MASK6), .MASK7(MASK7))
-   demux5 (.*, .s(ib_o5), .m(dm_o5));
+   demux5 (.*, .master(ib_o5), .slave(dm_o5));
 
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                  .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
@@ -166,7 +173,7 @@ module nasti_crossbar
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
                  .MASK4(MASK4), .MASK5(MASK5), .MASK6(MASK6), .MASK7(MASK7))
-   demux6 (.*, .s(ib_o6), .m(dm_o6));
+   demux6 (.*, .master(ib_o6), .slave(dm_o6));
 
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                  .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
@@ -174,7 +181,7 @@ module nasti_crossbar
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
                  .MASK4(MASK4), .MASK5(MASK5), .MASK6(MASK6), .MASK7(MASK7))
-   demux7 (.*, .s(ib_o7), .m(dm_o7));
+   demux7 (.*, .master(ib_o7), .slave(dm_o7));
 
    // crossbar connection
    logic [7:0][7:0][ID_WIDTH-1:0]     cbi_aw_id,     cbi_ar_id;
@@ -1004,94 +1011,102 @@ module nasti_crossbar
                .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .LITE_MODE(LITE_MODE))
-   mux0 (.*, .s(mx_i0), .m(ob_i0));
+   mux0 (.*, .master(mx_i0), .slave(ob_i0));
 
    nasti_mux #(.W_MAX(W_MAX), .R_MAX(R_MAX),
                .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .LITE_MODE(LITE_MODE))
-   mux1 (.*, .s(mx_i1), .m(ob_i1));
+   mux1 (.*, .master(mx_i1), .slave(ob_i1));
 
    nasti_mux #(.W_MAX(W_MAX), .R_MAX(R_MAX),
                .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .LITE_MODE(LITE_MODE))
-   mux2 (.*, .s(mx_i2), .m(ob_i2));
+   mux2 (.*, .master(mx_i2), .slave(ob_i2));
 
    nasti_mux #(.W_MAX(W_MAX), .R_MAX(R_MAX),
                .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .LITE_MODE(LITE_MODE))
-   mux3 (.*, .s(mx_i3), .m(ob_i3));
+   mux3 (.*, .master(mx_i3), .slave(ob_i3));
 
    nasti_mux #(.W_MAX(W_MAX), .R_MAX(R_MAX),
                .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .LITE_MODE(LITE_MODE))
-   mux4 (.*, .s(mx_i4), .m(ob_i4));
+   mux4 (.*, .master(mx_i4), .slave(ob_i4));
 
    nasti_mux #(.W_MAX(W_MAX), .R_MAX(R_MAX),
                .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
-   mux5 (.*, .s(mx_i5), .m(ob_i5));
+   mux5 (.*, .master(mx_i5), .slave(ob_i5));
 
    nasti_mux #(.W_MAX(W_MAX), .R_MAX(R_MAX),
                .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .LITE_MODE(LITE_MODE))
-   mux6 (.*, .s(mx_i6), .m(ob_i6));
+   mux6 (.*, .master(mx_i6), .slave(ob_i6));
 
    nasti_mux #(.W_MAX(W_MAX), .R_MAX(R_MAX),
                .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .LITE_MODE(LITE_MODE))
-   mux7 (.*, .s(mx_i7), .m(ob_i7));
+   mux7 (.*, .master(mx_i7), .slave(ob_i7));
 
-   // combine channel and possibly insert output buffers
+   // output buffers
+   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
+   obuf0 (.*, .master(ob_i0), .slave(ob_o0));
+
+   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
+   obuf1 (.*, .master(ob_i1), .slave(ob_o1));
+
+   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
+   obuf2 (.*, .master(ob_i2), .slave(ob_o2));
+
+   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
+   obuf3 (.*, .master(ob_i3), .slave(ob_o3));
+
+   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
+   obuf4 (.*, .master(ob_i4), .slave(ob_o4));
+
+   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
+   obuf5 (.*, .master(ob_i5), .slave(ob_o5));
+
+   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
+   obuf6 (.*, .master(ob_i6), .slave(ob_o6));
+
+   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
+   obuf7 (.*, .master(ob_i7), .slave(ob_o7));
+
+   // combine channel for output
    nasti_channel_combiner #(N_OUTPUT)
    output_combiner (
-                    .s0 ( ob_o0  ), .s1 ( ob_o1  ), .s2 ( ob_o2  ), .s3 ( ob_o3  ),
-                    .s4 ( ob_o4  ), .s5 ( ob_o5  ), .s6 ( ob_o6  ), .s7 ( ob_o7  ),
-                    .m  ( m      ));
-
-   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
-               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
-   obuf0 (.*, .s(ob_i0), .m(ob_o0));
-
-   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
-               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
-   obuf1 (.*, .s(ob_i1), .m(ob_o1));
-
-   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
-               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
-   obuf2 (.*, .s(ob_i2), .m(ob_o2));
-
-   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
-               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
-   obuf3 (.*, .s(ob_i3), .m(ob_o3));
-
-   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
-               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
-   obuf4 (.*, .s(ob_i4), .m(ob_o4));
-
-   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
-               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
-   obuf5 (.*, .s(ob_i5), .m(ob_o5));
-
-   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
-               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
-   obuf6 (.*, .s(ob_i6), .m(ob_o6));
-
-   nasti_buf #(.DEPTH(OB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
-               .BUF_REQ(OB_DEPTH), .BUF_RESP(OB_DEPTH))
-   obuf7 (.*, .s(ob_i7), .m(ob_o7));
+                    .master_0 ( ob_o0  ),
+                    .master_1 ( ob_o1  ),
+                    .master_2 ( ob_o2  ),
+                    .master_3 ( ob_o3  ),
+                    .master_4 ( ob_o4  ),
+                    .master_5 ( ob_o5  ),
+                    .master_6 ( ob_o6  ),
+                    .master_7 ( ob_o7  ),
+                    .slave    ( salve  )
+                    );
 
 endmodule // nasti_crossbar

@@ -13,8 +13,8 @@ module nasti_mux
     )
    (
     input clk, rstn,
-    nasti_channel.slave  s,
-    nasti_channel.master m
+    nasti_channel.slave  master,
+    nasti_channel.master slave
     );
 
    // dummy
@@ -83,7 +83,7 @@ module nasti_mux
    arbiter_rr #(8)
    aw_arb (
            .*,
-           .req    ( s.aw_valid           ),
+           .req    ( master.aw_valid           ),
            .gnt    ( aw_gnt               ),
            .enable ( !lock && !write_full )
            );
@@ -93,63 +93,63 @@ module nasti_mux
    always_ff @(posedge clk or negedge rstn)
      if(!rstn)
        lock <= 1'b0;
-     else if(s.aw_valid[aw_port_sel] && s.aw_ready[aw_port_sel]) begin
+     else if(master.aw_valid[aw_port_sel] && master.aw_ready[aw_port_sel]) begin
         lock <= 1'b1;
         locked_port <= aw_port_sel;
-     end else if((LITE_MODE || s.w_last[aw_port_sel]) && s.w_valid[aw_port_sel] && s.w_ready[aw_port_sel])
+     end else if((LITE_MODE || master.w_last[aw_port_sel]) && master.w_valid[aw_port_sel] && master.w_ready[aw_port_sel])
        lock <= 1'b0;
 
-   assign m.aw_id      = s.aw_id[aw_port_sel];
-   assign m.aw_addr    = s.aw_addr[aw_port_sel];
-   assign m.aw_len     = s.aw_len[aw_port_sel];
-   assign m.aw_size    = s.aw_size[aw_port_sel];
-   assign m.aw_burst   = s.aw_burst[aw_port_sel];
-   assign m.aw_lock    = s.aw_lock[aw_port_sel];
-   assign m.aw_cache   = s.aw_cache[aw_port_sel];
-   assign m.aw_prot    = s.aw_prot[aw_port_sel];
-   assign m.aw_qos     = s.aw_qos[aw_port_sel];
-   assign m.aw_region  = s.aw_region[aw_port_sel];
-   assign m.aw_user    = s.aw_user[aw_port_sel];
-   assign m.aw_valid   = !lock && s.aw_valid[aw_port_sel];
-   assign m.w_data     = s.w_data[aw_port_sel];
-   assign m.w_strb     = s.w_strb[aw_port_sel];
-   assign m.w_last     = s.w_last[aw_port_sel];
-   assign m.w_user     = s.w_user[aw_port_sel];
-   assign m.w_valid    = lock && s.w_valid[aw_port_sel];
-   assign s.aw_ready   = m.aw_ready ? (1 << aw_port_sel) : 0;
-   assign s.w_ready    = m.w_ready ? (1 << aw_port_sel) : 0;
+   assign slave.aw_id      = master.aw_id[aw_port_sel];
+   assign slave.aw_addr    = master.aw_addr[aw_port_sel];
+   assign slave.aw_len     = master.aw_len[aw_port_sel];
+   assign slave.aw_size    = master.aw_size[aw_port_sel];
+   assign slave.aw_burst   = master.aw_burst[aw_port_sel];
+   assign slave.aw_lock    = master.aw_lock[aw_port_sel];
+   assign slave.aw_cache   = master.aw_cache[aw_port_sel];
+   assign slave.aw_prot    = master.aw_prot[aw_port_sel];
+   assign slave.aw_qos     = master.aw_qos[aw_port_sel];
+   assign slave.aw_region  = master.aw_region[aw_port_sel];
+   assign slave.aw_user    = master.aw_user[aw_port_sel];
+   assign slave.aw_valid   = !lock && master.aw_valid[aw_port_sel];
+   assign slave.w_data     = master.w_data[aw_port_sel];
+   assign slave.w_strb     = master.w_strb[aw_port_sel];
+   assign slave.w_last     = master.w_last[aw_port_sel];
+   assign slave.w_user     = master.w_user[aw_port_sel];
+   assign slave.w_valid    = lock && master.w_valid[aw_port_sel];
+   assign master.aw_ready  = slave.aw_ready ? (1 << aw_port_sel) : 0;
+   assign master.w_ready   = slave.w_ready ? (1 << aw_port_sel) : 0;
 
    logic [W_MAX-1:0]          write_match;
    logic [$clog2(W_MAX)-1:0]  write_match_index;
 
    generate
       for(i=0; i<W_MAX; i++)
-        assign write_match[i] = write_vec_valid[i] && m.b_valid && m.b_id === write_vec_id[i];
+        assign write_match[i] = write_vec_valid[i] && slave.b_valid && slave.b_id === write_vec_id[i];
    endgenerate
    assign write_match_index = toInt_w(write_match);
 
    generate
       for(i=0; i<8; i++) begin
-         assign s.b_id[i]    = m.b_id;
-         assign s.b_resp[i]  = m.b_resp;
-         assign s.b_user[i]  = m.b_user;
-         assign s.b_valid[i] = m.b_valid && write_vec_port[write_match_index] == i;
+         assign master.b_id[i]    = slave.b_id;
+         assign master.b_resp[i]  = slave.b_resp;
+         assign master.b_user[i]  = slave.b_user;
+         assign master.b_valid[i] = slave.b_valid && write_vec_port[write_match_index] == i;
       end
    endgenerate
-   assign m.b_ready = s.b_ready[write_vec_port[write_match_index]];
+   assign slave.b_ready = master.b_ready[write_vec_port[write_match_index]];
 
    // update write_vec
    always_ff @(posedge clk or negedge rstn)
      if(!rstn) begin
         write_vec_valid <= 0;
      end else begin
-        if(m.aw_valid && m.aw_ready) begin
-           write_vec_id[write_wp] <= m.aw_id;
+        if(slave.aw_valid && slave.aw_ready) begin
+           write_vec_id[write_wp] <= slave.aw_id;
            write_vec_port[write_wp] <= aw_port_sel;
            write_vec_valid[write_wp] <= 1'b1;
         end
 
-        if(m.b_valid && m.b_ready)
+        if(slave.b_valid && slave.b_ready)
           write_vec_valid[write_match_index] <= 1'b0;
      end
 
@@ -160,46 +160,46 @@ module nasti_mux
    arbiter_rr #(8)
    ar_arb (
            .*,
-           .req    ( s.ar_valid  ),
+           .req    ( master.ar_valid  ),
            .gnt    ( ar_gnt      ),
            .enable ( !read_full  )
            );
    assign ar_port_sel = toInt(ar_gnt);
 
-   assign m.ar_id      = s.ar_id[ar_port_sel];
-   assign m.ar_addr    = s.ar_addr[ar_port_sel];
-   assign m.ar_len     = s.ar_len[ar_port_sel];
-   assign m.ar_size    = s.ar_size[ar_port_sel];
-   assign m.ar_burst   = s.ar_burst[ar_port_sel];
-   assign m.ar_lock    = s.ar_lock[ar_port_sel];
-   assign m.ar_cache   = s.ar_cache[ar_port_sel];
-   assign m.ar_prot    = s.ar_prot[ar_port_sel];
-   assign m.ar_qos     = s.ar_qos[ar_port_sel];
-   assign m.ar_region  = s.ar_region[ar_port_sel];
-   assign m.ar_user    = s.ar_user[ar_port_sel];
-   assign m.ar_valid   = s.ar_valid[ar_port_sel];
-   assign s.ar_ready   = m.ar_ready ? (1 << ar_port_sel) : 0;
+   assign slave.ar_id      = master.ar_id[ar_port_sel];
+   assign slave.ar_addr    = master.ar_addr[ar_port_sel];
+   assign slave.ar_len     = master.ar_len[ar_port_sel];
+   assign slave.ar_size    = master.ar_size[ar_port_sel];
+   assign slave.ar_burst   = master.ar_burst[ar_port_sel];
+   assign slave.ar_lock    = master.ar_lock[ar_port_sel];
+   assign slave.ar_cache   = master.ar_cache[ar_port_sel];
+   assign slave.ar_prot    = master.ar_prot[ar_port_sel];
+   assign slave.ar_qos     = master.ar_qos[ar_port_sel];
+   assign slave.ar_region  = master.ar_region[ar_port_sel];
+   assign slave.ar_user    = master.ar_user[ar_port_sel];
+   assign slave.ar_valid   = master.ar_valid[ar_port_sel];
+   assign master.ar_ready  = slave.ar_ready ? (1 << ar_port_sel) : 0;
 
    logic [R_MAX-1:0]          read_match;
    logic [$clog2(R_MAX)-1:0]  read_match_index;
 
    generate
       for(i=0; i<R_MAX; i++)
-        assign read_match[i] = read_vec_valid[i] && m.r_valid && m.r_id === read_vec_id[i];
+        assign read_match[i] = read_vec_valid[i] && slave.r_valid && slave.r_id === read_vec_id[i];
    endgenerate
    assign read_match_index = toInt_r(read_match);
 
    generate
       for(i=0; i<8; i++) begin
-         assign s.r_id[i]    = m.r_id;
-         assign s.r_data[i]  = m.r_data;
-         assign s.r_resp[i]  = m.r_resp;
-         assign s.r_last[i]  = m.r_last;
-         assign s.r_user[i]  = m.r_user;
-         assign s.r_valid[i] = m.r_valid && read_vec_port[read_match_index] == i;
+         assign master.r_id[i]    = slave.r_id;
+         assign master.r_data[i]  = slave.r_data;
+         assign master.r_resp[i]  = slave.r_resp;
+         assign master.r_last[i]  = slave.r_last;
+         assign master.r_user[i]  = slave.r_user;
+         assign master.r_valid[i] = slave.r_valid && read_vec_port[read_match_index] == i;
       end
    endgenerate
-   assign m.r_ready = s.r_ready[read_vec_port[read_match_index]];
+   assign slave.r_ready = master.r_ready[read_vec_port[read_match_index]];
 
    // update read_vec
    always_ff @(posedge clk or negedge rstn)
@@ -208,13 +208,13 @@ module nasti_mux
         for(n=0; n<R_MAX; n++)
           read_vec_valid[n] <= 1'b0;
      end else begin
-        if(m.ar_valid && m.ar_ready) begin
-           read_vec_id[read_wp] <= m.ar_id;
+        if(slave.ar_valid && slave.ar_ready) begin
+           read_vec_id[read_wp] <= slave.ar_id;
            read_vec_port[read_wp] <= ar_port_sel;
            read_vec_valid[read_wp] <= 1'b1;
         end
 
-        if(m.r_valid && m.r_ready)
+        if(slave.r_valid && slave.r_ready)
           read_vec_valid[read_match_index] <= 1'b0;
      end
 
