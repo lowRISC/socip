@@ -69,59 +69,60 @@ module nasti_crossbar
    nasti_channel_slicer #(N_INPUT)
    input_slicer (
                  .master  ( master ),
-                 .salve_0 ( ib_i0  ),
+                 .slave_0 ( ib_i0  ),
                  .slave_1 ( ib_i1  ),
                  .slave_2 ( ib_i2  ),
                  .slave_3 ( ib_i3  ),
-                 .salve_4 ( ib_i4  ),
-                 .salve_5 ( ib_i5  ),
-                 .salve_6 ( ib_i6  ),
+                 .slave_4 ( ib_i4  ),
+                 .slave_5 ( ib_i5  ),
+                 .slave_6 ( ib_i6  ),
                  .slave_7 ( ib_i7  )
                  );
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf0 (.*, .master(ib_i0), .salve(ib_o0));
+   ibuf0 (.*, .master(ib_i0), .slave(ib_o0));
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf1 (.*, .master(ib_i1), .salve(ib_o1));
+   ibuf1 (.*, .master(ib_i1), .slave(ib_o1));
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf2 (.*, .master(ib_i2), .salve(ib_o2));
+   ibuf2 (.*, .master(ib_i2), .slave(ib_o2));
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf3 (.*, .master(ib_i3), .salve(ib_o3));
+   ibuf3 (.*, .master(ib_i3), .slave(ib_o3));
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf4 (.*, .master(ib_i4), .salve(ib_o4));
+   ibuf4 (.*, .master(ib_i4), .slave(ib_o4));
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf5 (.*, .master(ib_i5), .salve(ib_o5));
+   ibuf5 (.*, .master(ib_i5), .slave(ib_o5));
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf6 (.*, .master(ib_i6), .salve(ib_o6));
+   ibuf6 (.*, .master(ib_i6), .slave(ib_o6));
 
    nasti_buf #(.DEPTH(IB_DEPTH), .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
                .BUF_REQ(IB_DEPTH), .BUF_RESP(IB_DEPTH))
-   ibuf7 (.*, .master(ib_i7), .salve(ib_o7));
+   ibuf7 (.*, .master(ib_i7), .slave(ib_o7));
 
    // demux according to addresses
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
+                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+                 .LITE_MODE(LITE_MODE), .ESCAPE_ENABLE(ESCAPE_ENABLE),
                  .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
@@ -129,7 +130,8 @@ module nasti_crossbar
    demux0 (.*, .master(ib_o0), .slave(dm_o0));
 
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
+                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+                 .LITE_MODE(LITE_MODE), .ESCAPE_ENABLE(ESCAPE_ENABLE),
                  .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
@@ -137,7 +139,8 @@ module nasti_crossbar
    demux1 (.*, .master(ib_o1), .slave(dm_o1));
 
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
+                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+                 .LITE_MODE(LITE_MODE), .ESCAPE_ENABLE(ESCAPE_ENABLE),
                  .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
@@ -146,6 +149,7 @@ module nasti_crossbar
 
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
                  .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+                 .LITE_MODE(LITE_MODE), .ESCAPE_ENABLE(ESCAPE_ENABLE),
                  .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
@@ -153,15 +157,17 @@ module nasti_crossbar
    demux3 (.*, .master(ib_o3), .slave(dm_o3));
 
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
-                 .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
+                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+                  .LITE_MODE(LITE_MODE), .ESCAPE_ENABLE(ESCAPE_ENABLE),
+                .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
                  .MASK4(MASK4), .MASK5(MASK5), .MASK6(MASK6), .MASK7(MASK7))
    demux4 (.*, .master(ib_o4), .slave(dm_o4));
 
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
+                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+                 .LITE_MODE(LITE_MODE), .ESCAPE_ENABLE(ESCAPE_ENABLE),
                  .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
@@ -169,7 +175,8 @@ module nasti_crossbar
    demux5 (.*, .master(ib_o5), .slave(dm_o5));
 
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
+                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+                 .LITE_MODE(LITE_MODE), .ESCAPE_ENABLE(ESCAPE_ENABLE),
                  .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
@@ -177,7 +184,8 @@ module nasti_crossbar
    demux6 (.*, .master(ib_o6), .slave(dm_o6));
 
    nasti_demux #(.ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH), .LITE_MODE(LITE_MODE),
+                 .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+                 .LITE_MODE(LITE_MODE), .ESCAPE_ENABLE(ESCAPE_ENABLE),
                  .BASE0(BASE0), .BASE1(BASE1), .BASE2(BASE2), .BASE3(BASE3),
                  .BASE4(BASE4), .BASE5(BASE5), .BASE6(BASE6), .BASE7(BASE7),
                  .MASK0(MASK0), .MASK1(MASK1), .MASK2(MASK2), .MASK3(MASK3),
@@ -1107,7 +1115,7 @@ module nasti_crossbar
                     .master_5 ( ob_o5  ),
                     .master_6 ( ob_o6  ),
                     .master_7 ( ob_o7  ),
-                    .slave    ( salve  )
+                    .slave    ( slave  )
                     );
 
 endmodule // nasti_crossbar

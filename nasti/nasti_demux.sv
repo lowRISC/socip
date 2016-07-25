@@ -29,7 +29,7 @@ module nasti_demux
    (
     input clk, rstn,
     nasti_channel.slave  master,
-    nasti_channel.master salve
+    nasti_channel.master slave
     );
 
    genvar i;
