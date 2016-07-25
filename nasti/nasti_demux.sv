@@ -8,6 +8,7 @@ module nasti_demux
     DATA_WIDTH = 8,             // width of data
     USER_WIDTH = 1,             // width of user field, must > 0, let synthesizer trim it if not in use
     LITE_MODE = 0,              // whether work in Lite mode
+    ESCAPE_ENABLE = 0,          // whether treat output port 0 as an escaping port
     logic [ADDR_WIDTH-1:0] BASE0 = 0, // base address for port 0
     logic [ADDR_WIDTH-1:0] BASE1 = 0, // base address for port 1
     logic [ADDR_WIDTH-1:0] BASE2 = 0, // base address for port 2
@@ -55,6 +56,17 @@ module nasti_demux
       return 0;
    endfunction // port_match
 
+   // port enable
+   logic [7:0] port_enable;
+   assign port_enable[0] = MASK0 != 0 || ESCAPE_ENABLE;
+   assign port_enable[1] = MASK1 != 0;
+   assign port_enable[2] = MASK2 != 0;
+   assign port_enable[3] = MASK3 != 0;
+   assign port_enable[4] = MASK4 != 0;
+   assign port_enable[5] = MASK5 != 0;
+   assign port_enable[6] = MASK6 != 0;
+   assign port_enable[7] = MASK7 != 0;
+
    // AW and W channels
    logic       lock;
    logic [2:0] locked_port;
@@ -84,12 +96,12 @@ module nasti_demux
          assign slave.aw_qos[i]     = master.aw_qos;
          assign slave.aw_region[i]  = master.aw_region;
          assign slave.aw_user[i]    = master.aw_user;
-         assign slave.aw_valid[i]   = !lock && aw_port_sel == i && master.aw_valid;
+         assign slave.aw_valid[i]   = port_enable[i] && !lock && aw_port_sel == i && master.aw_valid;
          assign slave.w_data[i]     = master.w_data;
          assign slave.w_strb[i]     = master.w_strb;
          assign slave.w_last[i]     = master.w_last;
          assign slave.w_user[i]     = master.w_user;
-         assign slave.w_valid[i]    = lock && aw_port_sel == i && master.w_valid;
+         assign slave.w_valid[i]    = port_enable[i] && lock && aw_port_sel == i && master.w_valid;
       end // for (i=0; i<8; i++)
    endgenerate
 
@@ -113,7 +125,7 @@ module nasti_demux
          assign slave.ar_qos[i]     = master.ar_qos;
          assign slave.ar_region[i]  = master.ar_region;
          assign slave.ar_user[i]    = master.ar_user;
-         assign slave.ar_valid[i]   = ar_port_sel == i && master.ar_valid;
+         assign slave.ar_valid[i]   = port_enable[i] && ar_port_sel == i && master.ar_valid;
       end // for (i=0; i<8; i++)
    endgenerate
 
@@ -123,14 +135,7 @@ module nasti_demux
    logic [7:0] b_valid, b_gnt;
    logic [2:0] b_port_sel;
 
-   assign b_valid[0] = (MASK0 != 0) && slave.b_valid[0];
-   assign b_valid[1] = (MASK1 != 0) && slave.b_valid[1];
-   assign b_valid[2] = (MASK2 != 0) && slave.b_valid[2];
-   assign b_valid[3] = (MASK3 != 0) && slave.b_valid[3];
-   assign b_valid[4] = (MASK4 != 0) && slave.b_valid[4];
-   assign b_valid[5] = (MASK5 != 0) && slave.b_valid[5];
-   assign b_valid[6] = (MASK6 != 0) && slave.b_valid[6];
-   assign b_valid[7] = (MASK7 != 0) && slave.b_valid[7];
+   assign b_valid = port_enable && slave.b_valid;
 
    arbiter_rr #(8)
    b_arb (
@@ -151,14 +156,7 @@ module nasti_demux
    logic [7:0] r_valid, r_gnt;
    logic [2:0] r_port_sel;
 
-   assign r_valid[0] = (MASK0 != 0) && slave.r_valid[0];
-   assign r_valid[1] = (MASK1 != 0) && slave.r_valid[1];
-   assign r_valid[2] = (MASK2 != 0) && slave.r_valid[2];
-   assign r_valid[3] = (MASK3 != 0) && slave.r_valid[3];
-   assign r_valid[4] = (MASK4 != 0) && slave.r_valid[4];
-   assign r_valid[5] = (MASK5 != 0) && slave.r_valid[5];
-   assign r_valid[6] = (MASK6 != 0) && slave.r_valid[6];
-   assign r_valid[7] = (MASK7 != 0) && slave.r_valid[7];
+   assign r_valid = port_enable && slave.r_valid;
 
    arbiter_rr #(8)
    r_arb (

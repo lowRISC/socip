@@ -14,6 +14,7 @@ module nasti_crossbar
     DATA_WIDTH = 8,             // width of data
     USER_WIDTH = 1,             // width of user field, must > 0, let synthesizer trim it if not
     LITE_MODE = 0,              // whether work in Lite mode
+    ESCAPE_ENABLE = 0,          // whether treat output port 0 as an escaping port
     logic [ADDR_WIDTH-1:0] BASE0 = 0, // base address for port 0
     logic [ADDR_WIDTH-1:0] BASE1 = 0, // base address for port 1
     logic [ADDR_WIDTH-1:0] BASE2 = 0, // base address for port 2
