@@ -135,7 +135,7 @@ module nasti_demux
    logic [7:0] b_valid, b_gnt;
    logic [2:0] b_port_sel;
 
-   assign b_valid = port_enable && slave.b_valid;
+   assign b_valid = port_enable & slave.b_valid;
 
    arbiter_rr #(8)
    b_arb (
@@ -156,7 +156,7 @@ module nasti_demux
    logic [7:0] r_valid, r_gnt;
    logic [2:0] r_port_sel;
 
-   assign r_valid = port_enable && slave.r_valid;
+   assign r_valid = port_enable & slave.r_valid;
 
    arbiter_rr #(8)
    r_arb (

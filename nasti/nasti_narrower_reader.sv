@@ -30,7 +30,7 @@ module nasti_narrower_reader
     output reg [1:0]                   master_r_resp,
     output reg                         master_r_last,
     output reg [USER_WIDTH-1:0]        master_r_user,
-    output                             master_r_valid,
+    output reg                         master_r_valid,
     input                              master_r_ready,
 
     output [ID_WIDTH-1:0]              slave_ar_id,
@@ -80,12 +80,12 @@ module nasti_narrower_reader
    endfunction // slave_len
 
    function int unsigned burst_index(input NastiReq req, int unsigned addr);
-      return (addr >> SLAVE_CHANNEL_SIZE) & ((1 << req.size) - 1);
+      return (addr >> SLAVE_CHANNEL_SIZE) & ((1 << (req.size - SLAVE_CHANNEL_SIZE)) - 1);
    endfunction // burst_index
 
    function int unsigned slave_len (input NastiReq req);
       if(ratio(req) > 1)        // special treatment for unaligned addr
-        return (req.len << ratio_offset(req)) + ratio(req) - burst_index(req, req.addr);
+        return (req.len << ratio_offset(req)) + ratio(req) - burst_index(req, req.addr) - 1;
       else
         return req.len;
    endfunction // slave_len
@@ -169,22 +169,16 @@ module nasti_narrower_reader
      end else if(slave_ar_valid && slave_ar_ready)
        master_r_data <= 0;
 
-   logic master_r_valid_wire, master_r_valid_dly;
-   assign master_r_valid_wire
-     = (r_addr & ( (1 << request.size) - 1)) + slave_step(request) >= (1 << request.size)
-       && slave_r_valid && slave_r_ready;
-
    always_ff @(posedge clk or negedge rstn)
      if(!rstn)
-       master_r_valid_dly <= 1'b0;
-     else if(master_r_valid && master_r_ready)
-       master_r_valid_dly <= 1'b0;
+       master_r_valid <= 1'b0;
      else if(slave_r_valid && slave_r_ready)
-       master_r_valid_dly <= master_r_valid_wire;
+       master_r_valid <= (r_addr & ( (1 << request.size) - 1)) + slave_step(request) >= (1 << request.size);
+     else if(master_r_valid && master_r_ready)
+       master_r_valid <= 1'b0;
 
-   assign master_r_valid = state == S_R && (master_r_valid_wire || master_r_valid_dly);
    assign master_r_id = request.id;
 
-   assign slave_r_ready = state == S_R && !master_r_valid_dly;
+   assign slave_r_ready = state == S_R && (!master_r_valid || master_r_ready);
 
 endmodule // nasti_narrower_reader

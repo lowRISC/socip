@@ -89,12 +89,12 @@ module nasti_narrower_writer
    endfunction // slave_len
 
    function int unsigned burst_index(input NastiReq req, int unsigned addr);
-      return (addr >> SLAVE_CHANNEL_SIZE) & ((1 << req.size) - 1);
+      return (addr >> SLAVE_CHANNEL_SIZE) & ((1 << (req.size - SLAVE_CHANNEL_SIZE)) - 1);
    endfunction // burst_index
 
    function int unsigned slave_len (input NastiReq req);
       if(ratio(req) > 1)        // special treatment for unaligned addr
-        return (req.len << ratio_offset(req)) + ratio(req) - burst_index(req, req.addr);
+        return (req.len << ratio_offset(req)) + ratio(req) - burst_index(req, req.addr) - 1;
       else
         return req.len;
    endfunction // slave_len
