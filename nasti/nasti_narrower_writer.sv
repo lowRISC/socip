@@ -132,7 +132,6 @@ module nasti_narrower_writer
                              master_aw_size, master_aw_burst, master_aw_lock,
                              master_aw_cache, master_aw_prot, master_aw_qos,
                              master_aw_region, master_aw_user};
-        w_addr <= master_aw_addr;
 
         assert(master_aw_burst == 2'b01)
           else $fatal(1, "nasti narrower support only INCR burst!");
@@ -155,7 +154,7 @@ module nasti_narrower_writer
    assign slave_aw_region = request.region;
    assign slave_aw_user = request.user;
 
-   always_ff @(posedge clk or negedge rstn)
+   always_ff @(posedge clk)
      if(slave_w_valid && slave_w_ready) begin // special treatment for unalign addr
         w_addr <= ((w_addr >> ratio_offset(request)) << ratio_offset(request))
           + slave_step(request);

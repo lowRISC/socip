@@ -120,7 +120,6 @@ module nasti_narrower_reader
                              master_ar_size, master_ar_burst, master_ar_lock,
                              master_ar_cache, master_ar_prot, master_ar_qos,
                              master_ar_region, master_ar_user};
-        r_addr <= master_ar_addr;
 
         assert(master_ar_burst == 2'b01)
           else $fatal(1, "nasti narrower support only INCR burst!");
@@ -143,7 +142,7 @@ module nasti_narrower_reader
    assign slave_ar_region = request.region;
    assign slave_ar_user = request.user;
 
-   always_ff @(posedge clk or negedge rstn)
+   always_ff @(posedge clk)
      if(slave_r_valid && slave_r_ready) begin // special treatment for unalign addr
         r_addr <= ((r_addr >> ratio_offset(request)) << ratio_offset(request))
           + slave_step(request);
