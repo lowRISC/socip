@@ -1048,7 +1048,8 @@ module nasti_crossbar
 
    nasti_mux #(.W_MAX(W_MAX), .R_MAX(R_MAX),
                .ID_WIDTH(ID_WIDTH), .ADDR_WIDTH(ADDR_WIDTH),
-               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH))
+               .DATA_WIDTH(DATA_WIDTH), .USER_WIDTH(USER_WIDTH),
+               .LITE_MODE(LITE_MODE))
    mux5 (.*, .master(mx_i5), .slave(ob_i5));
 
    nasti_mux #(.W_MAX(W_MAX), .R_MAX(R_MAX),
