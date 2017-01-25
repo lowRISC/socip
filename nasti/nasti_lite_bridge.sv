@@ -6,7 +6,7 @@ module nasti_lite_bridge
   #(
     WRITE_TRANSACTION = 2,      // maximal number of parallel write transactions
     READ_TRANSACTION = 2,       // maximal number of parallel read transactions
-    ID_WIDTH = 1,               // id width
+    ID_WIDTH = 8,               // id width
     ADDR_WIDTH = 8,             // address width
     NASTI_DATA_WIDTH = 64,      // width of data on the nasti side
     LITE_DATA_WIDTH = 32,       // width of data on the nasti-lite side
