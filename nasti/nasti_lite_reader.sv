@@ -118,19 +118,20 @@ module nasti_lite_reader
    assign ar_buf_full = ar_buf_valid && ar_buf_wp == ar_buf_rp;
    assign ar_buf_empty = !ar_buf_valid && ar_buf_wp == ar_buf_rp;
 
-   always_ff @(posedge clk or negedge rstn)
-     if(!rstn)
-        ar_buf_wp <= 0;
-     else if(nasti_ar_valid && nasti_ar_ready) begin
-        ar_buf[ar_buf_wp] <= NastiReq'{nasti_ar_id, nasti_ar_addr, nasti_ar_len,
-                                       nasti_ar_size, nasti_ar_burst, nasti_ar_lock,
-                                       nasti_ar_cache, nasti_ar_prot, nasti_ar_qos,
-                                       nasti_ar_region, nasti_ar_user};
-        ar_buf_wp <= incr(ar_buf_wp, 1, MAX_TRANSACTION);
+   always_ff @(posedge clk or negedge rstn) begin
+      if(nasti_ar_valid && nasti_ar_ready) begin
+         ar_buf[ar_buf_wp] <= NastiReq'{nasti_ar_id, nasti_ar_addr, nasti_ar_len,
+					nasti_ar_size, nasti_ar_burst, nasti_ar_lock,
+					nasti_ar_cache, nasti_ar_prot, nasti_ar_qos,
+					nasti_ar_region, nasti_ar_user};
+         ar_buf_wp <= incr(ar_buf_wp, 1, MAX_TRANSACTION);
 
-        assert(nasti_ar_burst == 2'b01)
-          else $fatal(1, "nasti-lite support only INCR burst!");
-     end
+         assert(nasti_ar_burst == 2'b01)
+           else $fatal(1, "nasti-lite support only INCR burst!");
+      end
+      if(!rstn)
+        ar_buf_wp <= 0;
+   end
 
    always_ff @(posedge clk or negedge rstn)
      if(!rstn)
@@ -165,41 +166,42 @@ module nasti_lite_reader
    assign lite_ar_valid = xact_req_valid && xact_ar_cnt < lite_packet_size(xact_req);
    assign nasti_ar_ready = !ar_buf_full;
 
-   always_ff @(posedge clk or negedge rstn)
-     if(!rstn) begin
+   always_ff @(posedge clk or negedge rstn) begin
+      if(lite_ar_valid && lite_ar_ready)
+        xact_ar_cnt <= xact_ar_cnt + 1;
+      else if(xact_finish)
+        xact_ar_cnt <= 0;
+
+      if(lite_r_valid && lite_r_ready)
+        xact_r_cnt <= xact_r_cnt + 1;
+      else if(xact_finish)
+        xact_r_cnt <= 0;
+
+      if(xact_finish || !xact_req_valid) begin
+         if(ar_buf_valid) xact_req <= ar_buf[ar_buf_rp];
+         xact_req_valid <= ar_buf_valid;
+      end
+      if(!rstn) begin
         xact_req_valid <= 1'b0;
         xact_ar_cnt <= 0;
         xact_r_cnt <= 0;
-     end else begin
-        if(lite_ar_valid && lite_ar_ready)
-          xact_ar_cnt <= xact_ar_cnt + 1;
-        else if(xact_finish)
-          xact_ar_cnt <= 0;
-
-        if(lite_r_valid && lite_r_ready)
-          xact_r_cnt <= xact_r_cnt + 1;
-        else if(xact_finish)
-          xact_r_cnt <= 0;
-
-        if(xact_finish || !xact_req_valid) begin
-           if(ar_buf_valid) xact_req <= ar_buf[ar_buf_rp];
-           xact_req_valid <= ar_buf_valid;
-        end
-     end
+      end
+   end
 
    logic [BUF_LEN_BITS:0] xact_data_wp_offset;
    assign xact_data_wp_offset = NASTI_DATA_WIDTH > LITE_DATA_WIDTH ? nasti_r_addr[NASTI_W_BITS-1:LITE_W_BITS] : 0;
    assign xact_finish = nasti_r_valid && nasti_r_ready && nasti_r_cnt == xact_req.len;
 
-   always_ff @(posedge clk or negedge rstn)
-     if(!rstn)
-       xact_data_wp <= 0;
-     else if(lite_r_valid && lite_r_ready) begin
-        xact_data_vec[xact_data_wp+xact_data_wp_offset] <= lite_r_data;
-        xact_resp <= lite_r_resp;
-        xact_data_wp <= xact_data_wp + 1;
-     end else if(nasti_r_valid && nasti_r_ready)
-       xact_data_wp <= 0;
+   always_ff @(posedge clk or negedge rstn) begin
+      if(lite_r_valid && lite_r_ready) begin
+         xact_data_vec[xact_data_wp+xact_data_wp_offset] <= lite_r_data;
+         xact_resp <= lite_r_resp;
+         xact_data_wp <= xact_data_wp + 1;
+      end else if(nasti_r_valid && nasti_r_ready)
+	xact_data_wp <= 0;
+      if(!rstn)
+	xact_data_wp <= 0;
+   end
 
    assign nasti_r_valid = xact_req_valid && xact_data_wp == lite_packet_ratio(xact_req);
    assign nasti_r_id = xact_req.id;
