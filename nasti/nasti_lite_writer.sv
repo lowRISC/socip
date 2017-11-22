@@ -132,20 +132,20 @@ module nasti_lite_writer
    assign aw_buf_full = aw_buf_valid && aw_buf_wp == aw_buf_rp;
    assign aw_buf_empty = !aw_buf_valid && aw_buf_wp == aw_buf_rp;
 
-   always_ff @(posedge clk or negedge rstn)
-     if(!rstn)
+   always_ff @(posedge clk or negedge rstn) begin
+      if(nasti_aw_valid && nasti_aw_ready) begin
+         aw_buf[aw_buf_wp] <= NastiReq'{nasti_aw_id, nasti_aw_addr, nasti_aw_len,
+					nasti_aw_size, nasti_aw_burst, nasti_aw_lock,
+					nasti_aw_cache, nasti_aw_prot, nasti_aw_qos,
+					nasti_aw_region, nasti_aw_user};
+         aw_buf_wp <= incr(aw_buf_wp, 1, MAX_TRANSACTION);
+
+         assert(nasti_aw_burst == 2'b01)
+           else $fatal(1, "nasti-lite support only INCR burst!");
+      end
+      if(!rstn)
         aw_buf_wp <= 0;
-     else if(nasti_aw_valid && nasti_aw_ready) begin
-        aw_buf[aw_buf_wp] <= NastiReq'{nasti_aw_id, nasti_aw_addr, nasti_aw_len,
-                                       nasti_aw_size, nasti_aw_burst, nasti_aw_lock,
-                                       nasti_aw_cache, nasti_aw_prot, nasti_aw_qos,
-                                       nasti_aw_region, nasti_aw_user};
-        aw_buf_wp <= incr(aw_buf_wp, 1, MAX_TRANSACTION);
-
-        assert(nasti_aw_burst == 2'b01)
-          else $fatal(1, "nasti-lite support only INCR burst!");
-
-     end
+   end
 
    always_ff @(posedge clk or negedge rstn)
      if(!rstn)
@@ -227,11 +227,8 @@ module nasti_lite_writer
         xact_req_valid <= aw_buf_valid;
      end
 
-   always_ff @(posedge clk or negedge rstn)
-     if(!rstn) begin
-        lite_aw_data_valid <= 1'b0;
-        lite_b_data_valid <= 1'b0;
-     end else if(nasti_w_valid && nasti_w_ready) begin
+   always_ff @(posedge clk or negedge rstn) begin
+     if(nasti_w_valid && nasti_w_ready) begin
         xact_data_vec <= nasti_w_data;
         xact_strb_vec <= nasti_w_strb;
         xact_user <= nasti_w_user;
@@ -244,6 +241,11 @@ module nasti_lite_writer
         if((lite_b_valid && lite_b_ready || lite_b_bypass) && lite_b_cnt == lite_packet_ratio(xact_req)-1)
           lite_b_data_valid <= 1'b0;
      end
+     if(!rstn) begin
+        lite_aw_data_valid <= 1'b0;
+        lite_b_data_valid <= 1'b0;
+     end
+   end
 
    always_ff @(posedge clk)
      if(lite_b_valid && lite_b_ready)
