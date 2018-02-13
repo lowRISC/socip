@@ -85,15 +85,22 @@ module nasti_mux
 
    assign aw_port_sel = lock ? locked_port : toInt(aw_gnt);
 
-   always_ff @(posedge clk or negedge rstn) begin
-      if(master.aw_valid[aw_port_sel] && master.aw_ready[aw_port_sel]) begin
-         lock <= 1'b1;
-         locked_port <= aw_port_sel;
-      end else if((LITE_MODE || master.w_last[aw_port_sel]) && master.w_valid[aw_port_sel] && master.w_ready[aw_port_sel])
-	lock <= 1'b0;
+   always_ff @(posedge clk or negedge rstn)
       if(!rstn)
+        begin
 	lock <= 1'b0;
-   end
+	locked_port <= 1'b0;
+        end
+      else
+        begin
+           if(master.aw_valid[aw_port_sel] && master.aw_ready[aw_port_sel])
+             begin
+                lock <= 1'b1;
+                locked_port <= aw_port_sel;
+             end
+           else if((LITE_MODE || master.w_last[aw_port_sel]) && master.w_valid[aw_port_sel] && master.w_ready[aw_port_sel])
+	     lock <= 1'b0;
+        end
 
    assign slave.aw_id      = master.aw_id[aw_port_sel];
    assign slave.aw_addr    = master.aw_addr[aw_port_sel];
@@ -135,17 +142,20 @@ module nasti_mux
    assign slave.b_ready = master.b_ready[write_vec_port[write_match_index]];
 
    // update write_vec
-   always_ff @(posedge clk or negedge rstn) begin
-      if(slave.aw_valid && slave.aw_ready) begin
-         write_vec_id[write_wp] <= slave.aw_id;
-         write_vec_port[write_wp] <= aw_port_sel;
-         write_vec_valid[write_wp] <= 1'b1;
-      end
-      if(slave.b_valid && slave.b_ready)
-        write_vec_valid[write_match_index] <= 1'b0;
+   always_ff @(posedge clk or negedge rstn)
      if(!rstn)
        write_vec_valid <= 0;
-   end
+     else
+       begin
+          if(slave.aw_valid && slave.aw_ready)
+            begin
+               write_vec_id[write_wp] <= slave.aw_id;
+               write_vec_port[write_wp] <= aw_port_sel;
+               write_vec_valid[write_wp] <= 1'b1;
+            end
+          if(slave.b_valid && slave.b_ready)
+            write_vec_valid[write_match_index] <= 1'b0;
+       end
 
    // AR and R
    logic [2:0] ar_port_sel;
@@ -196,20 +206,22 @@ module nasti_mux
    assign slave.r_ready = master.r_ready[read_vec_port[read_match_index]];
 
    // update read_vec
-   always_ff @(posedge clk or negedge rstn) begin
-      if(slave.ar_valid && slave.ar_ready) begin
-         read_vec_id[read_wp] <= slave.ar_id;
-         read_vec_port[read_wp] <= ar_port_sel;
-         read_vec_valid[read_wp] <= 1'b1;
-      end
-
-      if(slave.r_valid && slave.r_ready)
-        read_vec_valid[read_match_index] <= 1'b0;
-      if(!rstn) begin
-         int n;
-         for(n=0; n<R_MAX; n++)
-           read_vec_valid[n] <= 1'b0;
-      end
-   end
+   always_ff @(posedge clk or negedge rstn)
+     if(!rstn)
+       begin
+          for(int n=0; n<R_MAX; n++)
+            read_vec_valid[n] <= 1'b0;
+       end
+     else
+       begin
+          if(slave.ar_valid && slave.ar_ready)
+            begin
+               read_vec_id[read_wp] <= slave.ar_id;
+               read_vec_port[read_wp] <= ar_port_sel;
+               read_vec_valid[read_wp] <= 1'b1;
+            end
+          if(slave.r_valid && slave.r_ready)
+            read_vec_valid[read_match_index] <= 1'b0;
+       end
 
 endmodule // nasti_mux
