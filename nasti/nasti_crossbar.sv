@@ -3,34 +3,34 @@
 // up to 8x8 slave ports
 module nasti_crossbar
   #(
-    N_INPUT = 1,                // number of input ports
-    N_OUTPUT = 1,               // number of output ports
-    IB_DEPTH = 0,               // input buffer depth
-    OB_DEPTH = 0,               // output buffer depth
-    W_MAX = 2,                  // maximal parallel write transactions
-    R_MAX = 2,                  // maximal parallel read transactions
-    ID_WIDTH = 1,               // id width
-    ADDR_WIDTH = 8,             // address width
-    DATA_WIDTH = 8,             // width of data
-    USER_WIDTH = 1,             // width of user field, must > 0, let synthesizer trim it if not
-    LITE_MODE = 0,              // whether work in Lite mode
-    ESCAPE_ENABLE = 0,          // whether treat output port 0 as an escaping port
-    logic [ADDR_WIDTH-1:0] BASE0 = 0, // base address for port 0
-    logic [ADDR_WIDTH-1:0] BASE1 = 0, // base address for port 1
-    logic [ADDR_WIDTH-1:0] BASE2 = 0, // base address for port 2
-    logic [ADDR_WIDTH-1:0] BASE3 = 0, // base address for port 3
-    logic [ADDR_WIDTH-1:0] BASE4 = 0, // base address for port 4
-    logic [ADDR_WIDTH-1:0] BASE5 = 0, // base address for port 5
-    logic [ADDR_WIDTH-1:0] BASE6 = 0, // base address for port 6
-    logic [ADDR_WIDTH-1:0] BASE7 = 0, // base address for port 7
-    logic [ADDR_WIDTH-1:0] MASK0 = 0, // address mask for port 0
-    logic [ADDR_WIDTH-1:0] MASK1 = 0, // address mask for port 1
-    logic [ADDR_WIDTH-1:0] MASK2 = 0, // address mask for port 2
-    logic [ADDR_WIDTH-1:0] MASK3 = 0, // address mask for port 3
-    logic [ADDR_WIDTH-1:0] MASK4 = 0, // address mask for port 4
-    logic [ADDR_WIDTH-1:0] MASK5 = 0, // address mask for port 5
-    logic [ADDR_WIDTH-1:0] MASK6 = 0, // address mask for port 6
-    logic [ADDR_WIDTH-1:0] MASK7 = 0  // address mask for port 7
+    parameter N_INPUT = 1,                // number of input ports
+    parameter N_OUTPUT = 1,               // number of output ports
+    parameter IB_DEPTH = 0,               // input buffer depth
+    parameter OB_DEPTH = 0,               // output buffer depth
+    parameter W_MAX = 2,                  // maximal parallel write transactions
+    parameter R_MAX = 2,                  // maximal parallel read transactions
+    parameter ID_WIDTH = 1,               // id width
+    parameter ADDR_WIDTH = 8,             // address width
+    parameter DATA_WIDTH = 8,             // width of data
+    parameter USER_WIDTH = 1,             // width of user field, must > 0, let synthesizer trim it if not
+    parameter LITE_MODE = 0,              // whether work in Lite mode
+    parameter ESCAPE_ENABLE = 0,          // whether treat output port 0 as an escaping port
+    parameter logic [ADDR_WIDTH-1:0] BASE0 = 0, // base address for port 0
+    parameter logic [ADDR_WIDTH-1:0] BASE1 = 0, // base address for port 1
+    parameter logic [ADDR_WIDTH-1:0] BASE2 = 0, // base address for port 2
+    parameter logic [ADDR_WIDTH-1:0] BASE3 = 0, // base address for port 3
+    parameter logic [ADDR_WIDTH-1:0] BASE4 = 0, // base address for port 4
+    parameter logic [ADDR_WIDTH-1:0] BASE5 = 0, // base address for port 5
+    parameter logic [ADDR_WIDTH-1:0] BASE6 = 0, // base address for port 6
+    parameter logic [ADDR_WIDTH-1:0] BASE7 = 0, // base address for port 7
+    parameter logic [ADDR_WIDTH-1:0] MASK0 = 0, // address mask for port 0
+    parameter logic [ADDR_WIDTH-1:0] MASK1 = 0, // address mask for port 1
+    parameter logic [ADDR_WIDTH-1:0] MASK2 = 0, // address mask for port 2
+    parameter logic [ADDR_WIDTH-1:0] MASK3 = 0, // address mask for port 3
+    parameter logic [ADDR_WIDTH-1:0] MASK4 = 0, // address mask for port 4
+    parameter logic [ADDR_WIDTH-1:0] MASK5 = 0, // address mask for port 5
+    parameter logic [ADDR_WIDTH-1:0] MASK6 = 0, // address mask for port 6
+    parameter logic [ADDR_WIDTH-1:0] MASK7 = 0  // address mask for port 7
     )
    (
     input clk, rstn,

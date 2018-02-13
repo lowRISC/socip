@@ -36,8 +36,7 @@ module nasti_mux
    assign read_full = &read_vec_valid;
 
    function logic[$clog2(W_MAX)-1:0] get_write_wp();
-      automatic int i;
-      for(i=0; i<W_MAX; i++)
+      for(int i=0; i<W_MAX; i++)
         if(!write_vec_valid[i])
           return i;
       return 0;
@@ -45,8 +44,7 @@ module nasti_mux
    assign write_wp = get_write_wp();
 
    function logic[$clog2(R_MAX)-1:0] get_read_wp();
-      automatic int i;
-      for(i=0; i<R_MAX; i++)
+      for(int i=0; i<R_MAX; i++)
         if(!read_vec_valid[i])
           return i;
       return 0;
@@ -54,22 +52,19 @@ module nasti_mux
    assign read_wp = get_read_wp();
 
    function logic [2:0] toInt (logic [7:0] dat);
-      automatic int i;
-      for(i=0; i<8; i++)
+      for(int i=0; i<8; i++)
         if(dat[i]) return i;
       return 0;
    endfunction // toInt
       
    function logic [$clog2(W_MAX)-1:0] toInt_w (logic [W_MAX-1:0] dat);
-      automatic int i;
-      for(i=0; i<W_MAX; i++)
+      for(int i=0; i<W_MAX; i++)
         if(dat[i]) return i;
       return 0;
    endfunction // toInt
 
    function logic [$clog2(R_MAX)-1:0] toInt_r (logic [R_MAX:0] dat);
-      automatic int i;
-      for(i=0; i<R_MAX; i++)
+      for(int i=0; i<R_MAX; i++)
         if(dat[i]) return i;
       return 0;
    endfunction // toInt
@@ -125,7 +120,7 @@ module nasti_mux
 
    generate
       for(i=0; i<W_MAX; i++)
-        assign write_match[i] = write_vec_valid[i] && slave.b_valid && slave.b_id === write_vec_id[i];
+        assign write_match[i] = write_vec_valid[i] && slave.b_valid && slave.b_id == write_vec_id[i];
    endgenerate
    assign write_match_index = toInt_w(write_match);
 
@@ -184,7 +179,7 @@ module nasti_mux
 
    generate
       for(i=0; i<R_MAX; i++)
-        assign read_match[i] = read_vec_valid[i] && slave.r_valid && slave.r_id === read_vec_id[i];
+        assign read_match[i] = read_vec_valid[i] && slave.r_valid && slave.r_id == read_vec_id[i];
    endgenerate
    assign read_match_index = toInt_r(read_match);
 
