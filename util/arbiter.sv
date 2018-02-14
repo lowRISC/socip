@@ -11,12 +11,12 @@ module arbiter_rr
     input enable
     );
 
-   logic [N-1:0] p;             // pointer of last grant
-   logic [2*N-1:0] mask, req_ext, p_ext;
-   logic           lock, locked; // make the arbiter stable
+   bit [N-1:0] p;             // pointer of last grant
+   bit [2*N-1:0] mask, req_ext, p_ext;
+   bit           lock, locked; // make the arbiter stable
 
 `ifdef VERILATOR
-   logic [2*N-1:0] p_or, req_and;
+   bit [2*N-1:0] p_or, req_and;
 `endif
 
    genvar          i;
@@ -41,7 +41,7 @@ module arbiter_rr
    endgenerate
 `endif
 
-   assign gnt = enable ? (locked ? p : req & (mask[N-1:0] | mask[2*N-1:N])) : 0;
+   assign gnt = enable ? (locked ? p : req & (mask[N-1:0] | mask[2*N-1:N])) : 8'b0;
 
    always_ff @(posedge clk or negedge rstn)
      if(!rstn)

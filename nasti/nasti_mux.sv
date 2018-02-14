@@ -21,21 +21,21 @@ module nasti_mux
    genvar i;
 
    // transaction records
-   logic [W_MAX-1:0][ID_WIDTH-1:0]    write_vec_id;
-   logic [W_MAX-1:0][2:0]             write_vec_port;
-   logic [W_MAX-1:0]                  write_vec_valid;
-   logic [R_MAX-1:0][ID_WIDTH-1:0]    read_vec_id;
-   logic [R_MAX-1:0][2:0]             read_vec_port;
-   logic [R_MAX-1:0]                  read_vec_valid;
+   bit [W_MAX-1:0][ID_WIDTH-1:0]    write_vec_id;
+   bit [W_MAX-1:0][2:0]             write_vec_port;
+   bit [W_MAX-1:0]                  write_vec_valid;
+   bit [R_MAX-1:0][ID_WIDTH-1:0]    read_vec_id;
+   bit [R_MAX-1:0][2:0]             read_vec_port;
+   bit [R_MAX-1:0]                  read_vec_valid;
 
-   logic [$clog2(W_MAX)-1:0] write_wp;
-   logic [$clog2(R_MAX)-1:0] read_wp;
-   logic write_full, read_full;
+   bit [$clog2(W_MAX)-1:0] write_wp;
+   bit [$clog2(R_MAX)-1:0] read_wp;
+   bit write_full, read_full;
 
    assign write_full = &write_vec_valid;
    assign read_full = &read_vec_valid;
 
-   function logic[$clog2(W_MAX)-1:0] get_write_wp();
+   function bit[$clog2(W_MAX)-1:0] get_write_wp();
       for(int i=0; i<W_MAX; i++)
         if(!write_vec_valid[i])
           return i;
@@ -43,7 +43,7 @@ module nasti_mux
    endfunction //
    assign write_wp = get_write_wp();
 
-   function logic[$clog2(R_MAX)-1:0] get_read_wp();
+   function bit[$clog2(R_MAX)-1:0] get_read_wp();
       for(int i=0; i<R_MAX; i++)
         if(!read_vec_valid[i])
           return i;
@@ -51,29 +51,29 @@ module nasti_mux
    endfunction //
    assign read_wp = get_read_wp();
 
-   function logic [2:0] toInt (logic [7:0] dat);
+   function bit [2:0] toInt (bit [7:0] dat);
       for(int i=0; i<8; i++)
         if(dat[i]) return i;
       return 0;
    endfunction // toInt
       
-   function logic [$clog2(W_MAX)-1:0] toInt_w (logic [W_MAX-1:0] dat);
+   function bit [$clog2(W_MAX)-1:0] toInt_w (bit [W_MAX-1:0] dat);
       for(int i=0; i<W_MAX; i++)
         if(dat[i]) return i;
       return 0;
    endfunction // toInt
 
-   function logic [$clog2(R_MAX)-1:0] toInt_r (logic [R_MAX:0] dat);
+   function bit [$clog2(R_MAX)-1:0] toInt_r (bit [R_MAX:0] dat);
       for(int i=0; i<R_MAX; i++)
         if(dat[i]) return i;
       return 0;
    endfunction // toInt
 
    // AW/W/B channels
-   logic       lock;
-   logic [2:0] locked_port;
-   logic [2:0] aw_port_sel;
-   logic [7:0] aw_gnt;
+   bit       lock;
+   bit [2:0] locked_port;
+   bit [2:0] aw_port_sel;
+   bit [7:0] aw_gnt;
 
    arbiter_rr #(8)
    aw_arb (
@@ -119,11 +119,11 @@ module nasti_mux
    assign slave.w_last     = master.w_last[aw_port_sel];
    assign slave.w_user     = master.w_user[aw_port_sel];
    assign slave.w_valid    = lock && master.w_valid[aw_port_sel];
-   assign master.aw_ready  = slave.aw_ready ? (1 << aw_port_sel) : 0;
-   assign master.w_ready   = slave.w_ready ? (1 << aw_port_sel) : 0;
+   assign master.aw_ready  = slave.aw_ready ? (8'b1 << aw_port_sel) : 8'b0;
+   assign master.w_ready   = slave.w_ready ? (8'b1 << aw_port_sel) : 8'b0;
 
-   logic [W_MAX-1:0]          write_match;
-   logic [$clog2(W_MAX)-1:0]  write_match_index;
+   bit [W_MAX-1:0]          write_match;
+   bit [$clog2(W_MAX)-1:0]  write_match_index;
 
    generate
       for(i=0; i<W_MAX; i++)
@@ -158,8 +158,8 @@ module nasti_mux
        end
 
    // AR and R
-   logic [2:0] ar_port_sel;
-   logic [7:0] ar_gnt;
+   bit [2:0] ar_port_sel;
+   bit [7:0] ar_gnt;
 
    arbiter_rr #(8)
    ar_arb (
@@ -182,15 +182,16 @@ module nasti_mux
    assign slave.ar_region  = master.ar_region[ar_port_sel];
    assign slave.ar_user    = master.ar_user[ar_port_sel];
    assign slave.ar_valid   = master.ar_valid[ar_port_sel];
-   assign master.ar_ready  = slave.ar_ready ? (1 << ar_port_sel) : 0;
+   assign master.ar_ready  = slave.ar_ready ? (8'b1 << ar_port_sel) : 8'b0;
 
-   logic [R_MAX-1:0]          read_match;
-   logic [$clog2(R_MAX)-1:0]  read_match_index;
+   bit [R_MAX-1:0]          read_match;
+   bit [$clog2(R_MAX)-1:0]  read_match_index;
 
    generate
       for(i=0; i<R_MAX; i++)
         assign read_match[i] = read_vec_valid[i] && slave.r_valid && slave.r_id == read_vec_id[i];
    endgenerate
+   
    assign read_match_index = toInt_r(read_match);
 
    generate

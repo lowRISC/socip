@@ -20,7 +20,7 @@ module nasti_bram_ctrl # (
    /* AXI */
 
    // Whether the BRAM controller is ready for R/W transaction
-   logic a_ready;
+   bit a_ready;
 
    assign s_nasti.ar_ready = a_ready;
    assign s_nasti.aw_ready = a_ready;
@@ -31,38 +31,38 @@ module nasti_bram_ctrl # (
 
    /* Reading */
 
-   logic [ADDR_WIDTH-1:0] read_burst_addr;
-   logic [7:0] read_burst_remaining;
+   bit [ADDR_WIDTH-1:0] read_burst_addr;
+   bit [7:0] read_burst_remaining;
 
    // Whether there is an inbound read transaction
-   logic inbound_read;
+   bit inbound_read;
    assign inbound_read = s_nasti.ar_ready & s_nasti.ar_valid;
 
    // Whether next data in a read burst can be served
-   logic read_can_serve_next;
+   bit read_can_serve_next;
    assign read_can_serve_next = s_nasti.r_ready & s_nasti.r_valid & !s_nasti.r_last;
 
    // Whether there is an pending read response
    // we can only guarantee that BRAM data is available for one cycle
    // So we need to cache the data
-   logic pending_read;
-   logic [DATA_WIDTH-1:0] pending_read_data;
+   bit pending_read;
+   bit [DATA_WIDTH-1:0] pending_read_data;
 
    /* Writing */
 
-   logic [ADDR_WIDTH-1:0] write_burst_addr;
-   logic [7:0] write_burst_remaining;
+   bit [ADDR_WIDTH-1:0] write_burst_addr;
+   bit [7:0] write_burst_remaining;
 
    // Whether there is an inbound write transaction
-   logic inbound_write;
-   logic inbound_write_data;
+   bit inbound_write;
+   bit inbound_write_data;
 
    assign inbound_write = s_nasti.aw_ready & s_nasti.aw_valid;
    assign inbound_write_data = s_nasti.w_ready & s_nasti.w_valid;
 
    // Whether there is an pending write transaction
    // caused by simultaneous read & wrtie transaction
-   logic pending_write;
+   bit pending_write;
 
    /* BRAM control */
 

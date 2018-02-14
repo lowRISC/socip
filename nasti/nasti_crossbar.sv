@@ -15,22 +15,22 @@ module nasti_crossbar
     parameter USER_WIDTH = 1,             // width of user field, must > 0, let synthesizer trim it if not
     parameter LITE_MODE = 0,              // whether work in Lite mode
     parameter ESCAPE_ENABLE = 0,          // whether treat output port 0 as an escaping port
-    parameter logic [ADDR_WIDTH-1:0] BASE0 = 0, // base address for port 0
-    parameter logic [ADDR_WIDTH-1:0] BASE1 = 0, // base address for port 1
-    parameter logic [ADDR_WIDTH-1:0] BASE2 = 0, // base address for port 2
-    parameter logic [ADDR_WIDTH-1:0] BASE3 = 0, // base address for port 3
-    parameter logic [ADDR_WIDTH-1:0] BASE4 = 0, // base address for port 4
-    parameter logic [ADDR_WIDTH-1:0] BASE5 = 0, // base address for port 5
-    parameter logic [ADDR_WIDTH-1:0] BASE6 = 0, // base address for port 6
-    parameter logic [ADDR_WIDTH-1:0] BASE7 = 0, // base address for port 7
-    parameter logic [ADDR_WIDTH-1:0] MASK0 = 0, // address mask for port 0
-    parameter logic [ADDR_WIDTH-1:0] MASK1 = 0, // address mask for port 1
-    parameter logic [ADDR_WIDTH-1:0] MASK2 = 0, // address mask for port 2
-    parameter logic [ADDR_WIDTH-1:0] MASK3 = 0, // address mask for port 3
-    parameter logic [ADDR_WIDTH-1:0] MASK4 = 0, // address mask for port 4
-    parameter logic [ADDR_WIDTH-1:0] MASK5 = 0, // address mask for port 5
-    parameter logic [ADDR_WIDTH-1:0] MASK6 = 0, // address mask for port 6
-    parameter logic [ADDR_WIDTH-1:0] MASK7 = 0  // address mask for port 7
+    parameter bit [ADDR_WIDTH-1:0] BASE0 = 0, // base address for port 0
+    parameter bit [ADDR_WIDTH-1:0] BASE1 = 0, // base address for port 1
+    parameter bit [ADDR_WIDTH-1:0] BASE2 = 0, // base address for port 2
+    parameter bit [ADDR_WIDTH-1:0] BASE3 = 0, // base address for port 3
+    parameter bit [ADDR_WIDTH-1:0] BASE4 = 0, // base address for port 4
+    parameter bit [ADDR_WIDTH-1:0] BASE5 = 0, // base address for port 5
+    parameter bit [ADDR_WIDTH-1:0] BASE6 = 0, // base address for port 6
+    parameter bit [ADDR_WIDTH-1:0] BASE7 = 0, // base address for port 7
+    parameter bit [ADDR_WIDTH-1:0] MASK0 = 0, // address mask for port 0
+    parameter bit [ADDR_WIDTH-1:0] MASK1 = 0, // address mask for port 1
+    parameter bit [ADDR_WIDTH-1:0] MASK2 = 0, // address mask for port 2
+    parameter bit [ADDR_WIDTH-1:0] MASK3 = 0, // address mask for port 3
+    parameter bit [ADDR_WIDTH-1:0] MASK4 = 0, // address mask for port 4
+    parameter bit [ADDR_WIDTH-1:0] MASK5 = 0, // address mask for port 5
+    parameter bit [ADDR_WIDTH-1:0] MASK6 = 0, // address mask for port 6
+    parameter bit [ADDR_WIDTH-1:0] MASK7 = 0  // address mask for port 7
     )
    (
     input clk, rstn,
@@ -193,55 +193,55 @@ module nasti_crossbar
    demux7 (.*, .master(ib_o7), .slave(dm_o7));
 
    // crossbar connection
-   logic [7:0][7:0][ID_WIDTH-1:0]     cbi_aw_id,     cbi_ar_id;
-   logic [7:0][7:0][ADDR_WIDTH-1:0]   cbi_aw_addr,   cbi_ar_addr;
-   logic [7:0][7:0][7:0]              cbi_aw_len,    cbi_ar_len;
-   logic [7:0][7:0][2:0]              cbi_aw_size,   cbi_ar_size;
-   logic [7:0][7:0][1:0]              cbi_aw_burst,  cbi_ar_burst;
-   logic [7:0][7:0]                   cbi_aw_lock,   cbi_ar_lock;
-   logic [7:0][7:0][3:0]              cbi_aw_cache,  cbi_ar_cache;
-   logic [7:0][7:0][2:0]              cbi_aw_prot,   cbi_ar_prot;
-   logic [7:0][7:0][3:0]              cbi_aw_qos,    cbi_ar_qos;
-   logic [7:0][7:0][3:0]              cbi_aw_region, cbi_ar_region;
-   logic [7:0][7:0][USER_WIDTH-1:0]   cbi_aw_user,   cbi_ar_user;
-   logic [7:0][7:0]                   cbi_aw_valid,  cbi_ar_valid;
-   logic [7:0][7:0]                   cbi_aw_ready,  cbi_ar_ready;
-   logic [7:0][7:0][DATA_WIDTH-1:0]   cbi_w_data,    cbi_r_data;
-   logic [7:0][7:0][DATA_WIDTH/8-1:0] cbi_w_strb;
-   logic [7:0][7:0]                   cbi_w_last,    cbi_r_last;
-   logic [7:0][7:0][USER_WIDTH-1:0]   cbi_w_user;
-   logic [7:0][7:0]                   cbi_w_valid;
-   logic [7:0][7:0]                   cbi_w_ready;
-   logic [7:0][7:0][ID_WIDTH-1:0]     cbi_b_id,      cbi_r_id;
-   logic [7:0][7:0][1:0]              cbi_b_resp,    cbi_r_resp;
-   logic [7:0][7:0][USER_WIDTH-1:0]   cbi_b_user,    cbi_r_user;
-   logic [7:0][7:0]                   cbi_b_valid,   cbi_r_valid;
-   logic [7:0][7:0]                   cbi_b_ready,   cbi_r_ready;
+   bit [7:0][7:0][ID_WIDTH-1:0]     cbi_aw_id,     cbi_ar_id;
+   bit [7:0][7:0][ADDR_WIDTH-1:0]   cbi_aw_addr,   cbi_ar_addr;
+   bit [7:0][7:0][7:0]              cbi_aw_len,    cbi_ar_len;
+   bit [7:0][7:0][2:0]              cbi_aw_size,   cbi_ar_size;
+   bit [7:0][7:0][1:0]              cbi_aw_burst,  cbi_ar_burst;
+   bit [7:0][7:0]                   cbi_aw_lock,   cbi_ar_lock;
+   bit [7:0][7:0][3:0]              cbi_aw_cache,  cbi_ar_cache;
+   bit [7:0][7:0][2:0]              cbi_aw_prot,   cbi_ar_prot;
+   bit [7:0][7:0][3:0]              cbi_aw_qos,    cbi_ar_qos;
+   bit [7:0][7:0][3:0]              cbi_aw_region, cbi_ar_region;
+   bit [7:0][7:0][USER_WIDTH-1:0]   cbi_aw_user,   cbi_ar_user;
+   bit [7:0][7:0]                   cbi_aw_valid,  cbi_ar_valid;
+   bit [7:0][7:0]                   cbi_aw_ready,  cbi_ar_ready;
+   bit [7:0][7:0][DATA_WIDTH-1:0]   cbi_w_data,    cbi_r_data;
+   bit [7:0][7:0][DATA_WIDTH/8-1:0] cbi_w_strb;
+   bit [7:0][7:0]                   cbi_w_last,    cbi_r_last;
+   bit [7:0][7:0][USER_WIDTH-1:0]   cbi_w_user;
+   bit [7:0][7:0]                   cbi_w_valid;
+   bit [7:0][7:0]                   cbi_w_ready;
+   bit [7:0][7:0][ID_WIDTH-1:0]     cbi_b_id,      cbi_r_id;
+   bit [7:0][7:0][1:0]              cbi_b_resp,    cbi_r_resp;
+   bit [7:0][7:0][USER_WIDTH-1:0]   cbi_b_user,    cbi_r_user;
+   bit [7:0][7:0]                   cbi_b_valid,   cbi_r_valid;
+   bit [7:0][7:0]                   cbi_b_ready,   cbi_r_ready;
 
-   logic [7:0][7:0][ID_WIDTH-1:0]     cbo_aw_id,     cbo_ar_id;
-   logic [7:0][7:0][ADDR_WIDTH-1:0]   cbo_aw_addr,   cbo_ar_addr;
-   logic [7:0][7:0][7:0]              cbo_aw_len,    cbo_ar_len;
-   logic [7:0][7:0][2:0]              cbo_aw_size,   cbo_ar_size;
-   logic [7:0][7:0][1:0]              cbo_aw_burst,  cbo_ar_burst;
-   logic [7:0][7:0]                   cbo_aw_lock,   cbo_ar_lock;
-   logic [7:0][7:0][3:0]              cbo_aw_cache,  cbo_ar_cache;
-   logic [7:0][7:0][2:0]              cbo_aw_prot,   cbo_ar_prot;
-   logic [7:0][7:0][3:0]              cbo_aw_qos,    cbo_ar_qos;
-   logic [7:0][7:0][3:0]              cbo_aw_region, cbo_ar_region;
-   logic [7:0][7:0][USER_WIDTH-1:0]   cbo_aw_user,   cbo_ar_user;
-   logic [7:0][7:0]                   cbo_aw_valid,  cbo_ar_valid;
-   logic [7:0][7:0]                   cbo_aw_ready,  cbo_ar_ready;
-   logic [7:0][7:0][DATA_WIDTH-1:0]   cbo_w_data,    cbo_r_data;
-   logic [7:0][7:0][DATA_WIDTH/8-1:0] cbo_w_strb;
-   logic [7:0][7:0]                   cbo_w_last,    cbo_r_last;
-   logic [7:0][7:0][USER_WIDTH-1:0]   cbo_w_user;
-   logic [7:0][7:0]                   cbo_w_valid;
-   logic [7:0][7:0]                   cbo_w_ready;
-   logic [7:0][7:0][ID_WIDTH-1:0]     cbo_b_id,      cbo_r_id;
-   logic [7:0][7:0][1:0]              cbo_b_resp,    cbo_r_resp;
-   logic [7:0][7:0][USER_WIDTH-1:0]   cbo_b_user,    cbo_r_user;
-   logic [7:0][7:0]                   cbo_b_valid,   cbo_r_valid;
-   logic [7:0][7:0]                   cbo_b_ready,   cbo_r_ready;
+   bit [7:0][7:0][ID_WIDTH-1:0]     cbo_aw_id,     cbo_ar_id;
+   bit [7:0][7:0][ADDR_WIDTH-1:0]   cbo_aw_addr,   cbo_ar_addr;
+   bit [7:0][7:0][7:0]              cbo_aw_len,    cbo_ar_len;
+   bit [7:0][7:0][2:0]              cbo_aw_size,   cbo_ar_size;
+   bit [7:0][7:0][1:0]              cbo_aw_burst,  cbo_ar_burst;
+   bit [7:0][7:0]                   cbo_aw_lock,   cbo_ar_lock;
+   bit [7:0][7:0][3:0]              cbo_aw_cache,  cbo_ar_cache;
+   bit [7:0][7:0][2:0]              cbo_aw_prot,   cbo_ar_prot;
+   bit [7:0][7:0][3:0]              cbo_aw_qos,    cbo_ar_qos;
+   bit [7:0][7:0][3:0]              cbo_aw_region, cbo_ar_region;
+   bit [7:0][7:0][USER_WIDTH-1:0]   cbo_aw_user,   cbo_ar_user;
+   bit [7:0][7:0]                   cbo_aw_valid,  cbo_ar_valid;
+   bit [7:0][7:0]                   cbo_aw_ready,  cbo_ar_ready;
+   bit [7:0][7:0][DATA_WIDTH-1:0]   cbo_w_data,    cbo_r_data;
+   bit [7:0][7:0][DATA_WIDTH/8-1:0] cbo_w_strb;
+   bit [7:0][7:0]                   cbo_w_last,    cbo_r_last;
+   bit [7:0][7:0][USER_WIDTH-1:0]   cbo_w_user;
+   bit [7:0][7:0]                   cbo_w_valid;
+   bit [7:0][7:0]                   cbo_w_ready;
+   bit [7:0][7:0][ID_WIDTH-1:0]     cbo_b_id,      cbo_r_id;
+   bit [7:0][7:0][1:0]              cbo_b_resp,    cbo_r_resp;
+   bit [7:0][7:0][USER_WIDTH-1:0]   cbo_b_user,    cbo_r_user;
+   bit [7:0][7:0]                   cbo_b_valid,   cbo_r_valid;
+   bit [7:0][7:0]                   cbo_b_ready,   cbo_r_ready;
 
    // painfully manuall connect them all to interfaces
    assign cbi_aw_id[0]      = dm_o0.aw_id;

@@ -9,22 +9,22 @@ module nasti_demux
     parameter USER_WIDTH = 1,             // width of user field, must > 0, let synthesizer trim it if not in use
     parameter LITE_MODE = 0,              // whether work in Lite mode
     parameter ESCAPE_ENABLE = 0,          // whether treat output port 0 as an escaping port
-    parameter logic [ADDR_WIDTH-1:0] BASE0 = 0, // base address for port 0
-    parameter logic [ADDR_WIDTH-1:0] BASE1 = 0, // base address for port 1
-    parameter logic [ADDR_WIDTH-1:0] BASE2 = 0, // base address for port 2
-    parameter logic [ADDR_WIDTH-1:0] BASE3 = 0, // base address for port 3
-    parameter logic [ADDR_WIDTH-1:0] BASE4 = 0, // base address for port 4
-    parameter logic [ADDR_WIDTH-1:0] BASE5 = 0, // base address for port 5
-    parameter logic [ADDR_WIDTH-1:0] BASE6 = 0, // base address for port 6
-    parameter logic [ADDR_WIDTH-1:0] BASE7 = 0, // base address for port 7
-    parameter logic [ADDR_WIDTH-1:0] MASK0 = 0, // address mask for port 0
-    parameter logic [ADDR_WIDTH-1:0] MASK1 = 0, // address mask for port 1
-    parameter logic [ADDR_WIDTH-1:0] MASK2 = 0, // address mask for port 2
-    parameter logic [ADDR_WIDTH-1:0] MASK3 = 0, // address mask for port 3
-    parameter logic [ADDR_WIDTH-1:0] MASK4 = 0, // address mask for port 4
-    parameter logic [ADDR_WIDTH-1:0] MASK5 = 0, // address mask for port 5
-    parameter logic [ADDR_WIDTH-1:0] MASK6 = 0, // address mask for port 6
-    parameter logic [ADDR_WIDTH-1:0] MASK7 = 0  // address mask for port 7
+    parameter bit [ADDR_WIDTH-1:0] BASE0 = 0, // base address for port 0
+    parameter bit [ADDR_WIDTH-1:0] BASE1 = 0, // base address for port 1
+    parameter bit [ADDR_WIDTH-1:0] BASE2 = 0, // base address for port 2
+    parameter bit [ADDR_WIDTH-1:0] BASE3 = 0, // base address for port 3
+    parameter bit [ADDR_WIDTH-1:0] BASE4 = 0, // base address for port 4
+    parameter bit [ADDR_WIDTH-1:0] BASE5 = 0, // base address for port 5
+    parameter bit [ADDR_WIDTH-1:0] BASE6 = 0, // base address for port 6
+    parameter bit [ADDR_WIDTH-1:0] BASE7 = 0, // base address for port 7
+    parameter bit [ADDR_WIDTH-1:0] MASK0 = 0, // address mask for port 0
+    parameter bit [ADDR_WIDTH-1:0] MASK1 = 0, // address mask for port 1
+    parameter bit [ADDR_WIDTH-1:0] MASK2 = 0, // address mask for port 2
+    parameter bit [ADDR_WIDTH-1:0] MASK3 = 0, // address mask for port 3
+    parameter bit [ADDR_WIDTH-1:0] MASK4 = 0, // address mask for port 4
+    parameter bit [ADDR_WIDTH-1:0] MASK5 = 0, // address mask for port 5
+    parameter bit [ADDR_WIDTH-1:0] MASK6 = 0, // address mask for port 6
+    parameter bit [ADDR_WIDTH-1:0] MASK7 = 0  // address mask for port 7
     )
    (
     input clk, rstn,
@@ -35,7 +35,7 @@ module nasti_demux
    genvar i;
 
    // function to find active channel
-   function logic [2:0] sel_active (logic [7:0] rdy);
+   function bit [2:0] sel_active (bit [7:0] rdy);
       // assume rdy arbitrated and one-hot
       int i;
       for(i=0; i<8; i++)
@@ -44,7 +44,7 @@ module nasti_demux
    endfunction // sel_active
 
    // port matcher
-   function logic [2:0] port_match(logic [ADDR_WIDTH-1:0] addr);
+   function bit [2:0] port_match(bit [ADDR_WIDTH-1:0] addr);
       if(MASK0 != 0 && (addr & ~MASK0) == BASE0) return 0;
       if(MASK1 != 0 && (addr & ~MASK1) == BASE1) return 1;
       if(MASK2 != 0 && (addr & ~MASK2) == BASE2) return 2;
@@ -57,7 +57,7 @@ module nasti_demux
    endfunction // port_match
 
    // port enable
-   logic [7:0] port_enable;
+   bit [7:0] port_enable;
    assign port_enable[0] = MASK0 != 0 || ESCAPE_ENABLE;
    assign port_enable[1] = MASK1 != 0;
    assign port_enable[2] = MASK2 != 0;
@@ -68,9 +68,9 @@ module nasti_demux
    assign port_enable[7] = MASK7 != 0;
 
    // AW and W channels
-   logic       lock;
-   logic [2:0] locked_port;
-   logic [2:0] aw_port_sel;
+   bit       lock;
+   bit [2:0] locked_port;
+   bit [2:0] aw_port_sel;
 
    assign aw_port_sel = lock ? locked_port : port_match(master.aw_addr);
 
@@ -117,7 +117,7 @@ module nasti_demux
    assign master.w_ready = lock && slave.w_ready[aw_port_sel];
 
    // AR channel
-   logic [2:0] ar_port_sel;
+   bit [2:0] ar_port_sel;
    assign ar_port_sel = port_match(master.ar_addr);
 
    generate
@@ -140,8 +140,8 @@ module nasti_demux
    assign master.ar_ready = slave.ar_ready[ar_port_sel];
    
    // B channel
-   logic [7:0] b_valid, b_gnt;
-   logic [2:0] b_port_sel;
+   bit [7:0] b_valid, b_gnt;
+   bit [2:0] b_port_sel;
 
    assign b_valid = port_enable & slave.b_valid;
 
@@ -158,11 +158,11 @@ module nasti_demux
    assign master.b_resp  = slave.b_resp[b_port_sel];
    assign master.b_user  = slave.b_user[b_port_sel];
    assign master.b_valid = slave.b_valid[b_port_sel];
-   assign slave.b_ready  = master.b_ready ? b_gnt : 0;
+   assign slave.b_ready  = master.b_ready ? b_gnt : 8'b0;
 
    // R channel
-   logic [7:0] r_valid, r_gnt;
-   logic [2:0] r_port_sel;
+   bit [7:0] r_valid, r_gnt;
+   bit [2:0] r_port_sel;
 
    assign r_valid = port_enable & slave.r_valid;
 
@@ -181,6 +181,6 @@ module nasti_demux
    assign master.r_last  = slave.r_last[r_port_sel];
    assign master.r_user  = slave.r_user[r_port_sel];
    assign master.r_valid = slave.r_valid[r_port_sel];
-   assign slave.r_ready  = master.r_ready ? r_gnt : 0;
+   assign slave.r_ready  = master.r_ready ? r_gnt : 8'b0;
 
 endmodule // nasti_demux

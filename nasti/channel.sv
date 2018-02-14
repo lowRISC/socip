@@ -14,34 +14,34 @@ interface nasti_channel
    initial assert(USER_WIDTH > 0) else $fatal(1, "[nasti interface] User field must have at least 1 bit!");
 
    // write/read address
-   logic [N_PORT-1:0][ID_WIDTH-1:0]     aw_id,     ar_id;
-   logic [N_PORT-1:0][ADDR_WIDTH-1:0]   aw_addr,   ar_addr;
-   logic [N_PORT-1:0][7:0]              aw_len,    ar_len;
-   logic [N_PORT-1:0][2:0]              aw_size,   ar_size;
-   logic [N_PORT-1:0][1:0]              aw_burst,  ar_burst;
-   logic [N_PORT-1:0]                   aw_lock,   ar_lock;
-   logic [N_PORT-1:0][3:0]              aw_cache,  ar_cache;
-   logic [N_PORT-1:0][2:0]              aw_prot,   ar_prot;
-   logic [N_PORT-1:0][3:0]              aw_qos,    ar_qos;
-   logic [N_PORT-1:0][3:0]              aw_region, ar_region;
-   logic [N_PORT-1:0][USER_WIDTH-1:0]   aw_user,   ar_user;
-   logic [N_PORT-1:0]                   aw_valid,  ar_valid;
-   logic [N_PORT-1:0]                   aw_ready,  ar_ready;
+   bit [N_PORT-1:0][ID_WIDTH-1:0]     aw_id,     ar_id;
+   bit [N_PORT-1:0][ADDR_WIDTH-1:0]   aw_addr,   ar_addr;
+   bit [N_PORT-1:0][7:0]              aw_len,    ar_len;
+   bit [N_PORT-1:0][2:0]              aw_size,   ar_size;
+   bit [N_PORT-1:0][1:0]              aw_burst,  ar_burst;
+   bit [N_PORT-1:0]                   aw_lock,   ar_lock;
+   bit [N_PORT-1:0][3:0]              aw_cache,  ar_cache;
+   bit [N_PORT-1:0][2:0]              aw_prot,   ar_prot;
+   bit [N_PORT-1:0][3:0]              aw_qos,    ar_qos;
+   bit [N_PORT-1:0][3:0]              aw_region, ar_region;
+   bit [N_PORT-1:0][USER_WIDTH-1:0]   aw_user,   ar_user;
+   bit [N_PORT-1:0]                   aw_valid,  ar_valid;
+   bit [N_PORT-1:0]                   aw_ready,  ar_ready;
 
    // write/read data
-   logic [N_PORT-1:0][DATA_WIDTH-1:0]   w_data,    r_data;
-   logic [N_PORT-1:0][DATA_WIDTH/8-1:0] w_strb;
-   logic [N_PORT-1:0]                   w_last,    r_last;
-   logic [N_PORT-1:0][USER_WIDTH-1:0]   w_user;
-   logic [N_PORT-1:0]                   w_valid;
-   logic [N_PORT-1:0]                   w_ready;
+   bit [N_PORT-1:0][DATA_WIDTH-1:0]   w_data,    r_data;
+   bit [N_PORT-1:0][DATA_WIDTH/8-1:0] w_strb;
+   bit [N_PORT-1:0]                   w_last,    r_last;
+   bit [N_PORT-1:0][USER_WIDTH-1:0]   w_user;
+   bit [N_PORT-1:0]                   w_valid;
+   bit [N_PORT-1:0]                   w_ready;
 
    // write/read response
-   logic [N_PORT-1:0][ID_WIDTH-1:0]     b_id,      r_id;
-   logic [N_PORT-1:0][1:0]              b_resp,    r_resp;
-   logic [N_PORT-1:0][USER_WIDTH-1:0]   b_user,    r_user;
-   logic [N_PORT-1:0]                   b_valid,   r_valid;
-   logic [N_PORT-1:0]                   b_ready,   r_ready;
+   bit [N_PORT-1:0][ID_WIDTH-1:0]     b_id,      r_id;
+   bit [N_PORT-1:0][1:0]              b_resp,    r_resp;
+   bit [N_PORT-1:0][USER_WIDTH-1:0]   b_user,    r_user;
+   bit [N_PORT-1:0]                   b_valid,   r_valid;
+   bit [N_PORT-1:0]                   b_ready,   r_ready;
 
 
    modport master (

@@ -40,26 +40,26 @@ module nasti_buf
    // And it is not happy with struct
    // Force me to use simple arrays
 
-   function logic [$clog2(DEPTH_LOC)-1:0] incr(logic [$clog2(DEPTH_LOC)-1:0] p);
-      logic [$clog2(DEPTH_LOC):0] p_incr;
+   function bit [$clog2(DEPTH_LOC)-1:0] incr(bit [$clog2(DEPTH_LOC)-1:0] p);
+      bit [$clog2(DEPTH_LOC):0] p_incr;
       p_incr = {1'b0,p} + 1;
       return p_incr >= DEPTH_LOC ? p_incr - DEPTH_LOC : p_incr;
    endfunction // incr
 
    // AW
-   logic [ID_WIDTH-1:0]           aw_q_id     [DEPTH_LOC-1:0];
-   logic [ADDR_WIDTH-1:0]         aw_q_addr   [DEPTH_LOC-1:0];
-   logic [7:0]                    aw_q_len    [DEPTH_LOC-1:0];
-   logic [2:0]                    aw_q_size   [DEPTH_LOC-1:0];
-   logic [1:0]                    aw_q_burst  [DEPTH_LOC-1:0];
-   logic                          aw_q_lock   [DEPTH_LOC-1:0];
-   logic [3:0]                    aw_q_cache  [DEPTH_LOC-1:0];
-   logic [2:0]                    aw_q_prot   [DEPTH_LOC-1:0];
-   logic [3:0]                    aw_q_qos    [DEPTH_LOC-1:0];
-   logic [3:0]                    aw_q_region [DEPTH_LOC-1:0];
-   logic [USER_WIDTH-1:0]         aw_q_user   [DEPTH_LOC-1:0];
-   logic [DEPTH_LOC-1:0]          aw_valid;
-   logic [$clog2(DEPTH_LOC)-1:0]  aw_wp, aw_rp;
+   bit [ID_WIDTH-1:0]           aw_q_id     [DEPTH_LOC-1:0];
+   bit [ADDR_WIDTH-1:0]         aw_q_addr   [DEPTH_LOC-1:0];
+   bit [7:0]                    aw_q_len    [DEPTH_LOC-1:0];
+   bit [2:0]                    aw_q_size   [DEPTH_LOC-1:0];
+   bit [1:0]                    aw_q_burst  [DEPTH_LOC-1:0];
+   bit                          aw_q_lock   [DEPTH_LOC-1:0];
+   bit [3:0]                    aw_q_cache  [DEPTH_LOC-1:0];
+   bit [2:0]                    aw_q_prot   [DEPTH_LOC-1:0];
+   bit [3:0]                    aw_q_qos    [DEPTH_LOC-1:0];
+   bit [3:0]                    aw_q_region [DEPTH_LOC-1:0];
+   bit [USER_WIDTH-1:0]         aw_q_user   [DEPTH_LOC-1:0];
+   bit [DEPTH_LOC-1:0]          aw_valid;
+   bit [$clog2(DEPTH_LOC)-1:0]  aw_wp, aw_rp;
 
    always_ff @(posedge clk or negedge rstn)
      if(!rstn) begin
@@ -108,19 +108,19 @@ module nasti_buf
    assign slave.aw_valid   = BUF_REQ && DEPTH > 0 ? aw_valid[aw_rp]    : master.aw_valid;
 
    // AR
-   logic [ID_WIDTH-1:0]           ar_q_id     [DEPTH_LOC-1:0];
-   logic [ADDR_WIDTH-1:0]         ar_q_addr   [DEPTH_LOC-1:0];
-   logic [7:0]                    ar_q_len    [DEPTH_LOC-1:0];
-   logic [2:0]                    ar_q_size   [DEPTH_LOC-1:0];
-   logic [1:0]                    ar_q_burst  [DEPTH_LOC-1:0];
-   logic                          ar_q_lock   [DEPTH_LOC-1:0];
-   logic [3:0]                    ar_q_cache  [DEPTH_LOC-1:0];
-   logic [2:0]                    ar_q_prot   [DEPTH_LOC-1:0];
-   logic [3:0]                    ar_q_qos    [DEPTH_LOC-1:0];
-   logic [3:0]                    ar_q_region [DEPTH_LOC-1:0];
-   logic [USER_WIDTH-1:0]         ar_q_user   [DEPTH_LOC-1:0];
-   logic [DEPTH_LOC-1:0]          ar_valid;
-   logic [$clog2(DEPTH_LOC)-1:0]  ar_wp, ar_rp;
+   bit [ID_WIDTH-1:0]           ar_q_id     [DEPTH_LOC-1:0];
+   bit [ADDR_WIDTH-1:0]         ar_q_addr   [DEPTH_LOC-1:0];
+   bit [7:0]                    ar_q_len    [DEPTH_LOC-1:0];
+   bit [2:0]                    ar_q_size   [DEPTH_LOC-1:0];
+   bit [1:0]                    ar_q_burst  [DEPTH_LOC-1:0];
+   bit                          ar_q_lock   [DEPTH_LOC-1:0];
+   bit [3:0]                    ar_q_cache  [DEPTH_LOC-1:0];
+   bit [2:0]                    ar_q_prot   [DEPTH_LOC-1:0];
+   bit [3:0]                    ar_q_qos    [DEPTH_LOC-1:0];
+   bit [3:0]                    ar_q_region [DEPTH_LOC-1:0];
+   bit [USER_WIDTH-1:0]         ar_q_user   [DEPTH_LOC-1:0];
+   bit [DEPTH_LOC-1:0]          ar_valid;
+   bit [$clog2(DEPTH_LOC)-1:0]  ar_wp, ar_rp;
 
    always_ff @(posedge clk or negedge rstn)
      if(!rstn) begin
@@ -169,12 +169,12 @@ module nasti_buf
    assign slave.ar_valid   = BUF_REQ && DEPTH > 0 ? ar_valid[ar_rp]    : master.ar_valid;
 
    // W
-   logic [DATA_WIDTH-1:0]   w_q_data  [DEPTH_LOC-1:0];
-   logic [DATA_WIDTH/8-1:0] w_q_strb  [DEPTH_LOC-1:0];
-   logic                    w_q_last  [DEPTH_LOC-1:0];
-   logic [USER_WIDTH-1:0]   w_q_user  [DEPTH_LOC-1:0];
-   logic [DEPTH_LOC-1:0]    w_valid;
-   logic [$clog2(DEPTH_LOC)-1:0] w_wp, w_rp;
+   bit [DATA_WIDTH-1:0]   w_q_data  [DEPTH_LOC-1:0];
+   bit [DATA_WIDTH/8-1:0] w_q_strb  [DEPTH_LOC-1:0];
+   bit                    w_q_last  [DEPTH_LOC-1:0];
+   bit [USER_WIDTH-1:0]   w_q_user  [DEPTH_LOC-1:0];
+   bit [DEPTH_LOC-1:0]    w_valid;
+   bit [$clog2(DEPTH_LOC)-1:0] w_wp, w_rp;
 
    always_ff @(posedge clk or negedge rstn)
      if(!rstn) begin
@@ -209,11 +209,11 @@ module nasti_buf
    assign slave.w_valid  = BUF_REQ && DEPTH > 0 ? w_valid[w_rp]  : master.w_valid;
 
    // B
-   logic [ID_WIDTH-1:0]   b_q_id    [DEPTH_LOC-1:0];
-   logic [1:0]            b_q_resp  [DEPTH_LOC-1:0];
-   logic [USER_WIDTH-1:0] b_q_user  [DEPTH_LOC-1:0];
-   logic [DEPTH_LOC-1:0]  b_valid;
-   logic [$clog2(DEPTH_LOC)-1:0] b_wp, b_rp;
+   bit [ID_WIDTH-1:0]   b_q_id    [DEPTH_LOC-1:0];
+   bit [1:0]            b_q_resp  [DEPTH_LOC-1:0];
+   bit [USER_WIDTH-1:0] b_q_user  [DEPTH_LOC-1:0];
+   bit [DEPTH_LOC-1:0]  b_valid;
+   bit [$clog2(DEPTH_LOC)-1:0] b_wp, b_rp;
 
    always_ff @(posedge clk or negedge rstn)
      if(!rstn) begin
@@ -246,14 +246,14 @@ module nasti_buf
    assign master.b_valid = BUF_RESP && DEPTH > 0 ? b_valid[b_rp]  : slave.b_valid;
 
    // R
-   logic [DATA_WIDTH-1:0]   r_q_data  [DEPTH_LOC-1:0];
-   logic [DATA_WIDTH/8-1:0] r_q_strb  [DEPTH_LOC-1:0];
-   logic                    r_q_last  [DEPTH_LOC-1:0];
-   logic [ID_WIDTH-1:0]     r_q_id    [DEPTH_LOC-1:0];
-   logic [1:0]              r_q_resp  [DEPTH_LOC-1:0];
-   logic [USER_WIDTH-1:0]   r_q_user  [DEPTH_LOC-1:0];
-   logic [DEPTH_LOC-1:0]    r_valid;
-   logic [$clog2(DEPTH_LOC)-1:0] r_wp, r_rp;
+   bit [DATA_WIDTH-1:0]   r_q_data  [DEPTH_LOC-1:0];
+   bit [DATA_WIDTH/8-1:0] r_q_strb  [DEPTH_LOC-1:0];
+   bit                    r_q_last  [DEPTH_LOC-1:0];
+   bit [ID_WIDTH-1:0]     r_q_id    [DEPTH_LOC-1:0];
+   bit [1:0]              r_q_resp  [DEPTH_LOC-1:0];
+   bit [USER_WIDTH-1:0]   r_q_user  [DEPTH_LOC-1:0];
+   bit [DEPTH_LOC-1:0]    r_valid;
+   bit [$clog2(DEPTH_LOC)-1:0] r_wp, r_rp;
 
    always_ff @(posedge clk or negedge rstn)
      if(!rstn) begin

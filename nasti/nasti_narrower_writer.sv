@@ -71,8 +71,8 @@ module nasti_narrower_writer
    `include "nasti_request.vh"
 
    NastiReq                         request;
-   logic [7:0]                      w_cnt;
-   logic [ADDR_WIDTH-1:0]           w_addr;
+   bit [7:0]                      w_cnt;
+   bit [ADDR_WIDTH-1:0]           w_addr;
 
    enum {S_IDLE, S_AW, S_W, S_B}    state;
 

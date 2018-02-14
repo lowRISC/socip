@@ -10,7 +10,7 @@ module nasti_data_mover # (
    input  [ADDR_WIDTH-1:0] dest_addr,
    input  [ADDR_WIDTH-1:0] length,
    input  en,
-   output logic done
+   output bit done
 );
 
    localparam ADDR_SHIFT = $clog2(DATA_WIDTH / 8);
@@ -52,14 +52,14 @@ module nasti_data_mover # (
 
    // Once the task is started, these values shouldn't be changed from outside the module,
    // so latch it
-   logic [63:0] src_addr_latch, dest_addr_latch, length_latch;
-   logic en_latch;
+   bit [63:0] src_addr_latch, dest_addr_latch, length_latch;
+   bit en_latch;
 
-   logic state_addr, state_wait, state_ready;
-   logic src_ready, dest_ready;
+   bit state_addr, state_wait, state_ready;
+   bit src_ready, dest_ready;
 
    // Whether address will be ready for next cycle
-   logic src_to_be_ready, dest_to_be_ready;
+   bit src_to_be_ready, dest_to_be_ready;
    always_comb src_to_be_ready = src.ar_ready & src.ar_valid;
    always_comb dest_to_be_ready = dest.aw_ready & dest.aw_valid;
 

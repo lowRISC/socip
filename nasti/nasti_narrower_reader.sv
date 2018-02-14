@@ -62,8 +62,8 @@ module nasti_narrower_reader
    `include "nasti_request.vh"
 
    NastiReq                         request;
-   logic [7:0]                      r_cnt;
-   logic [ADDR_WIDTH-1:0]           r_addr;
+   bit [7:0]                      r_cnt;
+   bit [ADDR_WIDTH-1:0]           r_addr;
 
    enum {S_IDLE, S_AR, S_R}         state;
 

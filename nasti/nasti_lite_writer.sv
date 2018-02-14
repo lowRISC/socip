@@ -79,29 +79,29 @@ module nasti_lite_writer
 
    // nasti request buffer
    NastiReq [MAX_TRANSACTION-1:0]    aw_buf;
-   logic [MAX_TRAN_BITS-1:0]         aw_buf_rp, aw_buf_wp;
-   logic                             aw_buf_valid;
-   logic                             aw_buf_full, aw_buf_empty;
+   bit [MAX_TRAN_BITS-1:0]         aw_buf_rp, aw_buf_wp;
+   bit                             aw_buf_valid;
+   bit                             aw_buf_full, aw_buf_empty;
 
    // transaction information
    NastiReq                                   xact_req;
-   logic                                      xact_req_valid;
-   logic [BUF_LEN_BITS+8:0]                   xact_aw_cnt;
-   logic [BUF_LEN_BITS+8:0]                   xact_b_cnt;
-   logic [BUF_LEN-1:0][LITE_DATA_WIDTH-1:0]   xact_data_vec;
-   logic [BUF_LEN-1:0][LITE_DATA_WIDTH/8-1:0] xact_strb_vec;
-   logic [USER_WIDTH-1:0]                     xact_user;
-   logic [1:0]                                xact_resp;
-   logic [8:0]                                nasti_w_cnt;
-   logic [BUF_LEN_BITS:0]                     lite_aw_cnt;
-   logic                                      lite_aw_data_valid;
-   logic [BUF_LEN_BITS:0]                     lite_w_rp;
-   logic [BUF_LEN_BITS:0]                     lite_b_cnt;
-   logic                                      lite_b_data_valid;
-   logic [LITE_DATA_WIDTH/8-1:0]              lite_b_strb;
-   logic [ADDR_WIDTH-1:0]                     lite_b_addr;
-   logic [BUF_LEN_BITS:0]                     lite_b_rp;
-   logic                                      xact_finish;
+   bit                                      xact_req_valid;
+   bit [BUF_LEN_BITS+8:0]                   xact_aw_cnt;
+   bit [BUF_LEN_BITS+8:0]                   xact_b_cnt;
+   bit [BUF_LEN-1:0][LITE_DATA_WIDTH-1:0]   xact_data_vec;
+   bit [BUF_LEN-1:0][LITE_DATA_WIDTH/8-1:0] xact_strb_vec;
+   bit [USER_WIDTH-1:0]                     xact_user;
+   bit [1:0]                                xact_resp;
+   bit [8:0]                                nasti_w_cnt;
+   bit [BUF_LEN_BITS:0]                     lite_aw_cnt;
+   bit                                      lite_aw_data_valid;
+   bit [BUF_LEN_BITS:0]                     lite_w_rp;
+   bit [BUF_LEN_BITS:0]                     lite_b_cnt;
+   bit                                      lite_b_data_valid;
+   bit [LITE_DATA_WIDTH/8-1:0]              lite_b_strb;
+   bit [ADDR_WIDTH-1:0]                     lite_b_addr;
+   bit [BUF_LEN_BITS:0]                     lite_b_rp;
+   bit                                      xact_finish;
 
    function int unsigned nasti_step_size(input NastiReq req);
       return 8'd1 << req.size;
@@ -180,10 +180,10 @@ module nasti_lite_writer
    assign nasti_b_user = xact_req.user;
 
    // current transaction
-   logic lite_aw_bypass;
-   logic lite_b_bypass;
+   bit lite_aw_bypass;
+   bit lite_b_bypass;
 
-   logic lite_aw_send, lite_w_send, lite_req_send;
+   bit lite_aw_send, lite_w_send, lite_req_send;
    always_ff @(posedge clk or negedge rstn)
      if(!rstn) begin
         lite_aw_send <= 1'b0;

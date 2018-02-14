@@ -70,24 +70,24 @@ module nasti_lite_reader
 
    // nasti request buffer
    NastiReq [MAX_TRANSACTION-1:0]    ar_buf;
-   logic [MAX_TRAN_BITS-1:0]         ar_buf_rp, ar_buf_wp;
-   logic                             ar_buf_valid;
-   logic                             ar_buf_full, ar_buf_empty;
+   bit [MAX_TRAN_BITS-1:0]         ar_buf_rp, ar_buf_wp;
+   bit                             ar_buf_valid;
+   bit                             ar_buf_full, ar_buf_empty;
 
    // transaction information
    NastiReq                                 xact_req;
-   logic                                    xact_req_valid;
-   logic [BUF_LEN_BITS+7:0]                 xact_ar_cnt;
-   logic [BUF_LEN_BITS+7:0]                 xact_r_cnt;
-   logic [BUF_LEN-1:0][LITE_DATA_WIDTH-1:0] xact_data_vec;
-   logic [1:0]                              xact_resp;
-   logic [BUF_LEN_BITS:0]                   xact_data_wp;
-   logic                                    xact_finish;
+   bit                                    xact_req_valid;
+   bit [BUF_LEN_BITS+7:0]                 xact_ar_cnt;
+   bit [BUF_LEN_BITS+7:0]                 xact_r_cnt;
+   bit [BUF_LEN-1:0][LITE_DATA_WIDTH-1:0] xact_data_vec;
+   bit [1:0]                              xact_resp;
+   bit [BUF_LEN_BITS:0]                   xact_data_wp;
+   bit                                    xact_finish;
 
-   logic [ADDR_WIDTH-1:0]                   lite_ar_addr_accum;
-   logic [7:0]                              nasti_r_cnt;
-   logic [ADDR_WIDTH-1:0]                   nasti_r_addr;
-   logic [ADDR_WIDTH-1:0]                   nasti_r_addr_accum;
+   bit [ADDR_WIDTH-1:0]                   lite_ar_addr_accum;
+   bit [7:0]                              nasti_r_cnt;
+   bit [ADDR_WIDTH-1:0]                   nasti_r_addr;
+   bit [ADDR_WIDTH-1:0]                   nasti_r_addr_accum;
 
    function int unsigned nasti_step_size(input NastiReq req);
       return 8'd1 << req.size;
@@ -188,7 +188,7 @@ module nasti_lite_reader
       end
    end
 
-   logic [BUF_LEN_BITS:0] xact_data_wp_offset;
+   bit [BUF_LEN_BITS:0] xact_data_wp_offset;
    assign xact_data_wp_offset = NASTI_DATA_WIDTH > LITE_DATA_WIDTH ? nasti_r_addr[NASTI_W_BITS-1:LITE_W_BITS] : 0;
    assign xact_finish = nasti_r_valid && nasti_r_ready && nasti_r_cnt == xact_req.len;
 

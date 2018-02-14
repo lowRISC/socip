@@ -71,49 +71,49 @@ module lite_nasti_writer
    end
 
    // helper functions
-   function logic [$clog2(MAX_TRANSACTION)-1:0] toInt (logic [MAX_TRANSACTION-1:0] dat);
+   function bit [$clog2(MAX_TRANSACTION)-1:0] toInt (bit [MAX_TRANSACTION-1:0] dat);
       int i;
       for(i=0; i<MAX_TRANSACTION; i++)
         if(dat[i]) return i;
       return 0;
    endfunction // toInt
 
-   function logic [2:0] nasti_byte_size ();
+   function bit [2:0] nasti_byte_size ();
       return $clog2(NASTI_DATA_WIDTH/8);
    endfunction // nasti_byte_size
 
-   function logic [7:0] nasti_packet_size ();
+   function bit [7:0] nasti_packet_size ();
       return  LITE_DATA_WIDTH / BUF_DATA_WIDTH;
    endfunction // lite_packet_size
 
-   function logic [ADDR_WIDTH-1:0] nasti_addr(logic[ADDR_WIDTH-1:0] addr);
+   function bit [ADDR_WIDTH-1:0] nasti_addr(bit[ADDR_WIDTH-1:0] addr);
       return NASTI_DATA_WIDTH == BUF_DATA_WIDTH ? addr : (addr >>  $clog2(NASTI_DATA_WIDTH/8)) << $clog2(NASTI_DATA_WIDTH/8);
    endfunction // nasti_addr
 
-   function logic [NASTI_DATA_WIDTH/8-1:0] nasti_wmask(logic [LITE_DATA_WIDTH/8-1:0] mask, logic[ADDR_WIDTH-1:0] addr);
+   function bit [NASTI_DATA_WIDTH/8-1:0] nasti_wmask(bit [LITE_DATA_WIDTH/8-1:0] mask, bit[ADDR_WIDTH-1:0] addr);
       return NASTI_DATA_WIDTH == BUF_DATA_WIDTH ? mask : mask << (BUF_DATA_WIDTH/8 * addr[$clog2(NASTI_DATA_WIDTH/8)-1:$clog2(LITE_DATA_WIDTH/8)]);
    endfunction // nasti_addr
 
-   function logic [NASTI_DATA_WIDTH-1:0] nasti_data(logic [NASTI_DATA_WIDTH-1:0] data, logic[ADDR_WIDTH-1:0] addr);
+   function bit [NASTI_DATA_WIDTH-1:0] nasti_data(bit [NASTI_DATA_WIDTH-1:0] data, bit[ADDR_WIDTH-1:0] addr);
       return NASTI_DATA_WIDTH == BUF_DATA_WIDTH ? data : data << (BUF_DATA_WIDTH * addr[$clog2(NASTI_DATA_WIDTH/8)-1:$clog2(LITE_DATA_WIDTH/8)]);
    endfunction // lite_data
 
    // transaction vector
-   logic [MAX_TRANSACTION-1:0][ID_WIDTH-1:0]      xact_id_vec;
-   logic [ADDR_WIDTH-1:0]                         xact_addr;
-   logic [MAX_BURST_SIZE-1:0][BUF_DATA_WIDTH-1:0] xact_data;
-   logic [MAX_BURST_SIZE-1:0][BUF_DATA_WIDTH/8-1:0]
+   bit [MAX_TRANSACTION-1:0][ID_WIDTH-1:0]      xact_id_vec;
+   bit [ADDR_WIDTH-1:0]                         xact_addr;
+   bit [MAX_BURST_SIZE-1:0][BUF_DATA_WIDTH-1:0] xact_data;
+   bit [MAX_BURST_SIZE-1:0][BUF_DATA_WIDTH/8-1:0]
                                                   xact_strb;
-   logic [$clog2(MAX_BURST_SIZE):0]               xact_data_cnt;
-   logic [USER_WIDTH-1:0]                         xact_w_user;
-   logic [MAX_TRANSACTION-1:0]                    xact_valid_vec;
-   logic                                          xact_id_conflict;
-   logic                                          xact_vec_available;
+   bit [$clog2(MAX_BURST_SIZE):0]               xact_data_cnt;
+   bit [USER_WIDTH-1:0]                         xact_w_user;
+   bit [MAX_TRANSACTION-1:0]                    xact_valid_vec;
+   bit                                          xact_id_conflict;
+   bit                                          xact_vec_available;
 
    // transaction control
-   logic [MAX_TRANSACTION-1:0]                    conflict_match, resp_match;
-   logic [$clog2(MAX_TRANSACTION)-1:0]            xact_avail_index, resp_index;
-   logic                                          lock;
+   bit [MAX_TRANSACTION-1:0]                    conflict_match, resp_match;
+   bit [$clog2(MAX_TRANSACTION)-1:0]            xact_avail_index, resp_index;
+   bit                                          lock;
 
    generate
       for(i=0; i<MAX_TRANSACTION; i++) begin
