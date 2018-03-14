@@ -9,6 +9,7 @@ module nasti_data_mover # (
    input  [ADDR_WIDTH-1:0] src_addr,
    input  [ADDR_WIDTH-1:0] dest_addr,
    input  [ADDR_WIDTH-1:0] length,
+   input  [7:0]            mask,
    input  en,
    output bit done
 );
@@ -44,11 +45,11 @@ module nasti_data_mover # (
 
    // Connect dest.w to src.r directly
    // Note that a read error is not considered here
-   assign dest.w_strb = 8'b11111111;
-   assign dest.w_valid = src.r_valid;
+   assign dest.w_strb   = mask;
+   assign dest.w_valid  = src.r_valid;
    assign dest.w_data   = src.r_data;
    assign dest.w_last   = src.r_last;
-   assign src.r_ready = dest.w_ready;
+   assign src.r_ready   = dest.w_ready;
 
    // Once the task is started, these values shouldn't be changed from outside the module,
    // so latch it
@@ -64,7 +65,7 @@ module nasti_data_mover # (
    always_comb dest_to_be_ready = dest.aw_ready & dest.aw_valid;
 
    always_ff @(posedge aclk or negedge aresetn) begin
-      if (!aresetn) begin
+      if (aresetn == 1'b0) begin
          en_latch <= 0;
          done <= 1;
       end

@@ -68,7 +68,7 @@ module nasti_bram_ctrl # (
 
    // Wire BRAM clk and rst directly
    assign bram_clk = s_nasti_aclk;
-   assign bram_rst = !s_nasti_aresetn;
+   assign bram_rst = s_nasti_aresetn == 1'b0;
 
    // Activate bram_en when next state is read complete state or write complete state
    assign bram_en = inbound_read | read_can_serve_next | inbound_write_data;
@@ -85,7 +85,7 @@ module nasti_bram_ctrl # (
 
    always_ff @(posedge s_nasti_aclk or negedge s_nasti_aresetn)
    begin
-      if (!s_nasti_aresetn) begin
+      if (s_nasti_aresetn == 1'b0) begin
          pending_read   <= 0;
          pending_write  <= 0;
          a_ready        <= 1;
