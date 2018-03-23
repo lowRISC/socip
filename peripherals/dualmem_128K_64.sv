@@ -1,5 +1,5 @@
 
-module dualmem(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, doutb, ena, enb);
+module dualmem_128K_64(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, doutb, ena, enb);
 
    input wire clka, clkb;
    input [63:0] dina;
@@ -8,7 +8,7 @@ module dualmem(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, doutb, ena
    input [10:0] addrb;
    input [7:0]        wea;
    input [7:0]        web;
-   input [0:0]        ena, enb;
+   input [7:0]        ena, enb;
    output [63:0]      douta;
    output [63:0]      doutb;
 
@@ -26,7 +26,7 @@ module dualmem(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, doutb, ena
         .ADDRA  ( addra                    ),     // Port A 14-bit Address Input
         .DIA    ( dina[r*8 +: 8]           ),     // Port A 1-bit Data Input
         .DIPA   ( 1'b0                     ),
-        .ENA    ( ena                      ),     // Port A RAM Enable Input
+        .ENA    ( ena[r]                   ),     // Port A RAM Enable Input
         .SSRA   ( 1'b0                     ),     // Port A Synchronous Set/Reset Input
         .WEA    ( wea[r]                   ),     // Port A Write Enable Input
         .CLKB   ( clkb                     ),     // Port B Clock
@@ -35,7 +35,7 @@ module dualmem(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, doutb, ena
         .ADDRB  ( addrb                    ),     // Port B 14-bit Address Input
         .DIB    ( dinb[r*8 +: 8]           ),     // Port B 1-bit Data Input
         .DIPB   ( 1'b0                     ),
-        .ENB    ( enb                      ),     // Port B RAM Enable Input
+        .ENB    ( enb[r]                   ),     // Port B RAM Enable Input
         .SSRB   ( 1'b0                     ),     // Port B Synchronous Set/Reset Input
         .WEB    ( web[r]                   )      // Port B Write Enable Input
         );

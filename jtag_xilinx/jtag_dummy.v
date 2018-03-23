@@ -21,13 +21,13 @@ wire CAPTURE2, DRCK2, RESET2, RUNTEST2, SEL2, SHIFT2, TDI2, TDO2, TMS2, UPDATE2;
    wire INC, WR;
 wire [31:0] ADDR0;
    
-BUFH jtag_buf(.I(TCK_unbuf), .O(TCK));
+clock_buffer_generic jtag_buf(.ing(TCK_unbuf), .outg(TCK));
 
    // BSCANE2: Boundary-Scan User Instruction
    //          Artix-7
    // Xilinx HDL Language Template, version 2017.1
 
-   BSCANE2 #(
+   bscan_generic #(
       .JTAG_CHAIN(JTAG_CHAIN_START)  // Value for USER command.
    )
    BSCANE2_inst (
@@ -46,7 +46,7 @@ BUFH jtag_buf(.I(TCK_unbuf), .O(TCK));
       .TDO(TDO)    // 1-bit input: Test Data Output (TDO) input for USER function.
    );
 
-   BSCANE2 #(
+   bscan_generic #(
       .JTAG_CHAIN(JTAG_CHAIN_START+1)  // Value for USER command.
    )
    BSCANE2_inst2 (

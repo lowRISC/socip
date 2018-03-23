@@ -2,8 +2,7 @@
 `default_nettype none
 
   module my_fifo #(parameter width=9) (
-                                       input wire              rd_clk,
-                                       input wire              wr_clk,
+                                       input wire              clk,
                                        input wire              rst,
                                        input wire [width-1:0]  din,
                                        input wire              wr_en,
@@ -21,6 +20,8 @@
    wire [31:0]                                                 DO, DI;
    wire [3:0]                                                  DOP, DIP;
 
+`ifdef FPGA
+   
    assign dout = {DOP[width/9-1:0],DO[width/9*8-1:0]};
    assign DIP = din[width-1:width/9*8];
    assign DI = din[width/9*8-1:0];
@@ -60,13 +61,13 @@
                         .WRCOUNT(wrcount),         // 12-bit output: Write count
                         .WRERR(wrerr),             // 1-bit output: Write error
                         // Read Control Signals: 1-bit (each) input: Read clock, enable and reset input signals
-                        .RDCLK(rd_clk),            // 1-bit input: Read clock
+                        .RDCLK(clk),            // 1-bit input: Read clock
                         .RDEN(rd_en),              // 1-bit input: Read enable
                         .REGCE(1'b1),              // 1-bit input: Clock enable
                         .RSTREG(rst),              // 1-bit input: Asynchronous Reset
                         .RST(rst),                 // 1-bit input: Asynchronous Reset
                         // Write Control Signals: 1-bit (each) input: Write clock and enable input signals
-                        .WRCLK(wr_clk),            // 1-bit input: Write clock
+                        .WRCLK(clk),            // 1-bit input: Write clock
                         .WREN(wr_en),              // 1-bit input: Write enable
                         // Write Data: 32-bit (each) input: Write input data
                         .DI(DI),                   // 32-bit input: Data input
@@ -101,13 +102,13 @@
                         .WRCOUNT(wrcount),         // 12-bit output: Write count
                         .WRERR(wrerr),             // 1-bit output: Write error
                         // Read Control Signals: 1-bit (each) input: Read clock, enable and reset input signals
-                        .RDCLK(rd_clk),              // 1-bit input: Read clock
+                        .RDCLK(clk),              // 1-bit input: Read clock
                         .RDEN(rd_en),              // 1-bit input: Read enable
                         .REGCE(1'b1),              // 1-bit input: Clock enable
                         .RST(rst),                 // 1-bit input: Asynchronous Reset
                         .RSTREG(rst),              // 1-bit input: Output register set/reset
                         // Write Control Signals: 1-bit (each) input: Write clock and enable input signals
-                        .WRCLK(wr_clk),              // 1-bit input: Write clock
+                        .WRCLK(clk),              // 1-bit input: Write clock
                         .WREN(wr_en),               // 1-bit input: Write enable
                         // Write Data: 32-bit (each) input: Write input data
                         .DI(DI),                   // 32-bit input: Data input
@@ -115,6 +116,31 @@
                         );
       end
    endgenerate
+
+`else // !`ifdef FPGA
+
+ generic_fifo
+  #(
+     .DATA_WIDTH(width),
+     .DATA_DEPTH(512)
+     )
+   fifo1
+   (
+    .clk(clk),
+    .rst_n(!rst),
+    //PUSH SIDE
+    .data_i(din),
+    .valid_i(wr_en),
+    .grant_o(),
+    //POP SIDE
+    .data_o(dout),
+    .valid_o(),
+    .grant_i(rd_en),
+    .test_mode_i(1'b0)
+    );
+
+  
+`endif
    
 endmodule
 `default_nettype wire

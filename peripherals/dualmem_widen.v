@@ -1,24 +1,24 @@
 
-module dualmem(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, doutb, ena, enb);
+module dualmem_widen(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, doutb, ena, enb);
 
    input wire clka, clkb;
-   input [63:0] dina;
+   input [15:0] dina;
    input [63:0] dinb;
    input [10:0] addra;
    input [10:0] addrb;
-   input [7:0]        wea;
+   input [1:0]        wea;
    input [7:0]        web;
    input [0:0]        ena, enb;
-   output [63:0]      douta;
+   output [15:0]      douta;
    output [63:0]      doutb;
 
    genvar r;
 
 `ifdef FPGA
    
-   generate for (r = 0; r < 8; r=r+1)
-     RAMB16_S9_S9
-     RAMB16_S9_S9_inst
+   generate for (r = 0; r < 2; r=r+1)
+     RAMB16_S9_S36
+     RAMB16_S9_S36_inst
        (
         .CLKA   ( clka                     ),     // Port A Clock
         .DOA    ( douta[r*8 +: 8]          ),     // Port A 1-bit Data Output
@@ -30,10 +30,10 @@ module dualmem(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, doutb, ena
         .SSRA   ( 1'b0                     ),     // Port A Synchronous Set/Reset Input
         .WEA    ( wea[r]                   ),     // Port A Write Enable Input
         .CLKB   ( clkb                     ),     // Port B Clock
-        .DOB    ( doutb[r*8 +: 8]          ),     // Port B 1-bit Data Output
+        .DOB    ( doutb[r*32 +: 32]        ),     // Port B 1-bit Data Output
         .DOPB   (                          ),
         .ADDRB  ( addrb                    ),     // Port B 14-bit Address Input
-        .DIB    ( dinb[r*8 +: 8]           ),     // Port B 1-bit Data Input
+        .DIB    ( dinb[r*32 +: 32]         ),     // Port B 1-bit Data Input
         .DIPB   ( 1'b0                     ),
         .ENB    ( enb                      ),     // Port B RAM Enable Input
         .SSRB   ( 1'b0                     ),     // Port B Synchronous Set/Reset Input

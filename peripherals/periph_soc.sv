@@ -90,8 +90,7 @@ logic [63:0] one_hot_rdata[4:0];
       .rx_ascii_read(ascii_ready));
  
  my_fifo #(.width(36)) keyb_fifo (
-       .rd_clk(~msoc_clk),      // input wire read clk
-       .wr_clk(~msoc_clk),      // input wire write clk
+       .clk(~msoc_clk),      // input wire read clk
        .rst(~rstn),      // input wire rst
        .din({21'b0, readch[6:0], scancode}),      // input wire [31 : 0] din
        .wr_en(ascii_ready),  // input wire wr_en
@@ -307,20 +306,12 @@ always @(posedge sd_clk_o)
    //Rx SD data
    wire [31:0] data_out_tx;
    
-   parameter iostd = "LVTTL";
-   parameter slew = "FAST";
-   parameter iodrv = 24;
    // tri-state gate
-   IOBUF #(
-       .DRIVE(iodrv), // Specify the output drive strength
-       .IBUF_LOW_PWR("FALSE"),  // Low Power - "TRUE", High Performance = "FALSE" 
-       .IOSTANDARD(iostd), // Specify the I/O standard
-       .SLEW(slew) // Specify the output slew rate
-    ) IOBUF_cmd_inst (
-       .O(sd_cmd_to_host),     // Buffer output
-       .IO(sd_cmd),   // Buffer inout port (connect directly to top-level port)
-       .I(sd_cmd_to_mem),     // Buffer input
-       .T(~sd_cmd_oe)      // 3-state enable input, high=input, low=output
+   io_buffer_fast IOBUF_cmd_inst (
+       .outg(sd_cmd_to_host),     // Buffer output
+       .inoutg(sd_cmd),   // Buffer inout port (connect directly to top-level port)
+       .ing(sd_cmd_to_mem),     // Buffer input
+       .ctrl(~sd_cmd_oe)      // 3-state enable input, high=input, low=output
     );
 
     rx_delay cmd_rx_dly(
@@ -328,31 +319,21 @@ always @(posedge sd_clk_o)
         .in(sd_cmd_to_host),             
         .maj(sd_cmd_to_host_maj));
 
-   IOBUF #(
-        .DRIVE(iodrv), // Specify the output drive strength
-        .IBUF_LOW_PWR("FALSE"),  // Low Power - "TRUE", High Performance = "FALSE" 
-        .IOSTANDARD(iostd), // Specify the I/O standard
-        .SLEW(slew) // Specify the output slew rate
-     ) IOBUF_clk_inst (
-        .O(),     // Buffer output
-        .IO(sd_sclk),   // Buffer inout port (connect directly to top-level port)
-        .I(~sd_clk_o),     // Buffer input
-        .T(~sd_clk_rst)      // 3-state enable input, high=input, low=output
+   io_buffer_fast IOBUF_clk_inst (
+        .outg(),     // Buffer output
+        .inoutg(sd_sclk),   // Buffer inout port (connect directly to top-level port)
+        .ing(~sd_clk_o),     // Buffer input
+        .ctrl(~sd_clk_rst)      // 3-state enable input, high=input, low=output
    );
 
     genvar sd_dat_ix;
     generate for (sd_dat_ix = 0; sd_dat_ix < 4; sd_dat_ix=sd_dat_ix+1)
         begin:sd_dat_gen
-         IOBUF #(
-           .DRIVE(iodrv), // Specify the output drive strength
-            .IBUF_LOW_PWR("FALSE"),  // Low Power - "TRUE", High Performance = "FALSE" 
-            .IOSTANDARD(iostd), // Specify the I/O standard
-            .SLEW(slew) // Specify the output slew rate
-        ) IOBUF_dat_inst (
-            .O(sd_dat_to_host[sd_dat_ix]),     // Buffer output
-            .IO(sd_dat[sd_dat_ix]),   // Buffer inout port (connect directly to top-level port)
-            .I(sd_dat_to_mem[sd_dat_ix]),     // Buffer input
-            .T(~sd_dat_oe)      // 3-state enable input, high=input, low=output
+         io_buffer_fast IOBUF_dat_inst (
+            .outg(sd_dat_to_host[sd_dat_ix]),     // Buffer output
+            .inoutg(sd_dat[sd_dat_ix]),   // Buffer inout port (connect directly to top-level port)
+            .ing(sd_dat_to_mem[sd_dat_ix]),     // Buffer input
+            .ctrl(~sd_dat_oe)      // 3-state enable input, high=input, low=output
         );
         rx_delay dat_rx_dly(
             .clk(clk_200MHz),
@@ -362,37 +343,27 @@ always @(posedge sd_clk_o)
         
    endgenerate					
 
-   genvar r;
-
    logic [1:0] rx_wr = {rx_wr_en,sd_xfr_addr[0]};
    logic [63:0] douta, doutb;
    assign one_hot_rdata[3] = doutb;
    assign data_out_tx = sd_xfr_addr[0] ? douta[63:32] : douta[31:0];
    
-   generate for (r = 0; r < 2; r=r+1)
-     RAMB16_S36_S36
+     dualmem_32K_64
      RAMB16_S36_S36_inst_sd
        (
-        .CLKA   ( ~sd_clk_o                   ),     // Port A Clock
-        .DOA    ( douta[r*32 +: 32]           ),     // Port A 1-bit Data Output
-        .DOPA   (                             ),
-        .ADDRA  ( sd_xfr_addr[9:1]            ),     // Port A 14-bit Address Input
-        .DIA    ( data_in_rx                  ),     // Port A 1-bit Data Input
-        .DIPA   ( 4'b0                        ),
-        .ENA    ( tx_rd|rx_wr_en              ),     // Port A RAM Enable Input
-        .SSRA   ( 1'b0                        ),     // Port A Synchronous Set/Reset Input
-        .WEA    ( rx_wr[r]                    ),     // Port A Write Enable Input
-        .CLKB   ( ~msoc_clk                   ),     // Port B Clock
-        .DOB    ( doutb[r*32 +: 32]           ),     // Port B 1-bit Data Output
-        .DOPB   (                             ),
-        .ADDRB  ( hid_addr[11:3]              ),     // Port B 14-bit Address Input
-        .DIB    ( hid_wrdata[r*32 +: 32]      ),     // Port B 1-bit Data Input
-        .DIPB   ( 4'b0                        ),
-        .ENB    ( hid_en&one_hot_data_addr[3] ),     // Port B RAM Enable Input
-        .SSRB   ( 1'b0                        ),     // Port B Synchronous Set/Reset Input
-        .WEB    ( |hid_we                     )      // Port B Write Enable Input
+        .clka   ( ~sd_clk_o                   ),     // Port A Clock
+        .douta  ( douta                       ),     // Port A 1-bit Data Output
+        .addra  ( sd_xfr_addr[9:1]            ),     // Port A 14-bit Address Input
+        .dina   ( data_in_rx                  ),     // Port A 1-bit Data Input
+        .ena    ( tx_rd|rx_wr_en              ),     // Port A RAM Enable Input
+        .wea    ( rx_wr                       ),     // Port A Write Enable Input
+        .clkb   ( ~msoc_clk                   ),     // Port B Clock
+        .doutb  ( doutb                       ),     // Port B 1-bit Data Output
+        .addrb  ( hid_addr[11:3]              ),     // Port B 14-bit Address Input
+        .dinb   ( hid_wrdata                  ),     // Port B 1-bit Data Input
+        .enb    ( hid_en&one_hot_data_addr[3] ),     // Port B RAM Enable Input
+        .web    ( |hid_we                     )      // Port B Write Enable Input
         );
-   endgenerate
 
    always @(posedge msoc_clk)
      begin
@@ -444,6 +415,8 @@ always @(posedge sd_clk_o)
    assign sd_status[3:0] = 4'b0;
 
    assign one_hot_rdata[2] = sd_cmd_resp_sel;
+
+`ifdef FPGA
  
 clk_wiz_1 sd_clk_div
      (
@@ -463,6 +436,12 @@ clk_wiz_1 sd_clk_div
       .reset(~(sd_clk_rst&rstn)), // input reset
       .locked(sd_clk_locked));      // output locked
 
+`else // !`ifdef FPGA
+
+   assign sd_clk_o = msoc_clk;
+   
+`endif
+   
 sd_top sdtop(
     .sd_clk     (sd_clk_o),
     .cmd_rst    (~(sd_cmd_rst&rstn)),

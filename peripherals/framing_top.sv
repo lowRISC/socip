@@ -84,7 +84,7 @@ reg        mii_rx_byte_received_i, full, byte_sync, sync, irq_en, mii_rx_frame_i
    always @(posedge clk_rmii)
      if (rstn == 1'b0)
        begin
-	  byte_sync = 1'b0;
+	  byte_sync <= 1'b0;
 	  addr_tap <= 'H0;
 	  rx_byte_dly <= {8{3'H1}};
        end
@@ -118,7 +118,7 @@ reg        mii_rx_byte_received_i, full, byte_sync, sync, irq_en, mii_rx_frame_i
             end
 	  if (rx_axis_tlast)
             begin
-	       byte_sync = 1'b0;
+	       byte_sync <= 1'b0;
 	       addr_tap <= 'H0;
             end
        end
@@ -126,59 +126,41 @@ reg        mii_rx_byte_received_i, full, byte_sync, sync, irq_en, mii_rx_frame_i
    always @(posedge clk_rmii)
        tx_enable_old <= tx_enable_i;
 
-   genvar r;
-
    logic [1:0] rx_wr = rx_axis_tvalid << rx_addr_axis[0];
    logic [15:0] douta;
    assign tx_axis_tdata = douta >> {tx_frame_addr[0],3'b000};
    
-   generate for (r = 0; r < 2; r=r+1)
-     begin
-     RAMB16_S9_S36 RAMB16_inst_rx (
-                                    .CLKA(clk_rmii),              // Port A Clock
-                                    .CLKB(msoc_clk),              // Port A Clock
-                                    .DOA(),                       // Port A 8-bit Data Output
-                                    .DOPA(),                      // Port A parity unused
-                                    .ADDRA({1'b0,rx_addr_axis[10:1]}),   // Port A 11-bit Address Input
-                                    .DIA(rx_axis_tdata),          // Port A 8-bit Data Input
-                                    .DIPA(1'b0),                  // Port A parity unused
-                                    .SSRA(1'b0),                  // Port A Synchronous Set/Reset Input
-                                    .ENA(rx_axis_tvalid),         // Port A RAM Enable Input
-                                    .WEA(rx_wr[r]),               // Port A Write Enable Input
-                                    .DOB(framing_rdata_pkt[r*32 +: 32]),      // Port B 32-bit Data Output
-                                    .DOPB(),                      // Port B parity unused
-                                    .ADDRB(core_lsu_addr[11:3]),  // Port B 9-bit Address Input
-                                    .DIB(core_lsu_wdata[r*32 +: 32]),         // Port B 32-bit Data Input
-                                    .DIPB(4'b0),                  // Port B parity unused
-                                    .ENB(ce_d & framing_sel & (core_lsu_addr[13:12]==2'b00)),
+   dualmem_widen RAMB16_inst_rx (
+                                    .clka(clk_rmii),              // Port A Clock
+                                    .clkb(msoc_clk),              // Port A Clock
+                                    .douta(),                     // Port A 8-bit Data Output
+                                    .addra({1'b0,rx_addr_axis[10:1]}),   // Port A 11-bit Address Input
+                                    .dina(rx_axis_tdata),         // Port A 8-bit Data Input
+                                    .ena(rx_axis_tvalid),         // Port A RAM Enable Input
+                                    .wea(rx_wr),                  // Port A Write Enable Input
+                                    .doutb(framing_rdata_pkt),      // Port B 32-bit Data Output
+                                    .addrb(core_lsu_addr[11:3]),  // Port B 9-bit Address Input
+                                    .dinb(core_lsu_wdata),         // Port B 32-bit Data Input
+                                    .enb(ce_d & framing_sel & (core_lsu_addr[13:12]==2'b00)),
                                                                   // Port B RAM Enable Input
-                                    .SSRB(1'b0),                  // Port B Synchronous Set/Reset Input
-                                    .WEB(we_d)                    // Port B Write Enable Input
+                                    .web(we_d)                   // Port B Write Enable Input
                                     );
 
-     RAMB16_S9_S36 RAMB16_inst_tx (
-                                   .CLKA(~clk_rmii),             // Port A Clock
-                                   .CLKB(msoc_clk),              // Port A Clock
-                                   .DOA(douta[r*8 +: 8]),        // Port A 8-bit Data Output
-                                   .DOPA(),                      // Port A parity unused
-                                   .ADDRA({1'b0,tx_frame_addr[10:1]}),  // Port A 11-bit Address Input
-                                   .DIA(8'b0),                   // Port A 8-bit Data Input
-                                   .DIPA(1'b0),                  // Port A parity unused
-                                   .SSRA(1'b0),                  // Port A Synchronous Set/Reset Input
-                                   .ENA(tx_axis_tvalid),         // Port A RAM Enable Input
-                                   .WEA(1'b0),                   // Port A Write Enable Input
-                                   .DOB(framing_wdata_pkt[r*32 +: 32]),      // Port B 32-bit Data Output
-                                   .DOPB(),                      // Port B parity unused
-                                   .ADDRB(core_lsu_addr[11:3]),  // Port B 9-bit Address Input
-                                   .DIB(core_lsu_wdata[r*32 +: 32]), // Port B 32-bit Data Input
-                                   .DIPB(4'b0),                  // Port B parity unused
-                                   .ENB(ce_d & framing_sel & (core_lsu_addr[13:12]==2'b10)),
+    dualmem_widen RAMB16_inst_tx (
+                                   .clka(~clk_rmii),             // Port A Clock
+                                   .clkb(msoc_clk),              // Port A Clock
+                                   .douta(douta),                // Port A 8-bit Data Output
+                                   .addra({1'b0,tx_frame_addr[10:1]}),  // Port A 11-bit Address Input
+                                   .dina(16'b0),                 // Port A 8-bit Data Input
+                                   .ena(tx_axis_tvalid),         // Port A RAM Enable Input
+                                   .wea(2'b0),                  // Port A Write Enable Input
+                                   .doutb(framing_wdata_pkt),    // Port B 32-bit Data Output
+                                   .addrb(core_lsu_addr[11:3]),  // Port B 9-bit Address Input
+                                   .dinb(core_lsu_wdata), // Port B 32-bit Data Input
+                                   .enb(ce_d & framing_sel & (core_lsu_addr[13:12]==2'b10)),
 				                                 // Port B RAM Enable Input
-                                   .SSRB(1'b0),                  // Port B Synchronous Set/Reset Input
-                                   .WEB(we_d)                    // Port B Write Enable Input
+                                   .web(we_d)                   // Port B Write Enable Input
                                    );
-     end
-  endgenerate
 
 assign o_edutmdc = o_edutmdclk;
 assign o_edutrefclk = clk_rmii; // was i_clk50_quad;
@@ -217,12 +199,12 @@ always @(posedge msoc_clk)
         2: begin tx_enable_dly <= 10; tx_packet_length <= core_lsu_wdata; end /* tx payload size */
         3: begin tx_enable_dly <= 0; tx_packet_length <= 0; end
         4: begin {o_edutrst,oe_edutmdio,o_edutmdio,o_edutmdclk} <= core_lsu_wdata; end
-        6: begin sync = 0; end
+        6: begin sync <= 0; end
       endcase
        if (byte_sync & (~rx_pair[2]) & ~sync)
          begin
          // check broadcast/multicast address
-         sync = (rx_dest_mac[47:24]==24'h01005E) | (&rx_dest_mac) | (mac_address == rx_dest_mac) | promiscuous;
+         sync <= (rx_dest_mac[47:24]==24'h01005E) | (&rx_dest_mac) | (mac_address == rx_dest_mac) | promiscuous;
          end
        if (gmii_tx_en && tx_axis_tlast)
          begin

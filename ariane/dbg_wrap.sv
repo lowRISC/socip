@@ -128,7 +128,7 @@ wire [96 : 0] pc_status;
    
    logic  dma_en;
 
-   always @(posedge TCK)
+   always @(posedge TCK or negedge combined_rstn)
      if (!combined_rstn)
        begin
           {cpu_capture, cpu_nofetch, cpu_resume, cpu_we, cpu_req, cpu_halt, cpu_addr, cpu_wdata} <= 'b0;
@@ -229,78 +229,56 @@ jtag_dummy #(.JTAG_CHAIN_START(JTAG_CHAIN_START)) jtag1(.*);
 
 `endif
    
-   genvar r;
-
-   generate for (r = 0; r < 32; r=r+1)
-     RAMB16_S2_S2
-     RAMB16_S2_S2_inst
+     dualmem_512K_64
+     RAMB16_inst
        (
-        .CLKA   ( TCK                      ),     // Port A Clock
-        .DOA    ( bootmem_dout[r*2 +: 2]   ),     // Port A 1-bit Data Output
-        .ADDRA  ( ADDR[15:3]               ),     // Port A 14-bit Address Input
-        .DIA    ( TO_MEM[r*2 +:2]          ),     // Port A 1-bit Data Input
-        .ENA    ( bootmem_en[r/4]          ),     // Port A RAM Enable Input
-        .SSRA   ( 1'b0                     ),     // Port A Synchronous Set/Reset Input
-        .WEA    ( WREN                     ),     // Port A Write Enable Input
-        .CLKB   ( clk                      ),     // Port B Clock
-        .DOB    ( boot_rdata[r*2 +: 2]     ),     // Port B 1-bit Data Output
-        .ADDRB  ( boot_addr[15:3]          ),     // Port B 14-bit Address Input
-        .DIB    ( boot_wdata[r*2 +: 2]     ),     // Port B 1-bit Data Input
-        .ENB    ( boot_en                  ),     // Port B RAM Enable Input
-        .SSRB   ( 1'b0                     ),     // Port B Synchronous Set/Reset Input
-        .WEB    ( boot_we[r/4]             )      // Port B Write Enable Input
+        .clka   ( TCK                      ),     // Port A Clock
+        .douta  ( bootmem_dout             ),     // Port A 1-bit Data Output
+        .addra  ( ADDR[15:3]               ),     // Port A 14-bit Address Input
+        .dina   ( TO_MEM                   ),     // Port A 1-bit Data Input
+        .ena    ( bootmem_en               ),     // Port A RAM Enable Input
+        .wea    ( WREN                     ),     // Port A Write Enable Input
+        .clkb   ( clk                      ),     // Port B Clock
+        .doutb  ( boot_rdata               ),     // Port B 1-bit Data Output
+        .addrb  ( boot_addr[15:3]          ),     // Port B 14-bit Address Input
+        .dinb   ( boot_wdata               ),     // Port B 1-bit Data Input
+        .enb    ( boot_en                  ),     // Port B RAM Enable Input
+        .web    ( boot_we                  )      // Port B Write Enable Input
         );
-   endgenerate
 
-   generate for (r = 0; r < 8; r=r+1)
-     RAMB16_S9_S9
+     dualmem_128K_64
      RAMB16_S9_S9_inst
        (
-        .CLKA   ( TCK                      ),     // Port A Clock
-        .DOA    ( sharedmem_dout[r*8 +: 8] ),     // Port A 1-bit Data Output
-        .DOPA   (                          ),
-        .ADDRA  ( ADDR[13:3]               ),     // Port A 14-bit Address Input
-        .DIA    ( TO_MEM[r*8 +:8]          ),     // Port A 1-bit Data Input
-        .DIPA   ( 1'b0                     ),
-        .ENA    ( sharedmem_en[r]          ),     // Port A RAM Enable Input
-        .SSRA   ( 1'b0                     ),     // Port A Synchronous Set/Reset Input
-        .WEA    ( WREN                     ),     // Port A Write Enable Input
-        .CLKB   ( clk                      ),     // Port B Clock
-        .DOB    ( wrap_rdata[r*8 +: 8]     ),     // Port B 1-bit Data Output
-        .DOPB   (                          ),
-        .ADDRB  ( wrap_addr[13:3]          ),     // Port B 14-bit Address Input
-        .DIB    ( wrap_wdata[r*8 +: 8]     ),     // Port B 1-bit Data Input
-        .DIPB   ( 1'b0                     ),
-        .ENB    ( wrap_en                  ),     // Port B RAM Enable Input
-        .SSRB   ( 1'b0                     ),     // Port B Synchronous Set/Reset Input
-        .WEB    ( wrap_we[r]               )      // Port B Write Enable Input
+        .clka   ( TCK                      ),     // Port A Clock
+        .douta  ( sharedmem_dout           ),     // Port A 1-bit Data Output
+        .addra  ( ADDR[13:3]               ),     // Port A 14-bit Address Input
+        .dina   ( TO_MEM                   ),     // Port A 1-bit Data Input
+        .ena    ( sharedmem_en             ),     // Port A RAM Enable Input
+        .wea    ( WREN                     ),     // Port A Write Enable Input
+        .clkb   ( clk                      ),     // Port B Clock
+        .doutb  ( wrap_rdata               ),     // Port B 1-bit Data Output
+        .addrb  ( wrap_addr[13:3]          ),     // Port B 14-bit Address Input
+        .dinb   ( wrap_wdata               ),     // Port B 1-bit Data Input
+        .enb    ( wrap_en                  ),     // Port B RAM Enable Input
+        .web    ( wrap_we                  )      // Port B Write Enable Input
         );
-   endgenerate
 
-   generate for (r = 0; r < 16; r=r+1)
-     RAMB16_S36_S36
+     dualmem_256K_512
      RAMB16_S36_S36_inst
        (
-        .CLKA   ( TCK                      ),     // Port A Clock
-        .DOA    ( capmem_dout[r*32 +: 32]  ),     // Port A 1-bit Data Output
-        .DOPA   (                          ),
-        .ADDRA  ( ADDR[14:6]               ),     // Port A 14-bit Address Input
-        .DIA    ( 32'b0                    ),     // Port A 1-bit Data Input
-        .DIPA   ( 4'b0                     ),
-        .ENA    ( capmem_en                ),     // Port A RAM Enable Input
-        .SSRA   ( 1'b0                     ),     // Port A Synchronous Set/Reset Input
-        .WEA    ( 1'b0                     ),     // Port A Write Enable Input
-        .CLKB   ( clk                      ),     // Port B Clock
-        .DOB    (                          ),     // Port B 1-bit Data Output
-        .DOPB   (                          ),
-        .ADDRB  ( capture_address          ),     // Port B 14-bit Address Input
-        .DIB    ( capture_wdata[r*32 +: 32]),     // Port B 1-bit Data Input
-        .DIPB   ( 4'b0                     ),
-        .ENB    ( capture_busy             ),     // Port B RAM Enable Input
-        .SSRB   ( 1'b0                     ),     // Port B Synchronous Set/Reset Input
-        .WEB    ( capture_busy             )      // Port B Write Enable Input
+        .clka   ( TCK                      ),     // Port A Clock
+        .douta  ( capmem_dout              ),     // Port A 1-bit Data Output
+        .addra  ( ADDR[14:6]               ),     // Port A 14-bit Address Input
+        .dina   ( 32'b0                    ),     // Port A 1-bit Data Input
+        .ena    ( capmem_en                ),     // Port A RAM Enable Input
+        .wea    ( 1'b0                     ),     // Port A Write Enable Input
+        .clkb   ( clk                      ),     // Port B Clock
+        .doutb  (                          ),     // Port B 1-bit Data Output
+        .addrb  ( capture_address          ),     // Port B 14-bit Address Input
+        .dinb   ( capture_wdata            ),     // Port B 1-bit Data Input
+        .enb    ( capture_busy             ),     // Port B RAM Enable Input
+        .web    ( capture_busy             )      // Port B Write Enable Input
         );
-   endgenerate
 
 always @(posedge clk)
     begin

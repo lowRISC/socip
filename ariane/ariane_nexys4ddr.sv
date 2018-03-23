@@ -373,14 +373,11 @@ axi_ram_wrap_ariane  #(
         .bram_clk_a ( ),
         .bram_rst_a ( ));
 
-infer_ram  #(
-        .RAM_SIZE(24),
-        .BYTE_WIDTH(8))
-        my_master2_behav (
+ddr_bram #(.BRAM_SIZE(24)) my_master2_behav (
       .ram_clk(clk_i),    // input wire clka
       .ram_en(master2_req),      // input wire ena
-      .ram_we(master2_we),   // input wire [7 : 0] wea
-      .ram_addr(master2_address[26:3]),  // input wire [13: 0] addra
+      .ram_we(|master2_we),   // input wire [7 : 0] wea (This model does not support sub-word writes yet!)
+      .ram_addr(master2_address[26:3]),  // input wire [26: 3] addr
       .ram_wrdata(master2_wdata),  // input wire [63 : 0] dina
       .ram_rddata(master2_rdata)  // output wire [63 : 0] douta
       );
@@ -410,33 +407,17 @@ infer_ram  #(
         io_emdio_t <= phy_emdio_t;
      end
 
-   IOBUF #(
-      .DRIVE(12), // Specify the output drive strength
-      .IBUF_LOW_PWR("TRUE"),  // Low Power - "TRUE", High Performance = "FALSE" 
-      .IOSTANDARD("DEFAULT"), // Specify the I/O standard
-      .SLEW("SLOW") // Specify the output slew rate
-   ) IOBUF_inst (
-      .O(io_emdio_i),     // Buffer output
-      .IO(io_emdio),   // Buffer inout port (connect directly to top-level port)
-      .I(io_emdio_o),     // Buffer input
-      .T(io_emdio_t)      // 3-state enable input, high=input, low=output
+   io_buffer_generic IOBUF_inst (
+      .outg(io_emdio_i),     // Buffer output
+      .inoutg(io_emdio),   // Buffer inout port (connect directly to top-level port)
+      .ing(io_emdio_o),     // Buffer input
+      .ctrl(io_emdio_t)      // 3-state enable input, high=input, low=output
    );
 
-  ODDR #(
-    .DDR_CLK_EDGE("OPPOSITE_EDGE"),
-    .INIT(1'b0),
-    .IS_C_INVERTED(1'b0),
-    .IS_D1_INVERTED(1'b0),
-    .IS_D2_INVERTED(1'b0),
-    .SRTYPE("SYNC")) 
+  oddr_buffer_generic
     refclk_inst
-       (.C(eth_refclk),
-        .CE(1'b1),
-        .D1(1'b1),
-        .D2(1'b0),
-        .Q(o_erefclk),
-        .R(1'b0),
-        .S( ));
+       (.ing(eth_refclk),
+        .outg(o_erefclk));
     
     always @(posedge clk_rmii_quad)
         begin
@@ -495,7 +476,7 @@ infer_ram  #(
         .data_if                ( data_if              ),
         .bypass_if              ( bypass_if            ),
         .instr_if               ( instr_if             ),
-        .boot_addr_i            ( 64'h40000000         )
+        .boot_addr_i            ( i_dip[0] ? 64'h80000000 : 64'h40000000 )
         );
 
     assign flush_dcache = flush_dcache_q;

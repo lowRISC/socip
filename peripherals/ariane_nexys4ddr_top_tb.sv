@@ -121,7 +121,7 @@ sd_verilator_model sdflash1 (
    wire [7:0]   o_led;
    wire [15:0]   i_dip;
 
-   assign i_dip = 16'h0;
+   assign i_dip = 16'h1;
 
    // push button array
    wire         GPIO_SW_C;
@@ -150,15 +150,19 @@ sd_verilator_model sdflash1 (
    wire [3:0]  VGA_BLUE_O;
    wire [3:0]  VGA_GREEN_O;
 
+   string      vcdname;
+   
    // vcd
-   initial begin
-         $dumpfile("test.vcd");
+   initial
+     if ($value$plusargs("vcd=%s", vcdname))
+       begin
+         $dumpfile(vcdname);
          $dumpvars(0, tb.DUT.i_ariane);
          $dumpvars(0, tb.DUT.i_master0);
          $dumpvars(0, tb.DUT.i_master1);
          $dumpvars(0, tb.DUT.i_master_behav);
          $dumpon;
-      end
+       end
 
   wire         o_erefclk; // RMII clock out
   wire [1:0]   i_erxd ;
