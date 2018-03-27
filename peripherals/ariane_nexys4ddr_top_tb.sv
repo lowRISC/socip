@@ -150,20 +150,27 @@ sd_verilator_model sdflash1 (
    wire [3:0]  VGA_BLUE_O;
    wire [3:0]  VGA_GREEN_O;
 
-   string      vcdname;
+   string      dumpname;
    
    // vcd
    initial
-     if ($value$plusargs("vcd=%s", vcdname))
+     begin
+     if ($value$plusargs("vcd=%s", dumpname))
        begin
-         $dumpfile(vcdname);
+         $dumpfile(dumpname);
          $dumpvars(0, tb.DUT.i_ariane);
          $dumpvars(0, tb.DUT.i_master0);
          $dumpvars(0, tb.DUT.i_master1);
          $dumpvars(0, tb.DUT.i_master_behav);
          $dumpon;
        end
-
+     if ($value$plusargs("vpd=%s", dumpname))
+       begin
+         $vcdplusfile(dumpname);
+         $vcdpluson;
+       end
+     end // initial begin
+   
   wire         o_erefclk; // RMII clock out
   wire [1:0]   i_erxd ;
   wire         i_erx_dv ;
