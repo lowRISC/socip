@@ -25,6 +25,8 @@ output reg [BYTE_WIDTH*8-1:0] ram_rddata);
 
    reg [BYTE_WIDTH*8-1:0] ram [0 : BRAM_LINE-1];
    string                 testname;
+
+   wire [BYTE_WIDTH*8-1:0] mem0, mem1, mem2, mem3;
    
    initial
      if ($value$plusargs("readmemh=%s", testname))
@@ -40,14 +42,19 @@ output reg [BYTE_WIDTH*8-1:0] ram_rddata);
    
    always @(posedge ram_clk)
      begin
-        if (ram_en)
+        if (!ram_we)
+          ram_rddata = ram[ram_addr];
+        else if (ram_en)
           begin
-             if (!ram_we)
-               ram_rddata = ram[ram_addr];
-             else foreach (ram_we[i])
+             foreach (ram_we[i])
                if (ram_we[i]) ram[ram_addr][i*8 +:8] <= ram_wrdata[i*8 +: 8];
           end
      end
+
+   assign mem0 = ram[0];
+   assign mem1 = ram[1];
+   assign mem2 = ram[2];
+   assign mem3 = ram[3];
 
 endmodule
 

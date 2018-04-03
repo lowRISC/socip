@@ -15,11 +15,19 @@ input  wire [AXI_DATA_WIDTH-1 : 0] bram_rddata_a,
 output wire          bram_rst_a, bram_clk_a, bram_en_a
 );
 
+localparam width = 19;
+
+wire [AXI_ADDR_WIDTH-1:0] s_axi_araddr = slave.ar_addr;
+wire [AXI_ADDR_WIDTH-1:0] s_axi_awaddr = slave.aw_addr;
+wire [width-1:0] bram_addr;
+
+assign bram_addr_a = bram_addr;
+
 axi_bram_ctrl_boot ram_ctrl (
   .s_axi_aclk(clk_i),                // input wire s_aclk
   .s_axi_aresetn(rst_ni),           // input wire s_aresetn
   .s_axi_awid(slave.aw_id),
-  .s_axi_awaddr(slave.aw_addr),
+  .s_axi_awaddr(s_axi_awaddr[width-1:0]),
   .s_axi_awlen(slave.aw_len),
   .s_axi_awsize(slave.aw_size),
   .s_axi_awburst(slave.aw_burst),
@@ -43,7 +51,7 @@ axi_bram_ctrl_boot ram_ctrl (
   .s_axi_bvalid(slave.b_valid),
   .s_axi_bready(slave.b_ready),
   .s_axi_arid(slave.ar_id),
-  .s_axi_araddr(slave.ar_addr),
+  .s_axi_araddr(s_axi_araddr[width-1:0]),
   .s_axi_arlen(slave.ar_len),
   .s_axi_arsize(slave.ar_size),
   .s_axi_arburst(slave.ar_burst),
@@ -65,10 +73,10 @@ axi_bram_ctrl_boot ram_ctrl (
   .bram_rst_a(bram_rst_a),        // output wire bram_rst_a
   .bram_clk_a(bram_clk_a),        // output wire bram_clk_a
   .bram_en_a(bram_en_a),          // output wire bram_en_a
-  .bram_we_a(bram_we_a),          // output wire [7 : 0] bram_we_a
-  .bram_addr_a(bram_addr_a),      // output wire [12 : 0] bram_addr_a
+  .bram_we_a(bram_we_a),          // output wire [7  : 0] bram_we_a
+  .bram_addr_a(bram_addr),        // output wire [12 : 0] bram_addr_a
   .bram_wrdata_a(bram_wrdata_a),  // output wire [63 : 0] bram_wrdata_a
-  .bram_rddata_a(bram_rddata_a)  // input wire [63 : 0] bram_rddata_a
+  .bram_rddata_a(bram_rddata_a)   // input  wire [63 : 0] bram_rddata_a
 );
 
 endmodule

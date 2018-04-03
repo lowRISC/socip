@@ -134,16 +134,16 @@ reg        mii_rx_byte_received_i, full, byte_sync, sync, irq_en, mii_rx_frame_i
                                     .clka(clk_rmii),              // Port A Clock
                                     .clkb(msoc_clk),              // Port A Clock
                                     .douta(),                     // Port A 8-bit Data Output
-                                    .addra({1'b0,rx_addr_axis[10:1]}),   // Port A 11-bit Address Input
-                                    .dina(rx_axis_tdata),         // Port A 8-bit Data Input
+                                    .addra({1'b0,rx_addr_axis[10:1]}),    // Port A 11-bit Address Input
+                                    .dina({rx_axis_tdata,rx_axis_tdata}), // Port A 8-bit Data Input
                                     .ena(rx_axis_tvalid),         // Port A RAM Enable Input
                                     .wea(rx_wr),                  // Port A Write Enable Input
-                                    .doutb(framing_rdata_pkt),      // Port B 32-bit Data Output
+                                    .doutb(framing_rdata_pkt),    // Port B 32-bit Data Output
                                     .addrb(core_lsu_addr[11:3]),  // Port B 9-bit Address Input
-                                    .dinb(core_lsu_wdata),         // Port B 32-bit Data Input
+                                    .dinb(core_lsu_wdata),        // Port B 32-bit Data Input
                                     .enb(ce_d & framing_sel & (core_lsu_addr[13:12]==2'b00)),
                                                                   // Port B RAM Enable Input
-                                    .web(we_d)                   // Port B Write Enable Input
+                                    .web(we_d ? {(|core_lsu_be[7:4]),(|core_lsu_be[3:0])} : 2'b0) // Port B Write Enable Input
                                     );
 
     dualmem_widen RAMB16_inst_tx (
@@ -159,7 +159,7 @@ reg        mii_rx_byte_received_i, full, byte_sync, sync, irq_en, mii_rx_frame_i
                                    .dinb(core_lsu_wdata), // Port B 32-bit Data Input
                                    .enb(ce_d & framing_sel & (core_lsu_addr[13:12]==2'b10)),
 				                                 // Port B RAM Enable Input
-                                   .web(we_d)                   // Port B Write Enable Input
+                                   .web(we_d ? {(|core_lsu_be[7:4]),(|core_lsu_be[3:0])} : 2'b0) // Port B Write Enable Input
                                    );
 
 assign o_edutmdc = o_edutmdclk;
@@ -218,7 +218,7 @@ always @(posedge msoc_clk)
        else if (~gmii_tx_en)
          tx_busy <= 1'b0;         
     end
-   
+
 always @(posedge clk_rmii)
   if (!rstn)
     begin

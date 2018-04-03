@@ -17,11 +17,12 @@ module jtag_dummy
     output wire RUNTEST);
 
 wire CAPTURE, DRCK, SEL, SHIFT, TDI, TDO, TMS, UPDATE, TCK_unbuf;
-wire CAPTURE2, DRCK2, RESET2, RUNTEST2, SEL2, SHIFT2, TDI2, TDO2, TMS2, UPDATE2;
+wire CAPTURE2, DRCK2, RESET2, RUNTEST2, SEL2, SHIFT2, TDI2, TDO2, TMS2, UPDATE2, TCK2_unbuf;
    wire INC, WR;
 wire [31:0] ADDR0;
    
 clock_buffer_generic jtag_buf(.ing(TCK_unbuf), .outg(TCK));
+clock_buffer_generic jtag_buf2(.ing(TCK2_unbuf), .outg(TCK2));
 
    // BSCANE2: Boundary-Scan User Instruction
    //          Artix-7
@@ -58,7 +59,7 @@ clock_buffer_generic jtag_buf(.ing(TCK_unbuf), .outg(TCK));
       .RUNTEST(RUNTEST2), // 1-bit output: Output asserted when TAP controller is in Run Test/Idle state.
       .SEL(SEL2),         // 1-bit output: USER instruction active output.
       .SHIFT(SHIFT2),     // 1-bit output: SHIFT output from TAP controller.
-      .TCK(TCK2),   // 1-bit output: Test Clock output. Fabric connection to TAP Clock pin.
+      .TCK(TCK2_unbuf),   // 1-bit output: Test Clock output. Fabric connection to TAP Clock pin.
       .TDI(TDI2),         // 1-bit output: Test Data Input (TDI) output from TAP controller.
       .TMS(TMS2),         // 1-bit output: Test Mode Select output. Fabric connection to TAP.
       .UPDATE(UPDATE2),   // 1-bit output: UPDATE output from TAP controller

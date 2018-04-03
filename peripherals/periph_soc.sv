@@ -343,7 +343,7 @@ always @(posedge sd_clk_o)
         
    endgenerate					
 
-   logic [1:0] rx_wr = {rx_wr_en,sd_xfr_addr[0]};
+   logic [7:0] rx_wr = 8'hF << {sd_xfr_addr[0],2'b0};
    logic [63:0] douta, doutb;
    assign one_hot_rdata[3] = doutb;
    assign data_out_tx = sd_xfr_addr[0] ? douta[63:32] : douta[31:0];
@@ -353,8 +353,8 @@ always @(posedge sd_clk_o)
        (
         .clka   ( ~sd_clk_o                   ),     // Port A Clock
         .douta  ( douta                       ),     // Port A 1-bit Data Output
-        .addra  ( sd_xfr_addr[9:1]            ),     // Port A 14-bit Address Input
-        .dina   ( data_in_rx                  ),     // Port A 1-bit Data Input
+        .addra  ( sd_xfr_addr[9:1]            ),     // Port A 9-bit Address Input
+        .dina   ( {data_in_rx,data_in_rx}     ),     // Port A 1-bit Data Input
         .ena    ( tx_rd|rx_wr_en              ),     // Port A RAM Enable Input
         .wea    ( rx_wr                       ),     // Port A Write Enable Input
         .clkb   ( ~msoc_clk                   ),     // Port B Clock
@@ -362,7 +362,7 @@ always @(posedge sd_clk_o)
         .addrb  ( hid_addr[11:3]              ),     // Port B 14-bit Address Input
         .dinb   ( hid_wrdata                  ),     // Port B 1-bit Data Input
         .enb    ( hid_en&one_hot_data_addr[3] ),     // Port B RAM Enable Input
-        .web    ( |hid_we                     )      // Port B Write Enable Input
+        .web    ( hid_we                      )      // Port B Write Enable Input
         );
 
    always @(posedge msoc_clk)

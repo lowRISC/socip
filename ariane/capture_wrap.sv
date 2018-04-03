@@ -2,7 +2,7 @@ module capture_wrap(
     input logic    clk_i,    // Clock
     input logic    rst_ni,  // Asynchronous reset active low
     AXI_BUS        capture_if,
-    output logic [289:0] capture
+    output logic [377:0] capture
 );
 
 capture_in capture1(
@@ -55,8 +55,8 @@ endmodule
 module capture_in(
 input logic    clk_i,    // Clock
 input logic    rst_ni,  // Asynchronous reset active low
-input logic [289:0] capture_in,
-output logic [289:0] capture_out
+input logic [377:0] capture_in,
+output logic [377:0] capture_out
 );
 
 always @(posedge clk_i)

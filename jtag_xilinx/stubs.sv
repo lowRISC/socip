@@ -1,8 +1,10 @@
-module clock_buffer_generic(input ing, output outg);
+`default_nettype none
+
+module clock_buffer_generic(input wire ing, output wire outg);
 
 `ifdef FPGA
    
-BUFH (.I(ing), .O(outg));
+BUFH buf1(.I(ing), .O(outg));
 
 `else
 
@@ -12,7 +14,7 @@ BUFH (.I(ing), .O(outg));
    
 endmodule // clock_buffer_generic
 
-module io_buffer_generic(inout inoutg, output outg, input ing, input ctrl);
+module io_buffer_generic(inout wire inoutg, output wire outg, input wire ing, input wire ctrl);
 
 `ifdef FPGA
    
@@ -35,9 +37,9 @@ module io_buffer_generic(inout inoutg, output outg, input ing, input ctrl);
    
 `endif
    
-endmodule // clock_buffer_generic
+endmodule // io_buffer_generic
 
-module io_buffer_fast(inout inoutg, output outg, input ing, input ctrl);
+module io_buffer_fast(inout wire inoutg, output wire outg, input wire ing, input wire ctrl);
 
 `ifdef FPGA
    
@@ -60,9 +62,9 @@ module io_buffer_fast(inout inoutg, output outg, input ing, input ctrl);
    
 `endif
    
-endmodule // clock_buffer_generic
+endmodule // io_buffer_fast
 
-module oddr_buffer_generic(output outg, input ing);
+module oddr_buffer_generic(output wire outg, input wire ing);
 
 `ifdef FPGA
    
@@ -88,12 +90,12 @@ module oddr_buffer_generic(output outg, input ing);
    
 `endif
    
-endmodule // clock_buffer_generic
+endmodule // oddr_buffer_generic
 
 module bscan_generic #(
-    parameter JTAG_CHAIN = 1
+    parameter integer JTAG_CHAIN = 1
  )
-(output CAPTURE, DRCK, RESET, RUNTEST, SEL, SHIFT, TCK, TDI, TMS, UPDATE, output TDO);
+(output wire CAPTURE, DRCK, RESET, RUNTEST, SEL, SHIFT, TCK, TDI, TMS, UPDATE, input wire TDO);
 
 `ifdef FPGA
    
@@ -104,16 +106,15 @@ module bscan_generic #(
       .CAPTURE(CAPTURE), // 1-bit output: CAPTURE output from TAP controller.
       .DRCK(DRCK),       // 1-bit output: Gated TCK output. When SEL is asserted, DRCK toggles when CAPTURE or
                          // SHIFT are asserted.
-
       .RESET(RESET),     // 1-bit output: Reset output for TAP controller.
       .RUNTEST(RUNTEST), // 1-bit output: Output asserted when TAP controller is in Run Test/Idle state.
       .SEL(SEL),         // 1-bit output: USER instruction active output.
       .SHIFT(SHIFT),     // 1-bit output: SHIFT output from TAP controller.
-      .TCK(TCK_unbuf),   // 1-bit output: Test Clock output. Fabric connection to TAP Clock pin.
+      .TCK(TCK),         // 1-bit output: Test Clock output. Fabric connection to TAP Clock pin.
       .TDI(TDI),         // 1-bit output: Test Data Input (TDI) output from TAP controller.
       .TMS(TMS),         // 1-bit output: Test Mode Select output. Fabric connection to TAP.
       .UPDATE(UPDATE),   // 1-bit output: UPDATE output from TAP controller
-      .TDO(TDO)    // 1-bit input: Test Data Output (TDO) input for USER function.
+      .TDO(TDO)          // 1-bit input: Test Data Output (TDO) input for USER function.
    );
 
 `else // !`ifdef FPGA

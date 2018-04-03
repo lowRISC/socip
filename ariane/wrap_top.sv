@@ -347,7 +347,7 @@ display_top display(.clk    (clk_i),
         .tdo_o      (                )
              );
                           
-axi_ram_wrap  #(
+axi_ram_wrap_ariane  #(
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH      ),
         .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
         .AXI_DATA_WIDTH ( AXI_DATA_WIDTH    ),

@@ -73,7 +73,7 @@ module fstore2(
    
    wire [63:0]                   dout;
    wire [13:0]                   addra = {offvreg[10:5],offhreg[12:6]};
-   wire [6:0]                    dout7 = dout >> {addra[2:0],3'b000};
+   wire [7:0]                    dout8 = dout >> {addra[2:0],3'b000};
    
    // 100 MHz / 2100 is 47.6kHz.  Divide by further 788 to get 60.4 Hz.
    // Aim for 1024x768 non interlaced at 60 Hz.  
@@ -196,7 +196,7 @@ module fstore2(
    wire [7:0] pixels_out;
    chargen_7x5_rachel the_rachel(
     .clk(pixel2_clk),
-    .ascii(dout),
+    .ascii(dout8),
     .row(vrow),
     .pixels_out(pixels_out));
    

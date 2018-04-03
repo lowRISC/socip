@@ -46,13 +46,13 @@ module dualmem_128K_64(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, do
 infer_dpram #(.RAM_SIZE(11), .BYTE_WIDTH(8)) ram1 // RAM_SIZE is in words
 (
 .ram_clk_a(clka),
-.ram_en_a(ena),
+.ram_en_a(|ena),
 .ram_we_a(wea),
 .ram_addr_a(addra),
 .ram_wrdata_a(dina),
 .ram_rddata_a(douta),
 .ram_clk_b(clkb),
-.ram_en_b(enb),
+.ram_en_b(|enb),
 .ram_we_b(web),
 .ram_addr_b(addrb),
 .ram_wrdata_b(dinb),

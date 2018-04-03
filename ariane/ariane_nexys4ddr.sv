@@ -107,7 +107,7 @@ module ariane_nexys4ddr
 
    parameter logic [63:0]               CACHE_START_ADDR  = 64'h8000_0000;
  // address on which to decide whether the request is cache-able or not
-   parameter int                        unsigned AXI_ID_WIDTH      = 4;
+   parameter int                        unsigned AXI_ID_WIDTH      = 10;
    parameter int                        unsigned AXI_USER_WIDTH    = 1;
    parameter int                        unsigned AXI_ADDRESS_WIDTH = 64;
    parameter int                        unsigned AXI_DATA_WIDTH    = 64;
@@ -142,7 +142,7 @@ reg phy_emdio_i, io_emdio_o, io_emdio_t;
    assign mig_ui_rstn = !mig_ui_rst;
 
     logic        master0_req,     master1_req,     master2_req,     master3_req;
-    logic [63:0] master0_address, master1_address, master2_address, master3_address;
+    logic [29:0] master0_address, master1_address, master2_address, master3_address;
     logic [7:0]  master0_we,      master1_we,      master2_we,      master3_we;
     logic [63:0] master0_wdata,   master1_wdata,   master2_wdata,   master3_wdata;
     logic [63:0] master0_rdata,   master1_rdata,   master2_rdata,   master3_rdata;
@@ -355,7 +355,7 @@ assign mem_mig_nasti.r_user = 'b0;
    assign clk_i         = clk_p;
    assign rst_ni        = rst_top;
 
-axi_ram_wrap_ariane  #(
+axi_ram_wrap_ariane #(
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH      ),
         .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
         .AXI_DATA_WIDTH ( AXI_DATA_WIDTH    ),
@@ -366,7 +366,7 @@ axi_ram_wrap_ariane  #(
         .rst_ni ( aresetn         ),
         .slave  ( master2_if      ),
         .bram_en_a  ( master2_req     ),
-        .bram_addr_a ( master2_address ),
+        .bram_addr_a ( master2_address[29:0] ),
         .bram_we_a   ( master2_we      ),
         .bram_wrdata_a ( master2_wdata   ),
         .bram_rddata_a ( master2_rdata   ),
@@ -376,8 +376,8 @@ axi_ram_wrap_ariane  #(
 ddr_bram #(.BRAM_SIZE(24)) my_master2_behav (
       .ram_clk(clk_i),    // input wire clka
       .ram_en(master2_req),      // input wire ena
-      .ram_we(|master2_we),   // input wire [7 : 0] wea (This model does not support sub-word writes yet!)
-      .ram_addr(master2_address[26:3]),  // input wire [26: 3] addr
+      .ram_we(master2_we),   // input wire [7 : 0] wea
+      .ram_addr(master2_address[23:3]),  // input wire [26: 3] addr
       .ram_wrdata(master2_wdata),  // input wire [63 : 0] dina
       .ram_rddata(master2_rdata)  // output wire [63 : 0] douta
       );
@@ -513,7 +513,10 @@ ddr_bram #(.BRAM_SIZE(24)) my_master2_behav (
    // CPU Control Signals
    logic                                 fetch_enable_i;
  
-   crossbar_socip cross1(
+ 
+ //  crossbar_socip
+ crossbar_xilinx
+   cross1(
       .slave0_if  ( instr_if   ),
       .slave1_if  ( data_if    ),
       .slave2_if  ( bypass_if  ),
@@ -584,7 +587,7 @@ axi_ram_wrap_ariane  #(
         .rst_ni ( rst_ni          ),
         .slave  ( master0_if      ),
         .bram_en_a  ( master0_req     ),
-        .bram_addr_a ( master0_address ),
+        .bram_addr_a ( master0_address[19:0] ),
         .bram_we_a   ( master0_we      ),
         .bram_wrdata_a ( master0_wdata   ),
         .bram_rddata_a ( master0_rdata   ),
@@ -595,7 +598,7 @@ axi_ram_wrap_ariane  #(
         .rst_ni ( rst_ni          ),
         .slave  ( master1_if      ),
         .bram_en_a  ( master1_req     ),
-        .bram_addr_a ( master1_address ),
+        .bram_addr_a ( master1_address[19:0] ),
         .bram_we_a   ( master1_we      ),
         .bram_wrdata_a ( master1_wdata   ),
         .bram_rddata_a ( master1_rdata   ),
@@ -606,7 +609,7 @@ axi_ram_wrap_ariane  #(
                 .rst_ni ( rst_ni          ),
                 .slave  ( master3_if      ),
                 .bram_en_a  ( master3_req     ),
-                .bram_addr_a ( master3_address ),
+                .bram_addr_a ( master3_address[19:0] ),
                 .bram_we_a   ( master3_we      ),
                 .bram_wrdata_a ( master3_wdata   ),
                 .bram_rddata_a ( master3_rdata   ),

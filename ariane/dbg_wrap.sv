@@ -95,7 +95,7 @@ logic        cpu_fetch;
 logic [8:0] capture_address;
 logic [63:0] capture_rdata;
 logic pc_asserted, cpu_capture, areset;
-logic [289:0] capture_input, capture_output, capture_select;
+logic [377:0] capture_input, capture_output, capture_select;
 
 wire [96 : 0] pc_status;
 
@@ -125,7 +125,7 @@ wire [96 : 0] pc_status;
    wire [63:0] move_status = {move_done, areset, dma_capture_select, dma_capture, move_en_in, move_mask};
    assign capture_select = dma_capture_select ? capture_output : capture_input;
    assign aresetn = combined_rstn && (!areset);
-   
+
    logic  dma_en;
 
    always @(posedge TCK or negedge combined_rstn)
@@ -237,12 +237,12 @@ jtag_dummy #(.JTAG_CHAIN_START(JTAG_CHAIN_START)) jtag1(.*);
         .addra  ( ADDR[15:3]               ),     // Port A 14-bit Address Input
         .dina   ( TO_MEM                   ),     // Port A 1-bit Data Input
         .ena    ( bootmem_en               ),     // Port A RAM Enable Input
-        .wea    ( WREN                     ),     // Port A Write Enable Input
+        .wea    ( WREN ? 8'hFF : 8'h00     ),     // Port A Write Enable Input
         .clkb   ( clk                      ),     // Port B Clock
         .doutb  ( boot_rdata               ),     // Port B 1-bit Data Output
         .addrb  ( boot_addr[15:3]          ),     // Port B 14-bit Address Input
         .dinb   ( boot_wdata               ),     // Port B 1-bit Data Input
-        .enb    ( boot_en                  ),     // Port B RAM Enable Input
+        .enb    ( boot_en ? 8'hFF : 8'h00  ),     // Port B RAM Enable Input
         .web    ( boot_we                  )      // Port B Write Enable Input
         );
 
@@ -254,30 +254,33 @@ jtag_dummy #(.JTAG_CHAIN_START(JTAG_CHAIN_START)) jtag1(.*);
         .addra  ( ADDR[13:3]               ),     // Port A 14-bit Address Input
         .dina   ( TO_MEM                   ),     // Port A 1-bit Data Input
         .ena    ( sharedmem_en             ),     // Port A RAM Enable Input
-        .wea    ( WREN                     ),     // Port A Write Enable Input
+        .wea    ( WREN ? 8'hFF : 8'h00     ),     // Port A Write Enable Input
         .clkb   ( clk                      ),     // Port B Clock
         .doutb  ( wrap_rdata               ),     // Port B 1-bit Data Output
         .addrb  ( wrap_addr[13:3]          ),     // Port B 14-bit Address Input
         .dinb   ( wrap_wdata               ),     // Port B 1-bit Data Input
-        .enb    ( wrap_en                  ),     // Port B RAM Enable Input
+        .enb    ( wrap_en ? 8'hFF : 8'h00  ),     // Port B RAM Enable Input
         .web    ( wrap_we                  )      // Port B Write Enable Input
         );
 
      dualmem_256K_512
      RAMB16_S36_S36_inst
        (
-        .clka   ( TCK                      ),     // Port A Clock
+        .clka   ( TCK2                     ),     // Port A Clock
         .douta  ( capmem_dout              ),     // Port A 1-bit Data Output
         .addra  ( ADDR[14:6]               ),     // Port A 14-bit Address Input
-        .dina   ( 32'b0                    ),     // Port A 1-bit Data Input
-        .ena    ( capmem_en                ),     // Port A RAM Enable Input
-        .wea    ( 1'b0                     ),     // Port A Write Enable Input
+        .dina   ( 512'b0                   ),     // Port A 1-bit Data Input
+        .ena    ( capmem_en ?
+                    16'hFFFF:16'h0000      ),     // Port A RAM Enable Input
+        .wea    ( 16'b0                    ),     // Port A Write Enable Input
         .clkb   ( clk                      ),     // Port B Clock
         .doutb  (                          ),     // Port B 1-bit Data Output
         .addrb  ( capture_address          ),     // Port B 14-bit Address Input
         .dinb   ( capture_wdata            ),     // Port B 1-bit Data Input
-        .enb    ( capture_busy             ),     // Port B RAM Enable Input
-        .web    ( capture_busy             )      // Port B Write Enable Input
+        .enb    ( capture_busy ?
+                    16'hFFFF:16'h0000      ),     // Port B RAM Enable Input
+        .web    ( capture_busy ?
+                    16'hFFFF:16'h0000      )      // Port B Write Enable Input
         );
 
 always @(posedge clk)

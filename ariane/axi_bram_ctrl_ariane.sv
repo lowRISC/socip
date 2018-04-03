@@ -100,6 +100,7 @@ module   axi_bram_ctrl_ariane
 
 );
 
+   logic [AXI4_ADDRESS_WIDTH-1:0]                   bram_a;
    logic [AXI_NUMBYTES-1:0]                         bram_bank_en;
    logic                                            bram_chip_enb, bram_write_enb;
    
@@ -107,7 +108,8 @@ assign bram_rst_a = 1'b0;
 assign bram_clk_a = s_axi_aclk;
 assign bram_en_a = !bram_chip_enb;
 assign bram_we_a = bram_write_enb ? 'b0 : bram_bank_en;
-
+assign bram_addr_a = bram_a;
+   
     axi_mem_if
     #(
         .AXI4_ADDRESS_WIDTH(AXI4_ADDRESS_WIDTH),
@@ -173,7 +175,7 @@ assign bram_we_a = bram_write_enb ? 'b0 : bram_bank_en;
 
         .CEN        ( bram_chip_enb           ),
         .WEN        ( bram_write_enb          ),
-        .A          ( bram_addr_a             ),
+        .A          ( bram_a                  ),
         .D          ( bram_wrdata_a           ),
         .BE         ( bram_bank_en            ),
         .Q          ( bram_rddata_a           ),

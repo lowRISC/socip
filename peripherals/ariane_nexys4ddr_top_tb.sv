@@ -17,6 +17,34 @@ module tb;
       .rst_top      ( !rst      )         // NEXYS4's cpu_reset is active low
       );
 
+    assign glbl.JTAG_TMS_GLBL = 1'b0;
+    assign glbl.JTAG_TCK_GLBL = 1'b0;
+    assign glbl.JTAG_TDI_GLBL = 1'b0;
+    assign glbl.JTAG_TRST_GLBL = 1'b0;
+
+initial
+    begin
+    glbl.JTAG_RESET_GLBL = 1'b1;
+    glbl.JTAG_SHIFT_GLBL = 1'b0;
+    glbl.JTAG_UPDATE_GLBL = 1'b0;
+    glbl.JTAG_CAPTURE_GLBL = 1'b0;
+    glbl.JTAG_RUNTEST_GLBL = 1'b0;
+    force glbl.JTAG_TRST_GLBL = 1'b1;       
+    forever
+        begin
+        #1000
+           force glbl.JTAG_TCK_GLBL = 1'b1;
+        #1000
+           release glbl.JTAG_TCK_GLBL;
+        #1000
+           force glbl.JTAG_TCK_GLBL = 1'b1;
+        #1000
+           release glbl.JTAG_TCK_GLBL;
+           release glbl.JTAG_TRST_GLBL;
+           glbl.JTAG_RESET_GLBL = 1'b0;
+        end
+    end
+
    initial begin
       rst = 1;
       #130;

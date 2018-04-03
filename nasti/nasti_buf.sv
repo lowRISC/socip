@@ -62,7 +62,7 @@ module nasti_buf
    bit [$clog2(DEPTH_LOC)-1:0]  aw_wp, aw_rp;
 
    always_ff @(posedge clk or negedge rstn)
-     if(!rstn) begin
+     if(rstn == 0) begin
         aw_rp <= 0;
         aw_wp <= 0;
         aw_valid <= 0;
@@ -123,7 +123,7 @@ module nasti_buf
    bit [$clog2(DEPTH_LOC)-1:0]  ar_wp, ar_rp;
 
    always_ff @(posedge clk or negedge rstn)
-     if(!rstn) begin
+     if(rstn == 0) begin
         ar_rp <= 0;
         ar_wp <= 0;
         ar_valid <= 0;
@@ -177,7 +177,7 @@ module nasti_buf
    bit [$clog2(DEPTH_LOC)-1:0] w_wp, w_rp;
 
    always_ff @(posedge clk or negedge rstn)
-     if(!rstn) begin
+     if(rstn == 0) begin
         w_rp <= 0;
         w_wp <= 0;
         w_valid <= 0;
@@ -216,7 +216,7 @@ module nasti_buf
    bit [$clog2(DEPTH_LOC)-1:0] b_wp, b_rp;
 
    always_ff @(posedge clk or negedge rstn)
-     if(!rstn) begin
+     if(rstn == 0) begin
         b_rp <= 0;
         b_wp <= 0;
         b_valid <= 0;
@@ -256,7 +256,7 @@ module nasti_buf
    bit [$clog2(DEPTH_LOC)-1:0] r_wp, r_rp;
 
    always_ff @(posedge clk or negedge rstn)
-     if(!rstn) begin
+     if(rstn == 0) begin
         r_rp <= 0;
         r_wp <= 0;
         r_valid <= 0;

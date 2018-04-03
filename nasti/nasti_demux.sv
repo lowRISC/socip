@@ -75,7 +75,7 @@ module nasti_demux
    assign aw_port_sel = lock ? locked_port : port_match(master.aw_addr);
 
    always_ff @(posedge clk or negedge rstn)
-      if(!rstn)
+      if(rstn == 0)
         begin
 	lock <= 1'b0;
 	locked_port <= 1'b0;

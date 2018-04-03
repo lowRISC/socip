@@ -86,7 +86,7 @@ module nasti_mux
    assign aw_port_sel = lock ? locked_port : toInt(aw_gnt);
 
    always_ff @(posedge clk or negedge rstn)
-      if(!rstn)
+      if(rstn == 0)
         begin
 	lock <= 1'b0;
 	locked_port <= 1'b0;
@@ -143,7 +143,7 @@ module nasti_mux
 
    // update write_vec
    always_ff @(posedge clk or negedge rstn)
-     if(!rstn)
+     if(rstn == 0)
        write_vec_valid <= 0;
      else
        begin
@@ -208,7 +208,7 @@ module nasti_mux
 
    // update read_vec
    always_ff @(posedge clk or negedge rstn)
-     if(!rstn)
+     if(rstn == 0)
        begin
           for(int n=0; n<R_MAX; n++)
             read_vec_valid[n] <= 1'b0;
