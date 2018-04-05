@@ -1,5 +1,7 @@
 // See LICENSE for license details.
 
+`default_nettype wire
+
 module nasti_narrower_reader
   #(
     ID_WIDTH          = 2,      // NASTI ID size

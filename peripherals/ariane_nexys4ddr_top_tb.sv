@@ -9,6 +9,8 @@ module tb;
 
    logic clk, rst, tck_i, trstn_i, tms_i, tdi_i, tdo_o;
 
+   tracer_t tracer;
+
    ariane_nexys4ddr DUT
      (
       .*,
@@ -220,4 +222,85 @@ sd_verilator_model sdflash1 (
    assign tms_i = 1'b0;
    assign tdi_i = 'b0;
    
+    string s;
+    int f;
+    logic [63:0] cycles;
+
+    import "DPI-C" function int pipe_init(input string s);
+   
+    import "DPI-C" function int pipe27(
+                        input longint arg1, input longint arg2, input longint arg3, input longint arg4, input longint arg5, 
+                        input longint arg6, input longint arg7, input longint arg8, input longint arg9, input longint arg10, 
+                        input longint arg11, input longint arg12, input longint arg13, input longint arg14, input longint arg15, 
+                        input longint arg16, input longint arg17, input longint arg18, input longint arg19, input longint arg20, 
+                        input longint arg21, input longint arg22, input longint arg23, input longint arg24, input longint arg25,
+                        input longint arg26, input longint arg27);
+
+    function fdisplay27(int f);
+
+      begin
+         if (f == -1)
+           begin
+              pipe27(tracer.rstn, tracer.commit_ack, tracer.commit_instr.pc, tracer.commit_instr.ex.tval[31:0], tracer.exception.valid, 
+                     tracer.commit_instr.ex.cause, tracer.flush_unissued, tracer.flush, tracer.instruction[31:0], tracer.fetch_valid, 
+                     tracer.fetch_ack, tracer.issue_ack, tracer.waddr, tracer.wdata, tracer.we, 
+                     tracer.commit_ack, tracer.st_valid, tracer.paddr, tracer.ld_valid, tracer.ld_kill, 
+                     tracer.priv_lvl, tracer.raddr_a_i, tracer.rdata_a_o, tracer.raddr_b_i,
+                     tracer.rdata_b_o, tracer.waddr_a_i, tracer.wdata_a_i);
+`ifdef VERBOSE              
+           if (tracer.commit_ack)
+             $display("%0h (%h) %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h",
+                     tracer.commit_instr.pc, tracer.commit_instr.ex.tval[31:0], tracer.exception.valid, 
+                     tracer.commit_instr.ex.cause, tracer.flush_unissued, tracer.flush, tracer.instruction, tracer.fetch_valid, 
+                     tracer.fetch_ack, tracer.issue_ack, tracer.waddr, tracer.wdata, tracer.we, 
+                     tracer.commit_ack, tracer.st_valid, tracer.paddr, tracer.ld_valid, tracer.ld_kill, 
+                     tracer.priv_lvl, tracer.raddr_a_i, tracer.rdata_a_o, tracer.raddr_b_i,
+                     tracer.rdata_b_o, tracer.waddr_a_i, tracer.wdata_a_i);
+`endif     
+           end
+         else
+           begin
+           if (!tracer.rstn)
+              cycles <= 0;
+           else
+             begin
+                if (tracer.commit_ack) 
+                  $fdisplay(f, "%d %0h (%h) %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h",
+                            cycles, tracer.commit_instr.pc, tracer.commit_instr.ex.tval[31:0], tracer.exception.valid, 
+                            tracer.commit_instr.ex.cause, tracer.flush_unissued, tracer.flush, tracer.instruction, tracer.fetch_valid, 
+                            tracer.fetch_ack, tracer.issue_ack, tracer.waddr, tracer.wdata, tracer.we, 
+                            tracer.commit_ack, tracer.st_valid, tracer.paddr, tracer.ld_valid, tracer.ld_kill, 
+                            tracer.priv_lvl, tracer.raddr_a_i, tracer.rdata_a_o, tracer.raddr_b_i,
+                            tracer.rdata_b_o, tracer.waddr_a_i, tracer.wdata_a_i);
+                cycles <= cycles + 1;
+             end // else: !if(arg1)
+           end
+      end
+
+    endfunction // fdisplay27
+   
+    initial begin
+       if ($test$plusargs("pipe"))
+         begin
+            if ($value$plusargs("readmemh=%s", s))
+              pipe_init(s);
+            else
+              pipe_init("cnvmem64.hex");
+         f = -1;
+         end
+       else if ($value$plusargs("trace=%s", s))
+         f = $fopen(s, "w");
+       else
+         f = $fopen("trace_core_00_0.dasm", "w");
+    end
+
+    always_ff @(posedge clk) begin
+       fdisplay27(f);
+    end
+
+    final begin
+        if (f != -1)
+          $fclose(f);
+    end
+
 endmodule // tb

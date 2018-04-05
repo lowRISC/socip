@@ -12,17 +12,15 @@ module jtag_dummy
     output wire [31:0] ADDR,
     input wire [63:0] FROM_MEM,
     output wire TCK,
-    output wire TCK2,
     output wire RESET,
     output wire RUNTEST);
 
 wire CAPTURE, DRCK, SEL, SHIFT, TDI, TDO, TMS, UPDATE, TCK_unbuf;
-wire CAPTURE2, DRCK2, RESET2, RUNTEST2, SEL2, SHIFT2, TDI2, TDO2, TMS2, UPDATE2, TCK2_unbuf;
-   wire INC, WR;
+wire CAPTURE2, DRCK2, RESET2, RUNTEST2, SEL2, SHIFT2, TCK2, TDI2, TDO2, TMS2, UPDATE2;
+wire INC, WR;
 wire [31:0] ADDR0;
    
 clock_buffer_generic jtag_buf(.ing(TCK_unbuf), .outg(TCK));
-clock_buffer_generic jtag_buf2(.ing(TCK2_unbuf), .outg(TCK2));
 
    // BSCANE2: Boundary-Scan User Instruction
    //          Artix-7
@@ -44,7 +42,7 @@ clock_buffer_generic jtag_buf2(.ing(TCK2_unbuf), .outg(TCK2));
       .TDI(TDI),         // 1-bit output: Test Data Input (TDI) output from TAP controller.
       .TMS(TMS),         // 1-bit output: Test Mode Select output. Fabric connection to TAP.
       .UPDATE(UPDATE),   // 1-bit output: UPDATE output from TAP controller
-      .TDO(TDO)    // 1-bit input: Test Data Output (TDO) input for USER function.
+      .TDO(TDO)          // 1-bit input: Test Data Output (TDO) input for USER function.
    );
 
    bscan_generic #(
@@ -53,19 +51,18 @@ clock_buffer_generic jtag_buf2(.ing(TCK2_unbuf), .outg(TCK2));
    BSCANE2_inst2 (
       .CAPTURE(CAPTURE2), // 1-bit output: CAPTURE output from TAP controller.
       .DRCK(DRCK2),       // 1-bit output: Gated TCK output. When SEL is asserted, DRCK toggles when CAPTURE or
-                         // SHIFT are asserted.
-
+                          // SHIFT are asserted.
       .RESET(RESET2),     // 1-bit output: Reset output for TAP controller.
       .RUNTEST(RUNTEST2), // 1-bit output: Output asserted when TAP controller is in Run Test/Idle state.
       .SEL(SEL2),         // 1-bit output: USER instruction active output.
       .SHIFT(SHIFT2),     // 1-bit output: SHIFT output from TAP controller.
-      .TCK(TCK2_unbuf),   // 1-bit output: Test Clock output. Fabric connection to TAP Clock pin.
+      .TCK(TCK2),         // 1-bit output: Test Clock output. Fabric connection to TAP Clock pin.
       .TDI(TDI2),         // 1-bit output: Test Data Input (TDI) output from TAP controller.
       .TMS(TMS2),         // 1-bit output: Test Mode Select output. Fabric connection to TAP.
       .UPDATE(UPDATE2),   // 1-bit output: UPDATE output from TAP controller
-      .TDO(TDO2)    // 1-bit input: Test Data Output (TDO) input for USER function.
+      .TDO(TDO2)          // 1-bit input: Test Data Output (TDO) input for USER function.
    );
-
+   
 jtag_rom rom1(
 .WREN(WREN),
 .TO_MEM(TO_MEM),

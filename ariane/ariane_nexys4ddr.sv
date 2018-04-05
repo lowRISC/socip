@@ -32,10 +32,10 @@ module ariane_nexys4ddr
    output wire        ddr_cs_n,
    output wire [1:0]  ddr_dm,
    output wire        ddr_odt,
-   input  wire        rxd,
+   input wire         rxd,
    output wire        txd,
    output wire        rts,
-   input  wire        cts,
+   input wire         cts,
    // 4-bit full SD interface
    output wire        sd_sclk,
    input wire         sd_detect,
@@ -66,29 +66,41 @@ module ariane_nexys4ddr
    output wire [3:0]  VGA_GREEN_O,
 
    // Ethernet
- input wire [1:0]   i_erxd, // RMII receive data
- input wire         i_erx_dv, // PHY data valid
- input wire         i_erx_er, // PHY coding error
- input wire         i_emdint, // PHY interrupt in active low
- output reg         o_erefclk, // RMII clock out
- output reg [1:0]   o_etxd, // RMII transmit data
- output reg         o_etx_en, // RMII transmit enable
- output wire        o_emdc, // MDIO clock
- inout wire         io_emdio, // MDIO inout
- output wire        o_erstn, // PHY reset active low
+   input wire [1:0]   i_erxd, // RMII receive data
+   input wire         i_erx_dv, // PHY data valid
+   input wire         i_erx_er, // PHY coding error
+   input wire         i_emdint, // PHY interrupt in active low
+   output reg         o_erefclk, // RMII clock out
+   output reg [1:0]   o_etxd, // RMII transmit data
+   output reg         o_etx_en, // RMII transmit enable
+   output wire        o_emdc, // MDIO clock
+   inout wire         io_emdio, // MDIO inout
+   output wire        o_erstn, // PHY reset active low
 
   // JTAG signals
-    input  logic     tck_i,
-    input  logic     trstn_i,
-    input  logic     tms_i,
-    input  logic     tdi_i,
-    output logic     tdo_o,
+   input logic        tck_i,
+   input logic        trstn_i,
+   input logic        tms_i,
+   input logic        tdi_i,
+   output logic       tdo_o,
 
    // clock and reset
-   input wire        clk_p,
-   input wire        clk_n,
-   input wire        rst_top
+   input wire         clk_p,
+   input wire         clk_n,
+   input wire         rst_top
+
+`ifdef FPGA
    );
+
+  // Tracing
+   tracer_t tracer;
+   
+`else
+
+  // Tracing
+   , output             tracer_t tracer
+   );
+`endif   
 
    logic             clk_i, locked, tdo;          
    logic             test_en_i = 'b1; // enable all clock gates for testing
@@ -470,6 +482,7 @@ ddr_bram #(.BRAM_SIZE(24)) my_master2_behav (
         .AXI_USER_WIDTH   ( AXI_USER_WIDTH   )
     ) i_ariane (
         .*,
+        .tracer                 ( tracer               ),
         .rst_ni                 ( aresetn              ),
         .flush_dcache_i         ( flush_dcache         ),
         .flush_dcache_ack_o     ( flush_dcache_ack     ),
@@ -542,6 +555,7 @@ ddr_bram #(.BRAM_SIZE(24)) my_master2_behav (
         .testmode_i ( 1'b0           ),
         .input_if   ( input_if       ),
         .output_if  ( output_if      ),
+        .tracer     ( tracer         ),
         // CPU signals
         .aresetn      ( aresetn        ),
         .cpu_addr_o   ( debug_addr_i   ), 

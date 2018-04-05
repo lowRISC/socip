@@ -29,6 +29,7 @@ module dbg_wrap
     output logic        aresetn,
 
     AXI_BUS.Master      input_if, output_if,
+    input  tracer_t     tracer,
     // CPU signals
     output logic [15:0] cpu_addr_o, 
     input  logic [AXI_DATA_WIDTH-1:0] cpu_rdata_i, 
@@ -95,7 +96,7 @@ logic        cpu_fetch;
 logic [8:0] capture_address;
 logic [63:0] capture_rdata;
 logic pc_asserted, cpu_capture, areset;
-logic [377:0] capture_input, capture_output, capture_select;
+logic [1229:0] capture_input, capture_output, capture_select;
 
 wire [96 : 0] pc_status;
 
@@ -105,7 +106,6 @@ wire [96 : 0] pc_status;
     logic [31:0] ADDR;
     logic [63:0] FROM_MEM;
     logic TCK;
-    logic TCK2;
     logic RESET;
     logic RUNTEST;
     logic CAPTURE;
@@ -114,16 +114,14 @@ wire [96 : 0] pc_status;
     logic UPDATE2;
    logic [63:0]  sharedmem_dout, bootmem_dout;
    logic [7:0]   sharedmem_en;
-   logic [511:0] capmem_dout, capmem_shift, capture_wdata;
+   logic [1259:0] capmem_dout, capmem_shift, capture_wdata, capture_shift;
    logic [7:0]   bootmem_en;
    logic         cpu_en, capture_rst;
    logic [10:0]  unused1;
    logic         capmem_en;
-   logic         dma_capture, dma_capture_select;
+   logic         dma_capture, dma_capture_select, capture_busy;
    
-   wire   capture_busy = (dma_capture || cpu_capture) & !(&capture_address);
    wire [63:0] move_status = {move_done, areset, dma_capture_select, dma_capture, move_en_in, move_mask};
-   assign capture_select = dma_capture_select ? capture_output : capture_input;
    assign aresetn = combined_rstn && (!areset);
 
    logic  dma_en;
@@ -131,7 +129,7 @@ wire [96 : 0] pc_status;
    always @(posedge TCK or negedge combined_rstn)
      if (!combined_rstn)
        begin
-          {cpu_capture, cpu_nofetch, cpu_resume, cpu_we, cpu_req, cpu_halt, cpu_addr, cpu_wdata} <= 'b0;
+          {capture_rst, cpu_capture, cpu_nofetch, cpu_resume, cpu_we, cpu_req, cpu_halt, cpu_addr, cpu_wdata} <= 'b0;
           {cpu_rdata, cpu_halted, cpu_gnt, cpu_rvalid} <= 'b0;
           {areset, dma_capture_select, dma_capture, move_src_addr, move_dest_addr, move_length, move_en_in, move_mask} <= 'b0; 
        end
@@ -140,10 +138,10 @@ wire [96 : 0] pc_status;
         {cpu_rdata, cpu_halted, cpu_gnt, cpu_rvalid} <= {cpu_rdata_i, cpu_halted_i, cpu_gnt_i, cpu_rvalid_i};
         if (cpu_en)
           begin
-             if (ADDR[19])
-               {cpu_capture, cpu_nofetch, cpu_resume, cpu_we, cpu_req, cpu_halt, cpu_addr} <= TO_MEM;
-             else
-               cpu_wdata <= TO_MEM;
+              casez (ADDR[19:18])
+                2'b00: cpu_wdata <= TO_MEM;
+                2'b10: {capture_rst, cpu_capture, cpu_nofetch, cpu_resume, cpu_we, cpu_req, cpu_halt, cpu_addr} <= TO_MEM;
+              endcase
           end
         if (dma_en)
           begin
@@ -158,14 +156,17 @@ wire [96 : 0] pc_status;
    
     always @*
       begin
-         cpu_en = 1'b0; dma_en = 1'b0;
-         sharedmem_en = 8'h0; capmem_en = 1'b0; bootmem_en = 8'b0;
-         capmem_shift = capmem_dout >> {ADDR[5:3],6'b0};
+         cpu_en = 1'b0; dma_en = 1'b0; sharedmem_en = 8'h0; capmem_en = 1'b0; bootmem_en = 8'b0;
          casez(ADDR[23:20])
            4'hf: begin cpu_en = &ADDR[31:24];
-              FROM_MEM = ADDR[19] ? {cpu_rvalid, cpu_halted, cpu_gnt, cpu_capture, cpu_nofetch, cpu_resume, cpu_we, cpu_req, cpu_halt, cpu_addr} : cpu_rdata; end
-           4'h9: begin capmem_en = 1'b1; FROM_MEM = capmem_shift[63:0]; end
-           4'h8: begin sharedmem_en = 8'hff; FROM_MEM = sharedmem_dout; end
+              casez (ADDR[19:18])
+                2'b00: FROM_MEM <= cpu_rdata;
+                2'b10: FROM_MEM <= {cpu_rvalid, cpu_halted, cpu_gnt, capture_rst, cpu_capture, cpu_nofetch, cpu_resume, cpu_we, cpu_req, cpu_halt, cpu_addr};
+                2'b11: begin capture_shift = capture_wdata >> {ADDR[7:3],6'b0}; FROM_MEM <= capture_shift[63:0]; end
+              endcase
+              end
+           4'h9: begin capmem_en = 1'b1; capmem_shift = capmem_dout >> {ADDR[7:3],6'b0}; FROM_MEM <= capmem_shift[63:0]; end
+           4'h8: begin sharedmem_en = 8'hff; FROM_MEM <= sharedmem_dout; end
            4'h6: begin dma_en = 1'b1;
               casez (ADDR[19:18])
                 2'b00: FROM_MEM <= move_src_addr;
@@ -174,11 +175,11 @@ wire [96 : 0] pc_status;
                 2'b11: FROM_MEM <= move_status;
               endcase
               end               
-           4'h5: begin FROM_MEM = {31'b0, pc_status[96:64]}; end
-           4'h4: begin FROM_MEM = pc_status[63:0]; end
-           4'h3: begin FROM_MEM = {55'b0, capture_address}; end
-           4'h2: begin bootmem_en = ADDR[31:24]; FROM_MEM = bootmem_dout; end
-           default: FROM_MEM = 64'hDEADBEEF;
+           4'h5: begin FROM_MEM <= {31'b0, pc_status[96:64]}; end
+           4'h4: begin FROM_MEM <= pc_status[63:0]; end
+           4'h3: begin FROM_MEM <= {55'b0, capture_address}; end
+           4'h2: begin bootmem_en = ADDR[31:24]; FROM_MEM <= bootmem_dout; end
+           default: FROM_MEM <= 64'hDEADBEEF;
          endcase
       end
 
@@ -263,24 +264,21 @@ jtag_dummy #(.JTAG_CHAIN_START(JTAG_CHAIN_START)) jtag1(.*);
         .web    ( wrap_we                  )      // Port B Write Enable Input
         );
 
-     dualmem_256K_512
+     dualmem_256K_1260
      RAMB16_S36_S36_inst
        (
-        .clka   ( TCK2                     ),     // Port A Clock
+        .clka   ( clk                      ),     // Port A Clock
         .douta  ( capmem_dout              ),     // Port A 1-bit Data Output
-        .addra  ( ADDR[14:6]               ),     // Port A 14-bit Address Input
-        .dina   ( 512'b0                   ),     // Port A 1-bit Data Input
-        .ena    ( capmem_en ?
-                    16'hFFFF:16'h0000      ),     // Port A RAM Enable Input
-        .wea    ( 16'b0                    ),     // Port A Write Enable Input
+        .addra  ( ADDR[16:8]               ),     // Port A 14-bit Address Input
+        .dina   ( 1260'b0                  ),     // Port A 1-bit Data Input
+        .ena    ( capmem_en                ),     // Port A RAM Enable Input
+        .wea    ( 1'b0                     ),     // Port A Write Enable Input
         .clkb   ( clk                      ),     // Port B Clock
         .doutb  (                          ),     // Port B 1-bit Data Output
         .addrb  ( capture_address          ),     // Port B 14-bit Address Input
         .dinb   ( capture_wdata            ),     // Port B 1-bit Data Input
-        .enb    ( capture_busy ?
-                    16'hFFFF:16'h0000      ),     // Port B RAM Enable Input
-        .web    ( capture_busy ?
-                    16'hFFFF:16'h0000      )      // Port B Write Enable Input
+        .enb    ( capture_busy             ),     // Port B RAM Enable Input
+        .web    ( capture_busy             )      // Port B Write Enable Input
         );
 
 always @(posedge clk)
@@ -290,36 +288,42 @@ always @(posedge clk)
        move_en_edge <= move_en & !move_en_dly;
        {cpu_capture, cpu_fetch_o, cpu_resume_o, cpu_we_o, cpu_req_o, cpu_halt_o, cpu_addr_o, cpu_wdata_o} <=
             {cpu_capture, ~cpu_nofetch, cpu_resume, cpu_we, cpu_req, cpu_halt, cpu_addr, cpu_wdata};
-       if (capture_rst)
+       if (capture_rst && !cpu_capture)
          capture_address <= 'b0;
        else if (capture_busy)
          capture_address <= capture_address + 9'b1;
-       capture_wdata <= {
- wrap_rdata,
- wrap_en,
- wrap_addr[13:0],
- boot_rdata,
- boot_addr,
- boot_wdata,
- boot_en,
- boot_we,
- capture_address[8:0],
- capture_select
- };
-       
     end
+
+`ifdef AXI_CAPTURE
 
 capture_wrap capture1(
          .clk_i(clk),
          .rst_ni(aresetn),
-         .capture(capture_input),              // output wire [96 : 0] pc_status
+         .capture(capture_input),
          .capture_if(input_if));
 
 capture_wrap capture2(
          .clk_i(clk),
          .rst_ni(aresetn),
-         .capture(capture_output),              // output wire [96 : 0] pc_status
+         .capture(capture_output),
          .capture_if(output_if));
+
+assign capture_busy = dma_capture & !(&capture_address);
+assign capture_select = dma_capture_select ? capture_output : capture_input;
+
+`else
+
+instr_wrap capture(
+         .clk_i(clk),
+         .rst_ni(aresetn),
+         .capture(capture_select),
+         .tracer(tracer));
+
+assign capture_busy = (cpu_capture&(tracer.commit_ack|capture_rst)) & !(&capture_address);
+
+`endif
+
+assign capture_wdata = {~capture_address[8:0],capture_select,capture_address[8:0]};
 
    nasti_channel
   #(
