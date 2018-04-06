@@ -87,7 +87,7 @@ logic [AXI_DATA_WIDTH-1:0] cpu_wdata;
 logic        cpu_halted;
 logic        cpu_halt;
 logic        cpu_req;
-logic        cpu_we;
+logic        cpu_we, cpu_we_in, cpu_we_in2, cpu_we_dly;
 logic        cpu_gnt;
 logic        cpu_resume;
 logic        cpu_rvalid;
@@ -286,7 +286,10 @@ always @(posedge clk)
        move_en <= move_en_in;
        move_en_dly <= move_en;
        move_en_edge <= move_en & !move_en_dly;
-       {cpu_capture, cpu_fetch_o, cpu_resume_o, cpu_we_o, cpu_req_o, cpu_halt_o, cpu_addr_o, cpu_wdata_o} <=
+       cpu_we_in2 <= cpu_we_in;
+       cpu_we_dly <= cpu_we_in2;
+       cpu_we_o <= cpu_we_in2 & !cpu_we_dly;
+       {cpu_capture, cpu_fetch_o, cpu_resume_o, cpu_we_in, cpu_req_o, cpu_halt_o, cpu_addr_o, cpu_wdata_o} <=
             {cpu_capture, ~cpu_nofetch, cpu_resume, cpu_we, cpu_req, cpu_halt, cpu_addr, cpu_wdata};
        if (capture_rst && !cpu_capture)
          capture_address <= 'b0;
