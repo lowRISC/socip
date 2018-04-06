@@ -99,9 +99,11 @@ set files [list \
                [file normalize $origin_dir/src/socip/ariane/if_converter.sv] \
                [file normalize $origin_dir/src/socip/ariane/axi_cache_wrap.sv] \
                [file normalize $origin_dir/src/socip/ariane/crossbar_socip.sv] \
+               [file normalize $origin_dir/src/socip/ariane/crossbar_xilinx.sv] \
 	       [file normalize $origin_dir/src/socip/jtag_xilinx/jtag_dummy.v] \
 	       [file normalize $origin_dir/src/socip/jtag_xilinx/stubs.sv] \
 	       [file normalize $origin_dir/src/socip/ariane/dbg_wrap.sv] \
+	       [file normalize $origin_dir/src/socip/ariane/instr_wrap.sv] \
 	       [file normalize $origin_dir/src/socip/ariane/capture_wrap.sv] \
 	       [file normalize $origin_dir/src/socip/ariane/axi_ram_wrap_ariane.sv] \
 	       [file normalize $origin_dir/src/socip/ariane/axi_ram_wrap_xilinx.sv] \
@@ -111,7 +113,7 @@ set files [list \
                [file normalize $origin_dir/src/socip/peripherals/dualmem.v] \
                [file normalize $origin_dir/src/socip/peripherals/dualmem_32K_64.sv] \
                [file normalize $origin_dir/src/socip/peripherals/dualmem_128K_64.sv] \
-               [file normalize $origin_dir/src/socip/peripherals/dualmem_256K_512.sv] \
+               [file normalize $origin_dir/src/socip/peripherals/dualmem_630K_1260.sv] \
                [file normalize $origin_dir/src/socip/peripherals/dualmem_512K_64.sv] \
                [file normalize $origin_dir/src/socip/peripherals/dualmem_widen.v] \
                [file normalize $origin_dir/src/socip/peripherals/axis_gmii_rx.v] \
