@@ -5,11 +5,16 @@
 //`define ADD_PHY_DDR
 `define NEXYS4
 
-module tb;
-
-   logic clk, rst, tck_i, trstn_i, tms_i, tdi_i, tdo_o;
-
+module tb
+`ifdef VERILATOR
+  (input clk, rst, output tracer_t tracer);
+`else
+  ();
+   logic clk, rst;
    tracer_t tracer;
+`endif
+
+   logic tck_i, trstn_i, tms_i, tdi_i, tdo_o;
 
    ariane_nexys4ddr DUT
      (
@@ -19,6 +24,7 @@ module tb;
       .rst_top      ( !rst      )         // NEXYS4's cpu_reset is active low
       );
 
+`ifndef VERILATOR
     assign glbl.JTAG_TMS_GLBL = 1'b0;
     assign glbl.JTAG_TCK_GLBL = 1'b0;
     assign glbl.JTAG_TDI_GLBL = 1'b0;
@@ -57,7 +63,8 @@ initial
       clk = 0;
       forever clk = #5 !clk;
    end // initial begin
-
+`endif //  `ifndef VERILATOR
+   
    wire [15:0]  ddr_dq;
    wire [1:0]   ddr_dqs_n;
    wire [1:0]   ddr_dqs_p;
@@ -73,6 +80,7 @@ initial
    wire [1:0]   ddr_dm;
    logic        ddr_odt;
 
+`ifndef VERILATOR
    // behavioural DDR2 RAM
    ddr2_model u_comp_ddr2
      (
@@ -92,7 +100,8 @@ initial
       .rdqs_n  (                 ),
       .odt     ( ddr_odt         )
       );
-
+`endif //  `ifndef VERILATOR
+   
    wire         rxd;
    wire         txd;
    wire         rts;
@@ -134,8 +143,8 @@ uart i_uart(
    wire [3:0]   sd_dat_to_host;
    wire         sd_cmd_to_host;
    wire         sd_reset, oeCmd, oeDat;
-   wand [3:0]   sd_dat = oeDat ? sd_dat_to_host : 4'b1111;
-   wand         sd_cmd = oeCmd ? sd_cmd_to_host : 4'b1;
+   wire [3:0]   sd_dat = oeDat ? sd_dat_to_host : 4'b1111;
+   wire         sd_cmd = oeCmd ? sd_cmd_to_host : 4'b1;
 
 sd_verilator_model sdflash1 (
              .sdClk(sd_sclk),
@@ -181,7 +190,8 @@ sd_verilator_model sdflash1 (
    wire [3:0]  VGA_GREEN_O;
 
    string      dumpname;
-   
+
+`ifndef VERILATOR
    // vcd
    initial
      begin
@@ -200,6 +210,7 @@ sd_verilator_model sdflash1 (
          $vcdpluson;
        end
      end // initial begin
+`endif
    
   wire         o_erefclk; // RMII clock out
   wire [1:0]   i_erxd ;

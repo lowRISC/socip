@@ -48,14 +48,14 @@ logic [7:0] uncon;
    
 infer_dpram #(.RAM_SIZE(9), .BYTE_WIDTH(158)) ram1 // RAM_SIZE is in words
 (
-.ram_clk_a(clka[0]),
-.ram_en_a(|ena),
+.ram_clk_a(clka),
+.ram_en_a(ena),
 .ram_we_a({158{wea}}),
 .ram_addr_a(addra),
 .ram_wrdata_a({4'b0,dina}),
 .ram_rddata_a({uncon[7:4],douta}),
 .ram_clk_b(clkb),
-.ram_en_b(|enb),
+.ram_en_b(enb),
 .ram_we_b({158{web}}),
 .ram_addr_b(addrb),
 .ram_wrdata_b({4'b0,dinb}),
