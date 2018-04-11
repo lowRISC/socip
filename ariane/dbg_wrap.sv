@@ -79,7 +79,6 @@ logic  [7:0]                move_mask;
 logic move_en, move_en_in, move_en_dly, move_en_edge;
 logic move_done;
 
-wire combined_rstn = rst_n && trstn_i;
 logic cpu_nofetch;   
 logic [15:0] cpu_addr; 
 logic [AXI_DATA_WIDTH-1:0] cpu_rdata; 
@@ -122,12 +121,12 @@ wire [96 : 0] pc_status;
    logic         dma_capture, dma_capture_select, capture_busy;
    
    wire [63:0] move_status = {move_done, areset, dma_capture_select, dma_capture, move_en_in, move_mask};
-   assign aresetn = combined_rstn && (!areset);
+   assign aresetn = rst_n && (!areset);
 
    logic  dma_en;
 
-   always @(posedge TCK or negedge combined_rstn)
-     if (!combined_rstn)
+   always @(posedge TCK or negedge rst_n)
+     if (!rst_n)
        begin
           {capture_rst, cpu_capture, cpu_nofetch, cpu_resume, cpu_we, cpu_req, cpu_halt, cpu_addr, cpu_wdata} <= 'b0;
           {cpu_rdata, cpu_halted, cpu_gnt, cpu_rvalid} <= 'b0;
@@ -264,7 +263,7 @@ jtag_dummy #(.JTAG_CHAIN_START(JTAG_CHAIN_START)) jtag1(.*);
         .web    ( wrap_we                  )      // Port B Write Enable Input
         );
 
-     dualmem_256K_1260
+     dualmem_630K_1260
      RAMB16_S36_S36_inst
        (
         .clka   ( clk                      ),     // Port A Clock
@@ -316,14 +315,9 @@ assign capture_select = dma_capture_select ? capture_output : capture_input;
 
 `else
 
-instr_wrap capture(
-         .clk_i(clk),
-         .rst_ni(aresetn),
-         .capture(capture_select),
-         .tracer(tracer));
-
 assign capture_busy = (cpu_capture&(tracer.commit_ack|capture_rst)) & !(&capture_address);
-
+assign capture_select = tracer;
+   
 `endif
 
 assign capture_wdata = {~capture_address[8:0],capture_select,capture_address[8:0]};
