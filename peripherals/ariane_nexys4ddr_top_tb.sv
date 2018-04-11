@@ -158,9 +158,21 @@ sd_verilator_model sdflash1 (
 
    // LED and DIP switch
    wire [7:0]   o_led;
-   wire [15:0]   i_dip;
+   reg [15:0]   i_dip;
 
-   assign i_dip = 16'h1;
+   initial
+     begin
+        if ($test$plusargs("boot"))
+          begin
+             i_dip = 16'h0;
+             if ($value$plusargs("readmemh=%s", s))
+               $readmemh(s, DUT.i_dbg.RAMB16_inst.ram1.ram);
+          end
+        else
+          begin
+             i_dip = 16'h1;
+          end
+     end
 
    // push button array
    wire         GPIO_SW_C;
@@ -191,6 +203,81 @@ sd_verilator_model sdflash1 (
 
    string      dumpname;
 
+   
+        logic              rstn;
+        logic              flush_unissued;
+        logic              flush;
+        // Decode
+        logic [31:0]       instruction;
+        logic              fetch_valid;
+        logic              fetch_ack;
+        // Issue stage
+        logic              issue_ack; // issue acknowledged
+        scoreboard_entry_t issue_sbe; // issue scoreboard entry
+        // WB stage
+        logic [4:0]        waddr;
+        logic [63:0]       wdata;
+        logic              we;
+        // commit stage
+        scoreboard_entry_t commit_instr; // commit instruction
+        logic              commit_ack;
+
+        // address translation
+        // stores
+        logic              st_valid;
+        // loads
+        logic              ld_valid;
+        logic              ld_kill;
+        // load and store
+        logic [63:0]       paddr;
+
+        // exceptions
+        exception_t        exception;
+        // current privilege level
+        priv_lvl_t         priv_lvl;
+        logic [4:0]        raddr_a_i, raddr_b_i, waddr_a_i;
+        logic [63:0]       rdata_a_o, rdata_b_o, wdata_a_i;
+
+   assign {
+           rstn,
+           flush_unissued,
+           flush,
+           // Decode
+           instruction,
+           fetch_valid,
+           fetch_ack,
+           // Issue stage
+           issue_ack, // issue acknowledged
+           issue_sbe, // issue scoreboard entry
+           // WB stage
+           waddr,
+           wdata,
+           we,
+           // commit stage
+           commit_instr, // commit instruction
+           commit_ack,
+           
+           // address translation
+           // stores
+           st_valid,
+           // loads
+           ld_valid,
+           ld_kill,
+           // load and store
+           paddr,
+           
+           // exceptions
+           exception,
+           // current privilege level
+           priv_lvl,
+           raddr_a_i,
+           raddr_b_i,
+           waddr_a_i,
+           rdata_a_o,
+           rdata_b_o,
+           wdata_a_i
+           } = tracer;
+   
 `ifndef VERILATOR
    // vcd
    initial
@@ -198,10 +285,47 @@ sd_verilator_model sdflash1 (
      if ($value$plusargs("vcd=%s", dumpname))
        begin
          $dumpfile(dumpname);
-         $dumpvars(0, tb.DUT.i_ariane);
-         $dumpvars(0, tb.DUT.i_master0);
-         $dumpvars(0, tb.DUT.i_master1);
-         $dumpvars(0, tb.DUT.i_master_behav);
+         $dumpvars(0, rstn);
+         $dumpvars(0, flush_unissued);
+         $dumpvars(0, flush);
+        // Decode
+         $dumpvars(0, instruction);
+         $dumpvars(0, fetch_valid);
+         $dumpvars(0, fetch_ack);
+        // Issue stage
+         $dumpvars(0, issue_ack); // issue acknowledged
+         $dumpvars(0, issue_sbe); // issue scoreboard entry
+        // WB stage
+         $dumpvars(0, waddr);
+         $dumpvars(0, wdata);
+         $dumpvars(0, we);
+        // commit stage
+         $dumpvars(0, commit_instr); // commit instruction
+         $dumpvars(0, commit_ack);
+        // address translation
+        // stores
+         $dumpvars(0, st_valid);
+        // loads
+         $dumpvars(0, ld_valid);
+         $dumpvars(0, ld_kill);
+        // load and store
+         $dumpvars(0, paddr);
+        // exceptions
+         $dumpvars(0, exception);
+        // current privilege level
+         $dumpvars(0, priv_lvl);
+         $dumpvars(0, raddr_a_i);
+         $dumpvars(0, raddr_b_i);
+         $dumpvars(0, waddr_a_i);
+         $dumpvars(0, rdata_a_o);
+         $dumpvars(0, rdata_b_o);
+         $dumpvars(0, wdata_a_i);
+/*
+         $dumpvars(0, DUT.i_ariane);
+         $dumpvars(0, DUT.i_master0);
+         $dumpvars(0, DUT.i_master1);
+         $dumpvars(0, DUT.i_master_behav);
+*/ 
          $dumpon;
        end
      if ($value$plusargs("vpd=%s", dumpname))
