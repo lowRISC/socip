@@ -1,5 +1,5 @@
 
-module dualmem_256K_1260(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, doutb, ena, enb);
+module dualmem_630K_1260(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, doutb, ena, enb);
 
    input wire clka;
    input wire clkb;
