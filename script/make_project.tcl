@@ -91,7 +91,16 @@ set files [list \
                [file normalize $origin_dir/src/cache_ctrl.sv] \
                [file normalize $origin_dir/src/perf_counters.sv] \
                [file normalize $origin_dir/src/regfile_ff.sv] \
-               [file normalize $origin_dir/src/util/xilinx_sram.sv] \
+               [file normalize $origin_dir/src/util/generate_sram.sv] \
+               [file normalize $origin_dir/src/socip/peripherals/ascii_code.v] \
+               [file normalize $origin_dir/src/socip/peripherals/ddr2_model_parameters.vh] \
+               [file normalize $origin_dir/src/socip/peripherals/sd_defines.h] \
+               [file normalize $origin_dir/src/util/xilinx_sram_128_256.sv] \
+               [file normalize $origin_dir/src/util/xilinx_sram_44_256.sv] \
+               [file normalize $origin_dir/src/util/xilinx_sram_16_256.sv] \
+               [file normalize $origin_dir/src/util/xilinx_sram_64_512_nobank.sv] \
+               [file normalize $origin_dir/src/util/xilinx_sram_46_256_nobank.sv] \
+               [file normalize $origin_dir/src/util/generate_sram_nobank.sv] \
                [file normalize $origin_dir/src/util/cluster_clock_gating.sv] \
                [file normalize $origin_dir/src/socip/ariane/ddr_bram.sv] \
                [file normalize $origin_dir/src/socip/ariane/slave_adapter.sv] \
@@ -103,7 +112,6 @@ set files [list \
 	       [file normalize $origin_dir/src/socip/jtag_xilinx/jtag_dummy.v] \
 	       [file normalize $origin_dir/src/socip/jtag_xilinx/stubs.sv] \
 	       [file normalize $origin_dir/src/socip/ariane/dbg_wrap.sv] \
-	       [file normalize $origin_dir/src/socip/ariane/instr_wrap.sv] \
 	       [file normalize $origin_dir/src/socip/ariane/capture_wrap.sv] \
 	       [file normalize $origin_dir/src/socip/ariane/axi_ram_wrap_ariane.sv] \
 	       [file normalize $origin_dir/src/socip/ariane/axi_ram_wrap_xilinx.sv] \
