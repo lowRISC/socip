@@ -109,9 +109,6 @@ module ariane_nexys4ddr
    logic [ 5:0]      cluster_id_i = 'b0;
    logic             flush_req_i = 'b0;
    logic             flushing_o;
-   // Interrupt s
-   logic [1:0]       irq_i = 'b0; // level sensitive IR lines; mip & sip
-   logic             ipi_i = 'b0; // inter-processor interrupts
    logic             sec_lvl_o; // current privilege level oot
    // Timer facilities
    logic [63:0]      time_i = 'b0; // global time (most probably coming from an RTC)
@@ -132,9 +129,6 @@ module ariane_nexys4ddr
 
    // Debug controlled reset of the Rocket system
    logic  sys_rst, cpu_rst;
-
-   // interrupt line
-   logic [63:0]                interrupt;
 
 wire io_emdio_i, phy_emdio_o, phy_emdio_t, clk_rmii, clk_rmii_quad, clk_locked, clk_locked_wiz, aresetn;
 reg phy_emdio_i, io_emdio_o, io_emdio_t;
@@ -401,7 +395,12 @@ ddr_bram #(.BRAM_SIZE(24)) my_master2_behav (
    /////////////////////////////////////////////////////////////
    // HID
 
-   logic                       hid_irq, sd_irq, eth_irq;
+   logic                       sd_irq, eth_irq, spi_irq = 1'b0, uart_irq = 1'b0;
+   // interrupt lines from peripherals
+   logic [63:0]                interrupt = {sd_irq, eth_irq, spi_irq, uart_irq};
+   // Ariane nterrupts in
+   logic [1:0]                 irq_i = {|interrupt,|interrupt}; // level sensitive IR lines; mip & sip
+   logic                       ipi_i = 'b0; // inter-processor interrupts
 
    wire                        hid_rst, hid_clk, hid_en;
    wire [7:0]                  hid_we;

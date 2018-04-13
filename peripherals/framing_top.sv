@@ -126,15 +126,15 @@ reg        mii_rx_byte_received_i, full, byte_sync, sync, irq_en, mii_rx_frame_i
    always @(posedge clk_rmii)
        tx_enable_old <= tx_enable_i;
 
-   logic [1:0] rx_wr = rx_axis_tvalid << rx_addr_axis[0];
+   logic [1:0] rx_wr = rx_axis_tvalid << rx_addr_axis[2];
    logic [15:0] douta;
-   assign tx_axis_tdata = douta >> {tx_frame_addr[0],3'b000};
+   assign tx_axis_tdata = douta >> {tx_frame_addr[2],3'b000};
    
    dualmem_widen RAMB16_inst_rx (
                                     .clka(clk_rmii),              // Port A Clock
                                     .clkb(msoc_clk),              // Port A Clock
                                     .douta(),                     // Port A 8-bit Data Output
-                                    .addra({1'b0,rx_addr_axis[10:1]}),    // Port A 11-bit Address Input
+                                    .addra({1'b0,rx_addr_axis[10:3],rx_addr_axis[1:0]}),    // Port A 11-bit Address Input
                                     .dina({rx_axis_tdata,rx_axis_tdata}), // Port A 8-bit Data Input
                                     .ena(rx_axis_tvalid),         // Port A RAM Enable Input
                                     .wea(rx_wr),                  // Port A Write Enable Input
@@ -150,7 +150,7 @@ reg        mii_rx_byte_received_i, full, byte_sync, sync, irq_en, mii_rx_frame_i
                                    .clka(~clk_rmii),             // Port A Clock
                                    .clkb(msoc_clk),              // Port A Clock
                                    .douta(douta),                // Port A 8-bit Data Output
-                                   .addra({1'b0,tx_frame_addr[10:1]}),  // Port A 11-bit Address Input
+                                   .addra({1'b0,tx_frame_addr[10:3],tx_frame_addr[1:0]}),  // Port A 11-bit Address Input
                                    .dina(16'b0),                 // Port A 8-bit Data Input
                                    .ena(tx_axis_tvalid),         // Port A RAM Enable Input
                                    .wea(2'b0),                  // Port A Write Enable Input
