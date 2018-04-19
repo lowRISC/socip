@@ -285,7 +285,6 @@ assign mem_mig_nasti.r_user = 'b0;
       .ui_addn_clk_2        (                        ),
       .ui_addn_clk_3        (                        ),
       .ui_addn_clk_4        (                        ),
-      .device_temp_i        ( 12'b0                  ),
       .ddr2_dq              ( ddr_dq                 ),
       .ddr2_dqs_n           ( ddr_dqs_n              ),
       .ddr2_dqs_p           ( ddr_dqs_p              ),

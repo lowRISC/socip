@@ -178,25 +178,6 @@ set_property verilog_define [list MIG FPGA FPGA_FULL NEXYS4 PULP_FPGA_EMUL NASTI
 # Set 'sources_1' fileset properties
 set_property "top" "ariane_nexys4ddr" [get_filesets sources_1]
 
-# AXI master FIFOs
-create_ip -name fifo_generator -vendor xilinx.com -library ip  -module_name data_fifo_32
-set_property -dict [list \
-                        CONFIG.Fifo_Implementation {Common_Clock_Builtin_FIFO} \
-                        CONFIG.Performance_Options {Standard_FIFO} \
-                        CONFIG.Input_Data_Width {32} \
-                        CONFIG.Output_Data_Width {32} \
-                        CONFIG.Reset_Type {Asynchronous_Reset} \
-                        CONFIG.Use_Dout_Reset {false}] [get_ips data_fifo_32]
-
-create_ip -name fifo_generator -vendor xilinx.com -library ip  -module_name data_fifo_64
-set_property -dict [list \
-                        CONFIG.Fifo_Implementation {Common_Clock_Builtin_FIFO} \
-                        CONFIG.Performance_Options {Standard_FIFO} \
-                        CONFIG.Input_Data_Width {64} \
-                        CONFIG.Output_Data_Width {64} \
-                        CONFIG.Reset_Type {Asynchronous_Reset} \
-                        CONFIG.Use_Dout_Reset {false}] [get_ips data_fifo_64]
-
 # Program/data RAM
 create_ip -name blk_mem_gen -vendor xilinx.com -library ip -module_name instr_ram
 set_property -dict [list \
@@ -258,15 +239,6 @@ set_property -dict [list \
                         CONFIG.Write_Depth_A {256} \
                         CONFIG.Register_PortA_Output_of_Memory_Primitives {false} ] \
     [get_ips xilinx_dcache_bank_tag_256x46]
-
-#UART
-create_ip -name axi_uart16550 -vendor xilinx.com -library ip -module_name axi_uart16550_0
-set_property -dict [list \
-                        CONFIG.UART_BOARD_INTERFACE {Custom} \
-                        CONFIG.C_S_AXI_ACLK_FREQ_HZ_d {25} \
-                       ] [get_ips axi_uart16550_0]
-generate_target {instantiation_template} \
-    [get_files $proj_dir/$project_name.srcs/sources_1/ip/axi_uart16550_0/axi_uart16550_0.xci]
 
 #BRAM Controller
 create_ip -name axi_bram_ctrl -vendor xilinx.com -library ip -module_name axi_bram_ctrl_0
@@ -516,29 +488,6 @@ set_property -dict [list \
                         CONFIG.MAX_R_WAITS {1023} \
                         CONFIG.MAX_B_WAITS {1023} \
                         CONFIG.HAS_SYSTEM_RESET {1}] [get_ips axi_protocol_checker_0]
-
-# SPI interface for R/W SD card
-create_ip -name axi_quad_spi -vendor xilinx.com -library ip -module_name axi_quad_spi_0
-set_property -dict [list \
-                        CONFIG.C_USE_STARTUP {0} \
-                        CONFIG.C_SCK_RATIO {2} \
-                        CONFIG.C_NUM_TRANSFER_BITS {8}] \
-    [get_ips axi_quad_spi_0]
-generate_target {instantiation_template} [get_files $proj_dir/$project_name.srcs/sources_1/ip/axi_quad_spi_0/axi_quad_spi_0.xci]
-
-# Quad SPI interface for XIP SPI Flash
-create_ip -name axi_quad_spi -vendor xilinx.com -library ip -module_name axi_quad_spi_1
-set_property -dict [list \
-                        CONFIG.C_USE_STARTUP {1} \
-                        CONFIG.C_SPI_MEMORY {3} \
-                        CONFIG.C_SPI_MODE {2} \
-                        CONFIG.C_XIP_MODE {1} \
-                        CONFIG.C_SPI_MEM_ADDR_BITS {32} \
-                        CONFIG.C_S_AXI4_ID_WIDTH $axi_id_width \
-                        CONFIG.C_SCK_RATIO {2} \
-                        CONFIG.C_TYPE_OF_AXI4_INTERFACE {1}] \
-    [get_ips axi_quad_spi_1]
-generate_target {instantiation_template} [get_files $proj_dir/$project_name.srcs/sources_1/ip/axi_quad_spi_1/axi_quad_spi_1.xci]
 
 # Create 'constrs_1' fileset (if not found)
 if {[string equal [get_filesets -quiet constrs_1] ""]} {

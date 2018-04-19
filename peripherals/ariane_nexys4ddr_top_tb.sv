@@ -300,7 +300,11 @@ sd_verilator_model sdflash1 (
          $dumpvars(0, wdata);
          $dumpvars(0, we);
         // commit stage
-         $dumpvars(0, commit_instr); // commit instruction
+         $dumpvars(0, commit_instr.pc); // commit instruction
+         $dumpvars(0, commit_instr.fu); // commit instruction
+         $dumpvars(0, commit_instr.op); // commit instruction
+         $dumpvars(0, commit_instr.ex.valid); // commit instruction
+         $dumpvars(0, commit_instr.ex.tval); // commit instruction
          $dumpvars(0, commit_ack);
         // address translation
         // stores
@@ -320,6 +324,8 @@ sd_verilator_model sdflash1 (
          $dumpvars(0, rdata_a_o);
          $dumpvars(0, rdata_b_o);
          $dumpvars(0, wdata_a_i);
+
+         $dumpvars(0, DUT.psoc);
 /*
          $dumpvars(0, DUT.i_ariane);
          $dumpvars(0, DUT.i_master0);

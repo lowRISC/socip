@@ -7,7 +7,7 @@
     <Debug_En>OFF</Debug_En>
     <DataDepth_En>1024</DataDepth_En>
     <LowPower_En>OFF</LowPower_En>
-    <XADC_En>Disabled</XADC_En>
+    <XADC_En>Enabled</XADC_En>
     <TargetFPGA>xc7a100t-csg324/-1</TargetFPGA>
     <Version>2.4</Version>
     <SystemClock>No Buffer</SystemClock>
@@ -120,7 +120,7 @@
             <C0_S_AXI_ADDR_WIDTH>27</C0_S_AXI_ADDR_WIDTH>
             <C0_S_AXI_DATA_WIDTH>64</C0_S_AXI_DATA_WIDTH>
             <C0_S_AXI_ID_WIDTH>10</C0_S_AXI_ID_WIDTH>
-            <C0_S_AXI_SUPPORTS_NARROW_BURST>0</C0_S_AXI_SUPPORTS_NARROW_BURST>
+            <C0_S_AXI_SUPPORTS_NARROW_BURST>1</C0_S_AXI_SUPPORTS_NARROW_BURST>
         </AXIParameters>
     </Controller>
 
