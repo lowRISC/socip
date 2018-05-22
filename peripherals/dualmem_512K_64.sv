@@ -14,7 +14,7 @@ module dualmem_512K_64(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, do
 
    genvar r;
 
-`ifdef FPGA
+`ifdef FPGA_FULL
    
    generate for (r = 0; r < 32; r=r+1)
      RAMB16_S2_S2

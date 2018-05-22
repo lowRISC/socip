@@ -111,10 +111,9 @@ module ariane_nexys4ddr
    logic             flushing_o;
    logic             sec_lvl_o; // current privilege level oot
    // Timer facilities
-   logic [63:0]      time_i = 'b0; // global time (most probably coming from an RTC)
-   logic             time_irq_i = 'b0; // timer interrupt in
+   logic [63:0]      time_i, mtimecmp; // global time (most probably coming from an RTC)
+   logic             time_irq_i; // timer interrupt in
 
-   parameter logic [63:0]               CACHE_START_ADDR  = 64'h8000_0000;
  // address on which to decide whether the request is cache-able or not
    parameter int                        unsigned AXI_ID_WIDTH      = 10;
    parameter int                        unsigned AXI_USER_WIDTH    = 1;
@@ -133,6 +132,15 @@ module ariane_nexys4ddr
 wire io_emdio_i, phy_emdio_o, phy_emdio_t, clk_rmii, clk_rmii_quad, clk_locked, clk_locked_wiz, aresetn;
 reg phy_emdio_i, io_emdio_o, io_emdio_t;
 
+always @(posedge clk_i)
+    begin
+    if (!rst_ni)
+        time_i = 'b0;
+    else
+        time_i = time_i + 1'b1;
+        time_irq_i = time_i >= mtimecmp;
+    end
+    
    // the NASTI bus for off-FPGA DRAM, converted to High frequency
    nasti_channel   
      #(
@@ -396,9 +404,11 @@ ddr_bram #(.BRAM_SIZE(24)) my_master2_behav (
 
    logic                       sd_irq, eth_irq, spi_irq = 1'b0, uart_irq = 1'b0;
    // interrupt lines from peripherals
-   logic [63:0]                interrupt = {sd_irq, eth_irq, spi_irq, uart_irq};
+   wire [63:0]                 minten, sinten;
+   wire [3:0]                  minterrupt = {sd_irq, eth_irq, spi_irq, uart_irq} & minten;
+   wire [3:0]                  sinterrupt = {sd_irq, eth_irq, spi_irq, uart_irq} & sinten;
    // Ariane nterrupts in
-   logic [1:0]                 irq_i = {|interrupt,|interrupt}; // level sensitive IR lines; mip & sip
+   wire [1:0]                  irq_i = {|minterrupt,|sinterrupt}; // level sensitive IR lines; meip & seip
    logic                       ipi_i = 'b0; // inter-processor interrupts
 
    wire                        hid_rst, hid_clk, hid_en;
@@ -475,7 +485,6 @@ ddr_bram #(.BRAM_SIZE(24)) my_master2_behav (
     logic [31:0] dbg_mstaddress;
     
     ariane #(
-        .CACHE_START_ADDR ( CACHE_START_ADDR ),
         .AXI_ID_WIDTH     ( AXI_ID_WIDTH     ),
         .AXI_USER_WIDTH   ( AXI_USER_WIDTH   )
     ) i_ariane (
@@ -487,7 +496,10 @@ ddr_bram #(.BRAM_SIZE(24)) my_master2_behav (
         .data_if                ( data_if              ),
         .bypass_if              ( bypass_if            ),
         .instr_if               ( instr_if             ),
-        .boot_addr_i            ( i_dip[0] ? 64'h80000000 : 64'h40000000 )
+        .boot_addr_i            ( i_dip[0] ? 64'h80000000 : 64'h40000000 ),
+        .mtimecmp_o             ( mtimecmp             ),
+        .minten_o               ( minten               ),
+        .sinten_o               ( sinten               )
         );
 
     assign flush_dcache = flush_dcache_q;

@@ -266,18 +266,12 @@ jtag_dummy #(.JTAG_CHAIN_START(JTAG_CHAIN_START)) jtag1(.*);
      dualmem_630K_1260
      RAMB16_S36_S36_inst
        (
-        .clka   ( clk                      ),     // Port A Clock
-        .douta  ( capmem_dout              ),     // Port A 1-bit Data Output
-        .addra  ( ADDR[16:8]               ),     // Port A 14-bit Address Input
-        .dina   ( 1260'b0                  ),     // Port A 1-bit Data Input
-        .ena    ( capmem_en                ),     // Port A RAM Enable Input
-        .wea    ( 1'b0                     ),     // Port A Write Enable Input
-        .clkb   ( clk                      ),     // Port B Clock
-        .doutb  (                          ),     // Port B 1-bit Data Output
-        .addrb  ( capture_address          ),     // Port B 14-bit Address Input
-        .dinb   ( capture_wdata            ),     // Port B 1-bit Data Input
-        .enb    ( capture_busy             ),     // Port B RAM Enable Input
-        .web    ( capture_busy             )      // Port B Write Enable Input
+        .clk    ( clk                      ),     // Port A Clock
+        .dout   ( capmem_dout              ),     // Port A 1-bit Data Output
+        .addr   ( capture_busy ? capture_address : ADDR[16:8] ),     // Port B 14-bit Address Input
+        .din    ( capture_wdata            ),     // Port B 1-bit Data Input
+        .en     ( capture_busy | capmem_en ),     // Port B RAM Enable Input
+        .we     ( capture_busy             )      // Port B Write Enable Input
         );
 
 always @(posedge clk)

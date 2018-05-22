@@ -84,18 +84,20 @@ module fstore2(
    
    wire [7:0]                    red_in, green_in, blue_in;
 
+   assign dvi_mux = hreg[0];
+
+   dualmem ram1(.clka(pixel2_clk),
+                .dina({8{addra[7:0]}}), .addra(addra[13:3]), .wea({8{clear}}), .douta(dout), .ena(1'b1),
+                .clkb(~clk_data), .dinb(dinb), .addrb(addrb), .web(web), .doutb(doutb), .enb(enb));
+
+`ifdef LASTMSG
+   
    parameter msgwid = 32;
    
    reg [msgwid*8-1:0]            last_msg;
                
    reg [7:0]                     crnt, msgi;
                      
-   assign dvi_mux = hreg[0];
-
-   dualmem ram1(.clka(pixel2_clk),
-                .dina({8{addra[7:0]}}), .addra(addra[13:3]), .wea({8{clear}}), .douta(dout), .ena(1'b1),
-                .clkb(clk_data), .dinb(dinb), .addrb(addrb), .web(web), .doutb(doutb), .enb(enb));
-
    // This section generates a message in simulation, it gets trimmed in hardware.
    always @(posedge clk_data)
      if (irst)
@@ -106,9 +108,12 @@ module fstore2(
           if (web[msgi])
             begin
                crnt = dinb >> msgi*8;
+               $write("%c", crnt);
+               if (crnt==10 || crnt==13) $fflush();
                last_msg = {last_msg[msgwid*8-9:0],crnt};
             end
      end
+`endif
    
    always @(posedge pixel2_clk) // or posedge reset) // JRRK - does this need async ?
    if (irst)

@@ -55,13 +55,17 @@ initial
 
    initial begin
       rst = 1;
-      #130;
+      #1000;
       rst = 0;
    end
 
    initial begin
       clk = 0;
+`ifdef MIG
       forever clk = #5 !clk;
+`else
+      forever clk = #20 !clk;
+`endif      
    end // initial begin
 `endif //  `ifndef VERILATOR
    
@@ -107,20 +111,24 @@ initial
    wire         rts;
    wire         cts;
 
-   assign rxd = 'b1;
    assign cts = 'b1;
 
-reg u_trans;
+reg u_trans, u_recv_ack;
 reg [15:0] u_baud;
 wire received, recv_err, is_recv, is_trans, u_tx, u_rx;
 wire [7:0] u_rx_byte;
 reg  [7:0] u_tx_byte;
 
-   assign u_trans = received;
    assign u_tx_byte = u_rx_byte;
-   assign u_baud = 16'd52;
+   assign u_baud = 16'd54;
    assign u_rx = txd;
+   assign rxd = u_tx;
    
+    always_ff @(posedge clk) begin
+       u_recv_ack = u_trans;
+       u_trans = received;
+    end
+
 uart i_uart(
     .clk(clk), // The master clock for this module
     .rst(rst), // Synchronous reset.
@@ -134,7 +142,7 @@ uart i_uart(
     .is_transmitting(is_trans), // Low when transmit line is idle.
     .recv_error(recv_err), // Indicates error in receiving packet.
     .baud(u_baud),
-    .recv_ack(received)
+    .recv_ack(u_recv_ack)
     );
 
    // 4-bit full SD interface
@@ -285,6 +293,7 @@ sd_verilator_model sdflash1 (
      if ($value$plusargs("vcd=%s", dumpname))
        begin
          $dumpfile(dumpname);
+`ifdef TRACE
          $dumpvars(0, rstn);
          $dumpvars(0, flush_unissued);
          $dumpvars(0, flush);
@@ -324,8 +333,8 @@ sd_verilator_model sdflash1 (
          $dumpvars(0, rdata_a_o);
          $dumpvars(0, rdata_b_o);
          $dumpvars(0, wdata_a_i);
-
-         $dumpvars(0, DUT.psoc);
+`endif
+         $dumpvars(0, tb);
 /*
          $dumpvars(0, DUT.i_ariane);
          $dumpvars(0, DUT.i_master0);
@@ -390,7 +399,7 @@ sd_verilator_model sdflash1 (
                      tracer.rdata_b_o, tracer.waddr_a_i, tracer.wdata_a_i);
 `ifdef VERBOSE              
            if (tracer.commit_ack)
-             $display("%0h (%h) %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h",
+             $display("%0h DASM(%h) %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h",
                      tracer.commit_instr.pc, tracer.commit_instr.ex.tval[31:0], tracer.exception.valid, 
                      tracer.commit_instr.ex.cause, tracer.flush_unissued, tracer.flush, tracer.instruction, tracer.fetch_valid, 
                      tracer.fetch_ack, tracer.issue_ack, tracer.waddr, tracer.wdata, tracer.we, 
@@ -406,7 +415,7 @@ sd_verilator_model sdflash1 (
            else
              begin
                 if (tracer.commit_ack) 
-                  $fdisplay(f, "%d %0h (%h) %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h",
+                  $fdisplay(f, "%d %0h DASM(%h) %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h",
                             cycles, tracer.commit_instr.pc, tracer.commit_instr.ex.tval[31:0], tracer.exception.valid, 
                             tracer.commit_instr.ex.cause, tracer.flush_unissued, tracer.flush, tracer.instruction, tracer.fetch_valid, 
                             tracer.fetch_ack, tracer.issue_ack, tracer.waddr, tracer.wdata, tracer.we, 
@@ -433,6 +442,10 @@ sd_verilator_model sdflash1 (
          f = $fopen(s, "w");
        else
          f = $fopen("trace_core_00_0.dasm", "w");
+       if ($value$plusargs("dtb=%s", s))
+              $readmemh(s, DUT.i_dbg.RAMB16_inst.ram1.ram);
+            else
+              pipe_init("cnvmem64.hex");
     end
 
     always_ff @(posedge clk) begin
