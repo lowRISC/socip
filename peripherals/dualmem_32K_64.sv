@@ -28,7 +28,7 @@ module dualmem_32K_64(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, dou
         .DIPA   ( 4'b0                     ),
         .ENA    ( ena                      ),     // Port A RAM Enable Input
         .SSRA   ( 1'b0                     ),     // Port A Synchronous Set/Reset Input
-        .WEA    ( wea[r]                   ),     // Port A Write Enable Input
+        .WEA    ( wea[r*4]                 ),     // Port A Write Enable Input
         .CLKB   ( clkb                     ),     // Port B Clock
         .DOB    ( doutb[r*32 +: 32]        ),     // Port B 1-bit Data Output
         .DOPB   (                          ),
@@ -37,7 +37,7 @@ module dualmem_32K_64(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, dou
         .DIPB   ( 4'b0                     ),
         .ENB    ( enb                      ),     // Port B RAM Enable Input
         .SSRB   ( 1'b0                     ),     // Port B Synchronous Set/Reset Input
-        .WEB    ( web[r]                   )      // Port B Write Enable Input
+        .WEB    ( web[r*4]                 )      // Port B Write Enable Input
         );
    endgenerate
 
