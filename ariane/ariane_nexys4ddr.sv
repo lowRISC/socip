@@ -78,11 +78,12 @@ module ariane_nexys4ddr
    output wire        o_erstn, // PHY reset active low
 
   // JTAG signals
-   input logic        tck_i,
-   input logic        trstn_i,
-   input logic        tms_i,
-   input logic        tdi_i,
-   output logic       tdo_o,
+   input wire        tck_i,
+   input wire        trstn_i,
+   input wire        tms_i,
+   input wire        tdi_i,
+// Comment out for now due to internal Xilinx JTAG
+//   output wire       tdo_o,
 
    // clock and reset
    input wire         clk_p,
