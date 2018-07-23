@@ -103,6 +103,14 @@ module ariane_nexys4ddr
    );
 `endif   
 
+  wire        ram_clk;
+  wire        ram_rst;
+  wire        ram_en;
+  wire [7:0]  ram_we;
+  wire [15:0] ram_addr;
+  wire [63:0] ram_wrdata;
+  wire [63:0] ram_rddata;
+ 
    logic             clk_i, locked, tdo;          
    logic             test_en_i = 'b1; // enable all clock gates for testing
    // Core ID; Cluster ID and boot address are considered more or less static
@@ -581,11 +589,11 @@ ddr_bram #(.BRAM_SIZE(24)) my_master2_behav (
         .cpu_gnt_i    ( debug_gnt_o    ),
         .cpu_fetch_o  ( fetch_enable_i ),
         // Boot memory at location 'h40000000
-        .boot_en(master1_req),      // input wire ena
-        .boot_we(master1_we),   // input wire [7 : 0] wea
-        .boot_addr(master1_address[15:0]),  // input wire [13: 0] addra
-        .boot_wdata(master1_wdata),  // input wire [63 : 0] dina
-        .boot_rdata(master1_rdata),  // output wire [63 : 0] douta
+        .boot_en(ram_en),      // input wire ena
+        .boot_we(ram_we),   // input wire [7 : 0] wea
+        .boot_addr(ram_addr),  // input wire [13: 0] addra
+        .boot_wdata(ram_wrdata),  // input wire [63 : 0] dina
+        .boot_rdata(ram_rddata),  // output wire [63 : 0] douta
         // JTAG shared memory at location 'h42000000
         .wrap_en(master3_req),      // input wire ena
         .wrap_we(master3_we),   // input wire [7 : 0] wea

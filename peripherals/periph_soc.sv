@@ -11,16 +11,17 @@
 
 `default_nettype none
 
-module periph_soc
+module periph_soc #(UBAUD_DEFAULT=54)
   (
  output wire 	   uart_tx,
+ output wire        uart_irq,
  input wire 	   uart_rx,
  // clock and reset
  input wire        clk_200MHz,
  input wire        pxl_clk,
  input wire 	   msoc_clk,
  input wire 	   rstn,
- output reg [7:0]  to_led,
+ output reg [15:0]  to_led,
  input wire [15:0] from_dip,
  output wire 	   sd_sclk,
  input wire 	   sd_detect,
@@ -63,15 +64,23 @@ output wire eth_mdc,
 input wire phy_mdio_i,
 output wire phy_mdio_o,
 output wire phy_mdio_t,
-output wire eth_irq
+ output wire        eth_irq,
+ output wire        ram_clk,
+ output wire        ram_rst,
+ output wire        ram_en,
+ output wire [7:0]  ram_we,
+ output wire [15:0] ram_addr,
+ output wire [63:0] ram_wrdata,
+ input  wire [63:0] ram_rddata
  );
  
  wire [19:0] dummy;
- wire        ascii_ready;
- wire [7:0]  readch, scancode, fstore_data;
- wire        keyb_empty;   
+ wire        scan_ready, scan_released;
+ wire [7:0]  scan_code, fstore_data;
+ wire        keyb_empty, tx_error_no_keyboard_ack;   
  reg [31:0]  keycode;
- wire [35:0] keyb_fifo_out;
+ reg scan_ready_dly;
+ wire [8:0] keyb_fifo_out;
  // signals from/to core
 logic [7:0] one_hot_data_addr;
 logic [63:0] one_hot_rdata[7:0];
@@ -83,17 +92,23 @@ logic [63:0] one_hot_rdata[7:0];
       .PS2_K_DATA_IO(PS2_DATA),
       .PS2_M_CLK_IO(),
       .PS2_M_DATA_IO(),
-      .ascii_code(readch[6:0]),
-      .ascii_data_ready(ascii_ready),
-      .rx_translated_scan_code(scancode),
-      .rx_ascii_read(ascii_ready));
+      .rx_released(scan_released),
+      .rx_scan_ready(scan_ready),
+      .rx_scan_code(scan_code),
+      .rx_scan_read(scan_ready),
+      .tx_error_no_keyboard_ack(tx_error_no_keyboard_ack));
  
- my_fifo #(.width(36)) keyb_fifo (
+ always @(negedge msoc_clk)
+    begin
+        scan_ready_dly <= scan_ready;
+    end
+    
+ my_fifo #(.width(9)) keyb_fifo (
        .clk(~msoc_clk),      // input wire read clk
        .rst(~rstn),      // input wire rst
-       .din({21'b0, readch[6:0], scancode}),      // input wire [31 : 0] din
-       .wr_en(ascii_ready),  // input wire wr_en
-       .rd_en(hid_en&(|hid_we)&one_hot_data_addr[0]&~hid_addr[14]),  // input wire rd_en
+       .din({scan_released, scan_code}),      // input wire [31 : 0] din
+       .wr_en(scan_ready & ~scan_ready_dly),  // input wire wr_en
+       .rd_en(hid_en&(|hid_we)&one_hot_data_addr[6]&~hid_addr[14]),  // input wire rd_en
        .dout(keyb_fifo_out),    // output wire [31 : 0] dout
        .rdcount(),         // 12-bit output: Read count
        .wrcount(),         // 12-bit output: Write count
@@ -118,10 +133,10 @@ logic [63:0] one_hot_rdata[7:0];
       .green(green),
       .blue(blue),
       .web(hid_we),
-      .enb(hid_en & one_hot_data_addr[1]),
+      .enb(hid_en & one_hot_data_addr[7]),
       .addrb(hid_addr[13:3]),
       .dinb(hid_wrdata),
-      .doutb(one_hot_rdata[1]),
+      .doutb(one_hot_rdata[7]),
       .irst(~rstn),
       .clk_data(msoc_clk),
       .GPIO_SW_C(GPIO_SW_C),
@@ -142,14 +157,16 @@ logic [63:0] one_hot_rdata[7:0];
    wire [8:0]  uart_rx_fifo_data_out, uart_tx_fifo_data_out;
    reg [7:0]   u_rx_byte, u_tx_byte;
 
-    assign one_hot_rdata[0] = hid_addr[14] ?
+   assign uart_irq = ~uart_rx_empty;
+
+   assign one_hot_rdata[6] = hid_addr[14] ?
                               (hid_addr[13] ?
                                {4'b0,uart_tx_wrcount,
                                 4'b0,uart_tx_rdcount,
                                 4'b0,uart_rx_wrcount,
                                 4'b0,uart_rx_rdcount} : 
                                {4'b0,uart_rx_full,uart_tx_full,uart_rx_empty,uart_rx_fifo_data_out}) :
-                              {keyb_empty,keyb_fifo_out[15:0]};
+                              {tx_error_no_keyboard_ack,keyb_empty,keyb_fifo_out[8:0]};
 
 typedef enum {UTX_IDLE, UTX_EMPTY, UTX_INUSE, UTX_POP, UTX_START} utx_t;
 
@@ -158,7 +175,7 @@ typedef enum {UTX_IDLE, UTX_EMPTY, UTX_INUSE, UTX_POP, UTX_START} utx_t;
 always @(posedge msoc_clk)
     if (~rstn)
     begin
-    u_baud = 54;
+    u_baud = UBAUD_DEFAULT;
     u_recv = 0;
     u_trans = 0;
     u_tx_byte = 0;
@@ -169,7 +186,7 @@ always @(posedge msoc_clk)
     u_recv = 0;
     u_trans = 0;
     utxstate_q = utxstate_d;
-    if (hid_en & (|hid_we) & one_hot_data_addr[0] & hid_addr[14])
+    if (hid_en & (|hid_we) & one_hot_data_addr[6] & hid_addr[14])
         casez (hid_addr[13:12])
          2'b00: begin u_trans = 1; u_tx_byte = hid_wrdata[7:0]; $write("%c", u_tx_byte); $fflush(); end
          2'b01: begin u_recv = 1; end
@@ -209,7 +226,7 @@ uart i_uart(
     .rx(uart_maj), // Incoming serial line
     .tx(uart_tx), // Outgoing serial line
     .transmit(utxstate_q==UTX_START), // Signal to transmit
-    .tx_byte(uart_tx_fifo_data_out), // Byte to transmit
+    .tx_byte(uart_tx_fifo_data_out[7:0]), // Byte to transmit
     .received(received), // Indicated that a byte has been received.
     .rx_byte(u_rx_byte), // Byte received
     .is_receiving(is_recv), // Low when receive line is idle.
@@ -339,7 +356,7 @@ always @(posedge msoc_clk or negedge rstn)
         sd_irq_stat_reg <= {~sd_detect_reg,sd_detect_reg,sd_status[10],sd_status[8]};
         sd_irq <= |(sd_irq_en_reg & sd_irq_stat_reg);
         from_dip_reg <= from_dip;
-	 if (hid_en&hid_we&one_hot_data_addr[2]&~hid_addr[14])
+	 if (hid_en&(|hid_we)&one_hot_data_addr[2]&~hid_addr[14])
 	  case(hid_addr[6:3])
 	    0: sd_align_reg <= hid_wrdata;
 	    1: sd_clk_din <= hid_wrdata;
@@ -412,21 +429,28 @@ always @(posedge sd_clk_o)
         
    endgenerate					
 
-   logic [7:0] rx_wr = 8'hF << {sd_xfr_addr[0],2'b0};
+   logic [7:0] rx_wr = rx_wr_en ? (sd_xfr_addr[0] ? 8'hF0 : 8'hF) : 8'b0;
    logic [63:0] douta, doutb;
+   logic sd_xfr_addr_prev;
+   logic [31:0] swapbein = {data_in_rx[7:0],data_in_rx[15:8],data_in_rx[23:16],data_in_rx[31:24]};
    assign one_hot_rdata[3] = doutb;
-   assign data_out_tx = sd_xfr_addr[0] ? douta[63:32] : douta[31:0];
+   assign data_out_tx = sd_xfr_addr_prev ? {douta[39:32],douta[47:40],douta[55:48],douta[63:56]} :
+                                           {douta[7:0],douta[15:8],douta[23:16],douta[31:24]};
    
-     dualmem_32K_64
-     RAMB16_S36_S36_inst_sd
+   always @(negedge sd_clk_o)
+       begin
+       if (tx_rd) sd_xfr_addr_prev = sd_xfr_addr[0];
+       end            
+ 
+   dualmem_32K_64 RAMB16_S36_S36_inst_sd
        (
         .clka   ( ~sd_clk_o                   ),     // Port A Clock
         .douta  ( douta                       ),     // Port A 1-bit Data Output
         .addra  ( sd_xfr_addr[9:1]            ),     // Port A 9-bit Address Input
-        .dina   ( {data_in_rx,data_in_rx}     ),     // Port A 1-bit Data Input
+        .dina   ( {swapbein,swapbein}         ),     // Port A 1-bit Data Input
         .ena    ( tx_rd|rx_wr_en              ),     // Port A RAM Enable Input
         .wea    ( rx_wr                       ),     // Port A Write Enable Input
-        .clkb   ( ~msoc_clk                   ),     // Port B Clock
+        .clkb   ( msoc_clk                    ),     // Port B Clock
         .doutb  ( doutb                       ),     // Port B 1-bit Data Output
         .addrb  ( hid_addr[11:3]              ),     // Port B 14-bit Address Input
         .dinb   ( hid_wrdata                  ),     // Port B 1-bit Data Input
@@ -556,7 +580,7 @@ framing_top open
    .rstn(locked),
    .msoc_clk(msoc_clk),
    .clk_rmii(clk_rmii),
-   .core_lsu_addr(hid_addr[13:0]),
+   .core_lsu_addr(hid_addr[14:0]),
    .core_lsu_wdata(hid_wrdata),
    .core_lsu_be(hid_we),
    .ce_d(hid_en),
@@ -577,18 +601,14 @@ framing_top open
    .eth_irq(eth_irq)
 );
 
-dummy_clint clint
-       (
-        .rstn     ( rstn                        ),     // Port A 1-bit Data Output
-        .msoc_clk ( msoc_clk                    ),     // Port A Clock
-        .rdata    ( one_hot_rdata[6]            ),     // Port B 1-bit Data Output
-        .addr     ( hid_addr[15:0]              ),     // Port B 14-bit Address Input
-        .wdata    ( hid_wrdata                  ),     // Port B 1-bit Data Input
-        .ce_d     ( hid_en&(one_hot_data_addr[7]|one_hot_data_addr[6]) ),     // Port B RAM Enable Input
-        .we_d     ( hid_we                      )      // Port B Write Enable Input
-        );
-
-assign one_hot_rdata[7] = one_hot_data_addr[6];
+   assign one_hot_rdata[1] = one_hot_rdata[0];
+   assign one_hot_rdata[0] = ram_rddata;
+   assign ram_wrdata = hid_wrdata;
+   assign ram_addr = hid_addr[15:0];
+   assign ram_we = hid_we;
+   assign ram_en = hid_en&(one_hot_data_addr[1]|one_hot_data_addr[0]);
+   assign ram_clk = msoc_clk;
+   assign ram_rst = ~rstn;
    
 endmodule // chip_top
 `default_nettype wire
